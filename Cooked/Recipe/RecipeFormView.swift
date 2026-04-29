@@ -32,14 +32,24 @@ struct RecipeFormView: View {
 
     let onSave: (Recipe) -> Void
 
-    // 2. Updated init to accept the store
-    init(store: RecipeStore, onSave: @escaping (Recipe) -> Void) {
-        self.store = store
-        self.onSave = onSave
-        
-        // Initialize the picker with the first available category from the store
-        _category = State(initialValue: store.categories.first ?? RecipeCategory(name: "Lunch"))
-    }
+    init(store: RecipeStore, recipeToEdit: Recipe? = nil, onSave: @escaping (Recipe) -> Void) {
+            self.store = store
+            self.onSave = onSave
+            
+            // If editing, use the recipe's data. If new, use defaults.
+            _name = State(initialValue: recipeToEdit?.name ?? "")
+            _recipeDescription = State(initialValue: recipeToEdit?.recipeDescription ?? "")
+            _category = State(initialValue: recipeToEdit?.category ?? store.categories.first ?? RecipeCategory(name: "Lunch"))
+            _isFavorite = State(initialValue: recipeToEdit?.isFavorite ?? false)
+            _selectedImageData = State(initialValue: recipeToEdit?.imageData)
+            
+            // Break strings back into lines for the SmartListEditor
+            let ing = recipeToEdit?.ingredients.components(separatedBy: "\n") ?? [""]
+            _ingredientsLines = State(initialValue: ing)
+            
+            let ins = recipeToEdit?.instructions.components(separatedBy: "\n") ?? [""]
+            _instructionsLines = State(initialValue: ins)
+        }
 
     private var isFormValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&

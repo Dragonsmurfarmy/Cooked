@@ -18,6 +18,7 @@ struct MainPageView: View {
             name: "Tomato Soup",
             category: RecipeCategory(name: "Lunch"),
             recipeDescription: "Classic soup with basil.",
+            ingredients: "flour",
             instructions: "Cook tomatoes, blend them, and simmer with basil.",
             isFavorite: true
         ),
@@ -25,6 +26,7 @@ struct MainPageView: View {
             name: "Pancakes",
             category: RecipeCategory(name: "Lunch"),
             recipeDescription: "Quick breakfast pancakes.",
+            ingredients: "flour",
             instructions: "Mix batter, pour into pan, and cook until golden.",
             isFavorite: true
         ),
@@ -39,6 +41,7 @@ struct MainPageView: View {
             name: "Vegetable Salad",
             category: RecipeCategory(name: "Lunch"),
             recipeDescription: "Fresh mixed salad.",
+            ingredients: "flour",
             instructions: "Chop vegetables, mix, and serve.",
             isFavorite: false
         )
@@ -179,16 +182,22 @@ struct MainPageView: View {
                 .fontWeight(.semibold)
 
             ForEach(visibleRecipes) { recipe in
-                switch displayStyle {
-                case .compact:
-                    CompactRecipeRow(recipe: recipe) {
-                        toggleFavorite(for: recipe.id)
-                    }
-                case .card:
-                    CardRecipeRow(recipe: recipe) {
-                        toggleFavorite(for: recipe.id)
+                // Wrap the row in a NavigationLink
+                NavigationLink {
+                    RecipeDetailView(recipe: recipe, store: store)
+                } label: {
+                    switch displayStyle {
+                    case .compact:
+                        CompactRecipeRow(recipe: recipe) {
+                            toggleFavorite(for: recipe.id)
+                        }
+                    case .card:
+                        CardRecipeRow(recipe: recipe) {
+                            toggleFavorite(for: recipe.id)
+                        }
                     }
                 }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -297,10 +306,10 @@ private struct CardRecipeRow: View {
     }
 }
 
-private struct RecipeImage: View {
+public struct RecipeImage: View {
     let imageData: Data?
     
-    var body: some View {
+    public var body: some View {
         GeometryReader { proxy in
             ZStack {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
