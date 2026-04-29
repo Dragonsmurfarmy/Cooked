@@ -14,7 +14,7 @@ struct TimerView: View {
     @Environment(TimerViewModel.self) private var viewModel // To make sure timer persists even when user leaves screen
     @Environment(\.dismiss) private var dismiss
     @State private var selectedHours = 0
-    @State private var selectedMinutes = 10
+    @State private var selectedMinutes = 0
     @State private var selectedSeconds = 0
     @State private var showSoundPicker = false
 

@@ -114,6 +114,7 @@ final class TimerViewModel {
                     status = .finished
                     isAlarmActive = true
                     startAlarmSound()
+                    await stopLiveActivity()
                     stop()
                     break
                 }
@@ -138,11 +139,9 @@ final class TimerViewModel {
         }
     }
 
-    private func stopLiveActivity() {
-        Task {
-            await activity?.end(nil, dismissalPolicy: .immediate)
-            activity = nil
-        }
+    private func stopLiveActivity() async {
+        await activity?.end(nil, dismissalPolicy: .immediate)
+        activity = nil
     }
 
 

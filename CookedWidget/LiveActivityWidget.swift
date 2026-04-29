@@ -33,7 +33,6 @@ struct TimerLiveActivityWidget: Widget {
         } dynamicIsland: { context in
             
             DynamicIsland {
-                
                 DynamicIslandExpandedRegion(.center) {
                     Text(context.state.endDate, style: .timer)
                         .font(.title2)
