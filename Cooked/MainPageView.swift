@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MainPageView: View {
+    @State private var store = RecipeStore()
     @State private var sortOption: RecipeSortOption = .name
     @State private var displayStyle: RecipeDisplayStyle = .compact
     @State private var showCategoryFilter = false
@@ -15,33 +16,34 @@ struct MainPageView: View {
     @State private var recipes: [Recipe] = [
         Recipe(
             name: "Tomato Soup",
-            category: .lunch,
+            category: RecipeCategory(name: "Lunch"),
             recipeDescription: "Classic soup with basil.",
             instructions: "Cook tomatoes, blend them, and simmer with basil.",
             isFavorite: true
         ),
         Recipe(
             name: "Pancakes",
-            category: .lunch,
+            category: RecipeCategory(name: "Lunch"),
             recipeDescription: "Quick breakfast pancakes.",
             instructions: "Mix batter, pour into pan, and cook until golden.",
             isFavorite: true
         ),
         Recipe(
             name: "Grilled Chicken",
-            category: .lunch,
+            category: RecipeCategory(name: "Lunch"),
             recipeDescription: "Simple grilled chicken breast.",
             instructions: "Season chicken and grill until fully cooked.",
             isFavorite: false
         ),
         Recipe(
             name: "Vegetable Salad",
-            category: .lunch,
+            category: RecipeCategory(name: "Lunch"),
             recipeDescription: "Fresh mixed salad.",
             instructions: "Chop vegetables, mix, and serve.",
             isFavorite: false
         )
     ]
+    
     
     private var sortedRecipes: [Recipe] {
         // Switch determining by what criteria should the recipes be sorted
@@ -73,19 +75,23 @@ struct MainPageView: View {
     
     private var categoryFilter: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("recipe.category").font(.headline)
-            
-            ForEach(RecipeCategory.allCases) { category in
+            Text("recipe.category")
+                .font(.headline)
+
+            ForEach(store.categories) { category in
                 HStack {
-                    Image(systemName: selectedCategory == category
+                    Image(systemName: selectedCategory?.id == category.id
                           ? "checkmark.circle.fill"
                           : "circle")
-                    Text(category.title)
-                    
+
+                    Text(category.name)
+
                     Spacer()
                 }
                 .contentShape(Rectangle())
-                
+                .onTapGesture {
+                    selectedCategory = category
+                }
             }
         }
     }
@@ -124,7 +130,7 @@ struct MainPageView: View {
             HStack {
                 Text("\(String(localized: "main.controls.recipe_count_label")): \(recipes.count)")
                     .font(.headline)
-
+                
                 Spacer()
                 
                 Menu {
@@ -132,24 +138,22 @@ struct MainPageView: View {
                         selectedCategory = nil
                     } label: {
                         Label(
-                            "label.all",
-                            systemImage: selectedCategory == nil
-                                ? "checkmark.circle.fill"
-                                : "circle"
+                            "All",
+                            systemImage: selectedCategory == nil ? "checkmark.circle.fill" : "circle"
                         )
                     }
-
+                    
                     Divider()
-
-                    ForEach(RecipeCategory.allCases) { category in
+                    
+                    ForEach(store.categories) { category in
                         Button {
                             selectedCategory = category
                         } label: {
                             Label(
-                                category.title,
-                                systemImage: selectedCategory == category
-                                    ? "checkmark.circle.fill"
-                                    : "circle"
+                                category.name,
+                                systemImage: selectedCategory?.id == category.id
+                                ? "checkmark.circle.fill"
+                                : "circle"
                             )
                         }
                     }
@@ -158,22 +162,13 @@ struct MainPageView: View {
                 }
                 .buttonStyle(.bordered)
                 
-                Spacer()
-
-                Picker("main.controls.sort_by", selection: $sortOption) {
-                    ForEach(RecipeSortOption.allCases) { option in
-                        Text(option.title).tag(option)
+                Picker("main.controls.display_style", selection: $displayStyle) {
+                    ForEach(RecipeDisplayStyle.allCases) { style in
+                        Text(style.title).tag(style)
                     }
                 }
-                .pickerStyle(.menu)
+                .pickerStyle(.segmented)
             }
-
-            Picker("main.controls.display_style", selection: $displayStyle) {
-                ForEach(RecipeDisplayStyle.allCases) { style in
-                    Text(style.title).tag(style)
-                }
-            }
-            .pickerStyle(.segmented)
         }
     }
 
@@ -217,7 +212,7 @@ struct MainPageView: View {
             
             // New recipe
             NavigationLink {
-                RecipeFormView { newRecipe in
+                RecipeFormView(store: store) { newRecipe in
                     recipes.append(newRecipe)
                 }
             } label: {

@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
     "%@: %lld" : {
       "localizations" : {
         "en" : {
@@ -11,13 +14,20 @@
         }
       }
     },
+    "Add" : {
+
+    },
     "Alarm is ringing" : {
+
+    },
+    "All" : {
 
     },
     "Basic Info" : {
 
     },
     "button.cancel" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -68,6 +78,7 @@
       }
     },
     "button.save" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -83,7 +94,14 @@
         }
       }
     },
+    "Cancel" : {
+
+    },
+    "Category name" : {
+
+    },
     "category.breakfast" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -100,6 +118,7 @@
       }
     },
     "category.cake" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -116,6 +135,7 @@
       }
     },
     "category.dessert" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -132,6 +152,7 @@
       }
     },
     "category.dinner" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -148,6 +169,7 @@
       }
     },
     "category.drink" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -164,6 +186,7 @@
       }
     },
     "category.lunch" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -185,13 +208,26 @@
     "Choose Sound" : {
 
     },
+    "Create a custom category for your recipe." : {
+
+    },
+    "Description" : {
+
+    },
     "Done" : {
 
     },
     "Filter" : {
 
     },
+    "Ingredients" : {
+
+    },
+    "Instructions" : {
+
+    },
     "label.all" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -208,6 +244,7 @@
       }
     },
     "label.new" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -256,6 +293,7 @@
       }
     },
     "main.controls.sort_by" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -463,6 +501,15 @@
         }
       }
     },
+    "New Category" : {
+
+    },
+    "New Recipe" : {
+
+    },
+    "Recipe Name" : {
+
+    },
     "recipe.category" : {
       "localizations" : {
         "cs" : {
@@ -480,6 +527,7 @@
       }
     },
     "recipe.description" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -496,6 +544,7 @@
       }
     },
     "recipe.ingredients" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -512,6 +561,7 @@
       }
     },
     "recipe.instructions" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -528,6 +578,7 @@
       }
     },
     "recipe.name" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -542,6 +593,9 @@
           }
         }
       }
+    },
+    "Save" : {
+
     },
     "Select Image" : {
 

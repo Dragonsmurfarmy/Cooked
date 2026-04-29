@@ -9,58 +9,42 @@ import SwiftUI
 import UIKit
 import PhotosUI
 
-enum RecipeCategory: String, CaseIterable, Identifiable {
-    case breakfast
-    case lunch
-    case dinner
-    case dessert
-    case drink
-    case cake
-
-    var id: Self { self }
-    
-    var sortOrder: Int {
-        switch self {
-        case .breakfast: 0
-        case .lunch: 1
-        case .dinner: 2
-        case .dessert: 3
-        case .drink: 4
-        case .cake: 5
-        }
-    }
-
-    var title: LocalizedStringKey {
-        switch self {
-        case .breakfast: "category.breakfast"
-        case .lunch: "category.lunch"
-        case .dinner: "category.dinner"
-        case .dessert: "category.dessert"
-        case .drink: "category.drink"
-        case .cake: "category.cake"
-        }
-    }
+struct RecipeCategory: Identifiable, Equatable {
+    var id = UUID()
+    var name: String
 }
-
-
 struct RecipeFormView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // 1. We use the store passed from the parent
+    @Bindable var store: RecipeStore
+    
     @State private var name = ""
-    @State private var category: RecipeCategory = .dinner
+    @State private var category: RecipeCategory
     @State private var recipeDescription = ""
-    @State private var ingredients = ""
-    @State private var instructions = ""
+    @State private var ingredientsLines: [String] = [""]
+    @State private var instructionsLines: [String] = [""]
     @State private var isFavorite = false
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImageData: Data?
+    @State private var showNewCategoryAlert = false
+    @State private var newCategoryName = ""
 
-    
-    let onSave: (Recipe) -> Void // Saving behaviour will be handled elsewhere
+    let onSave: (Recipe) -> Void
+
+    // 2. Updated init to accept the store
+    init(store: RecipeStore, onSave: @escaping (Recipe) -> Void) {
+        self.store = store
+        self.onSave = onSave
+        
+        // Initialize the picker with the first available category from the store
+        _category = State(initialValue: store.categories.first ?? RecipeCategory(name: "Lunch"))
+    }
 
     private var isFormValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !instructions.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !ingredientsLines.joined().trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !instructionsLines.joined().trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     var body: some View {
@@ -81,47 +65,71 @@ struct RecipeFormView: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    TextField("recipe.name", text: $name)
-                    Picker("recipe.category", selection: $category) {
-                        ForEach(RecipeCategory.allCases) { cat in
-                            Text(cat.title)
-                                .tag(cat)
+                    
+                    TextField("Recipe Name", text: $name)
+                    
+                    Menu {
+                        // 3. Loop over categories in the STORE, not local state
+                        ForEach(store.categories) { cat in
+                            Button {
+                                category = cat
+                            } label: {
+                                Label(
+                                    cat.name,
+                                    systemImage: category == cat ? "checkmark" : "circle"
+                                )
+                            }
+                        }
+
+                        Divider()
+
+                        Button {
+                            showNewCategoryAlert = true
+                        } label: {
+                            Label("New Category", systemImage: "plus")
+                        }
+
+                    } label: {
+                        HStack {
+                            Text(category.name)
+                            Spacer()
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
-                    TextField("recipe.description", text: $recipeDescription)
-
+                    
+                    TextField("Description", text: $recipeDescription)
                 }
                 
-                Section("recipe.ingredients") {
-                    AutoListTextView(text: $ingredients, listStyle: .bulleted)
+                Section("Ingredients") {
+                    SmartListEditor(lines: $ingredientsLines, style: .bulleted)
                         .frame(minHeight: 160)
                 }
 
-                Section("recipe.instructions") {
-                    AutoListTextView(text: $instructions, listStyle: .numbered)
+                Section("Instructions") {
+                    SmartListEditor(lines: $instructionsLines, style: .bulleted)
                         .frame(minHeight: 160)
                 }
             }
-            .navigationTitle("label.new")
+            .navigationTitle("New Recipe")
             .task(id: selectedPhoto) {
                 await loadSelectedPhoto()
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("button.cancel") {
-                        dismiss()
-                    }
+                    Button("Cancel") { dismiss() }
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("button.save") {
+                    Button("Save") {
                         let recipe = Recipe(
                             name: name.trimmingCharacters(in: .whitespacesAndNewlines),
                             category: category,
                             recipeDescription: recipeDescription.trimmingCharacters(in: .whitespacesAndNewlines),
-                            ingredients: ingredients.trimmingCharacters(in: .whitespacesAndNewlines),
-                            instructions: instructions.trimmingCharacters(in: .whitespacesAndNewlines),
-                            isFavorite: isFavorite ? true : false,
+                            ingredients: ingredientsLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines),
+                            instructions: instructionsLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines),
+                            isFavorite: isFavorite,
                             imageData: selectedImageData
                         )
                         onSave(recipe)
@@ -131,11 +139,30 @@ struct RecipeFormView: View {
                 }
             }
         }
+        .alert("New Category", isPresented: $showNewCategoryAlert) {
+            TextField("Category name", text: $newCategoryName)
+
+            Button("Add") {
+                let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return }
+
+                // 4. Add to the STORE so it persists everywhere
+                let newCat = store.addCategory(trimmed)
+                category = newCat // Auto-select the one we just made
+
+                newCategoryName = ""
+            }
+
+            Button("Cancel", role: .cancel) {
+                newCategoryName = ""
+            }
+        } message: {
+            Text("Create a custom category for your recipe.")
+        }
     }
 
     private func loadSelectedPhoto() async {
         guard let selectedPhoto else { return }
-
         do {
             selectedImageData = try await selectedPhoto.loadTransferable(type: Data.self)
         } catch {
@@ -163,120 +190,5 @@ private struct RecipeSelectedImagePreview: View {
         }
         .frame(width: 56, height: 56)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-    }
-}
-
-private struct AutoListTextView: UIViewRepresentable {
-    @Binding var text: String
-    let listStyle: ListStyle
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, listStyle: listStyle)
-    }
-
-    func makeUIView(context: Context) -> UITextView {
-        let textView = UITextView()
-        textView.delegate = context.coordinator
-        textView.font = .preferredFont(forTextStyle: .body)
-        textView.adjustsFontForContentSizeCategory = true
-        textView.backgroundColor = .clear
-        textView.isScrollEnabled = true
-        textView.autocapitalizationType = .sentences
-        textView.textContainerInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
-        textView.textContainer.lineFragmentPadding = 0
-        textView.text = text
-        return textView
-    }
-
-    func updateUIView(_ uiView: UITextView, context: Context) {
-        context.coordinator.text = $text
-
-        if uiView.text != text {
-            uiView.text = text
-        }
-    }
-
-    enum ListStyle {
-        case bulleted
-        case numbered
-
-        var initialPrefix: String {
-            switch self {
-            case .bulleted:
-                return "• "
-            case .numbered:
-                return "1. "
-            }
-        }
-    }
-
-    final class Coordinator: NSObject, UITextViewDelegate {
-        var text: Binding<String>
-        let listStyle: ListStyle
-
-        init(text: Binding<String>, listStyle: ListStyle) {
-            self.text = text
-            self.listStyle = listStyle
-        }
-
-        func textViewDidBeginEditing(_ textView: UITextView) {
-            guard textView.text.isEmpty else { return }
-            textView.text = listStyle.initialPrefix
-            text.wrappedValue = textView.text
-            moveCursorToEnd(of: textView)
-        }
-
-        func textViewDidChange(_ textView: UITextView) {
-            text.wrappedValue = textView.text
-        }
-
-        func textView(
-            _ textView: UITextView,
-            shouldChangeTextIn range: NSRange,
-            replacementText replacement: String
-        ) -> Bool {
-            guard replacement == "\n" else { return true }
-
-            let currentText = textView.text ?? ""
-            guard let textRange = Range(range, in: currentText) else { return true }
-            let paragraphRange = currentText.lineRange(for: textRange.lowerBound..<textRange.lowerBound)
-            let currentLine = String(currentText[paragraphRange])
-            let trimmedLine = currentLine.trimmingCharacters(in: .whitespacesAndNewlines)
-
-            if trimmedLine.isEmpty || trimmedLine == listStyle.initialPrefix.trimmingCharacters(in: .whitespaces) {
-                return true
-            }
-
-            let nextPrefix = nextPrefix(for: trimmedLine)
-            let updatedText = (currentText as NSString).replacingCharacters(in: range, with: "\n\(nextPrefix)")
-            textView.text = updatedText
-            text.wrappedValue = updatedText
-
-            let newCursorLocation = range.location + 1 + nextPrefix.count
-            if let position = textView.position(from: textView.beginningOfDocument, offset: newCursorLocation) {
-                textView.selectedTextRange = textView.textRange(from: position, to: position)
-            }
-
-            return false
-        }
-
-        private func nextPrefix(for currentLine: String) -> String {
-            switch listStyle {
-            case .bulleted:
-                return "• "
-            case .numbered:
-                let number = currentLine
-                    .split(separator: ".", maxSplits: 1)
-                    .first
-                    .flatMap { Int($0) } ?? 1
-                return "\(number + 1). "
-            }
-        }
-
-        private func moveCursorToEnd(of textView: UITextView) {
-            let end = textView.endOfDocument
-            textView.selectedTextRange = textView.textRange(from: end, to: end)
-        }
-
     }
 }
