@@ -11,6 +11,9 @@
         }
       }
     },
+    "Alarm is ringing" : {
+
+    },
     "Basic Info" : {
 
     },
@@ -177,6 +180,12 @@
       }
     },
     "Choose from gallery" : {
+
+    },
+    "Choose Sound" : {
+
+    },
+    "Done" : {
 
     },
     "Filter" : {

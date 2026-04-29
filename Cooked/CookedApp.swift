@@ -1,33 +1,27 @@
-//
-//  CookedApp.swift
-//  Cooked
-//
-//  Created by Tomáš Kříž on 26.04.2026.
-//
-
 import SwiftUI
 import UserNotifications
 
 @main
 struct CookedApp: App {
     @State private var timerViewModel = TimerViewModel()
-    
+
     init() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             print("🔔 Notification permission:", settings.authorizationStatus.rawValue)
         }
+
         UNUserNotificationCenter.current().delegate = NotificationDelegate()
     }
-    
 
     var body: some Scene {
         WindowGroup {
-            MainPageView()
+            RootView()
                 .environment(timerViewModel)
         }
     }
-    
+
     final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         func userNotificationCenter(
             _ center: UNUserNotificationCenter,
@@ -36,6 +30,4 @@ struct CookedApp: App {
             return [.banner, .sound]
         }
     }
-    
-   
 }

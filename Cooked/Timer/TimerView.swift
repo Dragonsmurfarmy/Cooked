@@ -8,6 +8,7 @@
 import SwiftUI
 import ActivityKit
 import UIKit
+import AVFoundation
 
 struct TimerView: View {
     @Environment(TimerViewModel.self) private var viewModel // To make sure timer persists even when user leaves screen
@@ -15,6 +16,7 @@ struct TimerView: View {
     @State private var selectedHours = 0
     @State private var selectedMinutes = 10
     @State private var selectedSeconds = 0
+    @State private var showSoundPicker = false
 
     private var selectedDuration: TimeInterval {
         TimeInterval(selectedHours * 3600 + selectedMinutes * 60 + selectedSeconds)
@@ -120,6 +122,10 @@ struct TimerView: View {
                 systemImage: "bell.fill",
                 tint: .blue
             ) {
+                showSoundPicker = true
+            }
+            .sheet(isPresented: $showSoundPicker) {
+                SoundPickerView(viewModel: viewModel)
             }
         }
     }
@@ -389,3 +395,6 @@ private struct LoopingTimePicker: UIViewRepresentable {
     }
     .environment(TimerViewModel())
 }
+
+
+

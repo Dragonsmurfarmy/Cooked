@@ -2,6 +2,7 @@ import Foundation
 import Observation
 import ActivityKit
 import UserNotifications
+import AVFoundation
 
 @MainActor
 @Observable
@@ -10,6 +11,16 @@ final class TimerViewModel {
     private(set) var totalDuration: TimeInterval
     private(set) var remainingTime: TimeInterval
     private var endDate: Date?
+    public var selectedSoundUrl: URL?
+    private var alarmPlayer: AVAudioPlayer?
+    private(set) var isAlarmActive: Bool = false
+    var availableSounds: [TimerSoundFile] = [] {
+        didSet {
+            if selectedSoundUrl == nil {
+                selectedSoundUrl = availableSounds.first?.url
+            }
+        }
+    }
 
     private var activity: Activity<TimerActivityAttributes>?
     private(set) var status: TimerStatus = .ready
@@ -101,8 +112,9 @@ final class TimerViewModel {
                 
                 if(remaining <= 0) {
                     status = .finished
-                    stopLiveActivity()
-                    reset()
+                    isAlarmActive = true
+                    startAlarmSound()
+                    stop()
                     break
                 }
                 
@@ -138,7 +150,12 @@ final class TimerViewModel {
         let content = UNMutableNotificationContent()
         content.title = "Timer finished"
         content.body = "Your cooking timer is done."
-        content.sound = .default
+        if let url = selectedSoundUrl {
+            let name = url.lastPathComponent
+            content.sound = UNNotificationSound(named: UNNotificationSoundName(name))
+        } else {
+            content.sound = .default
+        }
 
         let trigger = UNTimeIntervalNotificationTrigger(
                 timeInterval: max(endDate.timeIntervalSinceNow, 1),
@@ -150,8 +167,6 @@ final class TimerViewModel {
             content: content,
             trigger: trigger
         )
-
-        UNUserNotificationCenter.current().add(request)
         
         UNUserNotificationCenter.current().add(request) { error in
                 if let error = error {
@@ -162,7 +177,35 @@ final class TimerViewModel {
             }
         
     }
+    
+    func setCustomSound(url: URL) {
+        selectedSoundUrl = url
+    }
+    
+    public func stopAlarm() {
+        isAlarmActive = false
+        stopAlarmSound()
+        reset()
+    }
+    
+    func startAlarmSound() {
+        let url = selectedSoundUrl ?? Bundle.main.url(forResource: "Tadadada", withExtension: "mp3")
 
+        guard let url else { return }
+
+        do {
+            alarmPlayer = try AVAudioPlayer(contentsOf: url)
+            alarmPlayer?.numberOfLoops = -1
+            alarmPlayer?.play()
+        } catch {
+            print("Alarm sound failed:", error)
+        }
+    }
+    
+    func stopAlarmSound() {
+        alarmPlayer?.stop()
+        alarmPlayer = nil
+    }
 
     enum TimerStatus {
         case ready
