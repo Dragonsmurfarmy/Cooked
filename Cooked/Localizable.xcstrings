@@ -4,15 +4,8 @@
     "" : {
 
     },
-    "%@: %lld" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@: %2$lld"
-          }
-        }
-      }
+    "%lld" : {
+
     },
     "Add" : {
 
@@ -211,6 +204,9 @@
     "Description" : {
 
     },
+    "Display" : {
+
+    },
     "Done" : {
 
     },
@@ -218,9 +214,6 @@
 
     },
     "Edit Recipe" : {
-
-    },
-    "Filter" : {
 
     },
     "Ingredients" : {
@@ -264,6 +257,7 @@
       }
     },
     "main.controls.display_style" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -280,6 +274,7 @@
       }
     },
     "main.controls.recipe_count_label" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -514,6 +509,7 @@
 
     },
     "recipe.category" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -601,6 +597,9 @@
 
     },
     "Select Image" : {
+
+    },
+    "Sort" : {
 
     },
     "Tap to change photo" : {

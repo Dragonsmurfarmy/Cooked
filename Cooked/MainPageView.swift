@@ -4,24 +4,33 @@
 //
 //  Created by Tomáš Kříž on 26.04.2026.
 //
-
 import SwiftUI
 
 struct MainPageView: View {
     @State private var store = RecipeStore()
     @State private var sortOption: RecipeSortOption = .name
     @State private var displayStyle: RecipeDisplayStyle = .compact
-    @State private var showCategoryFilter = false
     @State private var selectedCategory: RecipeCategory? = nil
-    @State private var recipes: [Recipe] = []
     
     
-    private var sortedRecipes: [Recipe] {
+    private var visibleRecipes: [Recipe] {
+        
+        let filtered = store.recipes.filter { recipe in
+            if let selected = selectedCategory {
+                
+                return recipe.category.id == selected.id
+            } else {
+                
+                return true
+            }
+        }
+        
+        // 2. Poté seřadíme
         switch sortOption {
         case .name:
-            return store.recipes.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+            return filtered.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         case .favorites:
-            return store.recipes.sorted {
+            return filtered.sorted {
                 if $0.isFavorite == $1.isFavorite {
                     return $0.name.localizedCompare($1.name) == .orderedAscending
                 }
@@ -29,43 +38,10 @@ struct MainPageView: View {
             }
         }
     }
-
-    private var visibleRecipes: [Recipe] {
-        store.recipes
-            .filter { selectedCategory == nil || $0.category == selectedCategory }
-            .sorted { lhs, rhs in
-                if lhs.isFavorite == rhs.isFavorite {
-                    return lhs.name.localizedCompare(rhs.name) == .orderedAscending
-                }
-                return lhs.isFavorite && !rhs.isFavorite
-            }
-    }
     
-    private var categoryFilter: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("recipe.category")
-                .font(.headline)
-
-            ForEach(store.categories) { category in
-                HStack {
-                    Image(systemName: selectedCategory?.id == category.id
-                          ? "checkmark.circle.fill"
-                          : "circle")
-
-                    Text(category.name)
-
-                    Spacer()
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    selectedCategory = category
-                }
-            }
-        }
-    }
-    
+    // MARK: - Body (Tohle v tvém kódu chybělo)
     var body: some View {
-        NavigationStack{
+        NavigationStack {
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
@@ -81,6 +57,7 @@ struct MainPageView: View {
         }
     }
 
+    // MARK: - Sections
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("main.header.title")
@@ -95,20 +72,37 @@ struct MainPageView: View {
 
     private var controlsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("\(String(localized: "main.controls.recipe_count_label")): \(recipes.count)")
-                    .font(.headline)
+            HStack(spacing: 10) {
+                // Počítadlo (používáme visibleRecipes, aby odpovídalo filtru)
+                Text("\(visibleRecipes.count)")
+                    .font(.subheadline.bold())
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.accentColor.opacity(0.1))
+                    .clipShape(Capsule())
                 
                 Spacer()
                 
+                // Tlačítko Řazení
+                Menu {
+                    Picker("Sort", selection: $sortOption) {
+                        ForEach(RecipeSortOption.allCases) { option in
+                            Label(option.title, systemImage: option == .name ? "textformat" : "star.fill")
+                                .tag(option)
+                        }
+                    }
+                } label: {
+                    Image(systemName: "arrow.up.arrow.down.circle")
+                        .font(.title3)
+                }
+                .buttonStyle(.bordered)
+
+                // Tlačítko Filtru
                 Menu {
                     Button {
                         selectedCategory = nil
                     } label: {
-                        Label(
-                            "All",
-                            systemImage: selectedCategory == nil ? "checkmark.circle.fill" : "circle"
-                        )
+                        Label("All", systemImage: selectedCategory == nil ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Divider()
@@ -119,23 +113,25 @@ struct MainPageView: View {
                         } label: {
                             Label(
                                 category.name,
-                                systemImage: selectedCategory?.id == category.id
-                                ? "checkmark.circle.fill"
-                                : "circle"
+                                systemImage: selectedCategory?.id == category.id ? "checkmark.circle.fill" : "circle"
                             )
                         }
                     }
                 } label: {
-                    Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                    Image(systemName: "line.3.horizontal.decrease.circle")
+                        .font(.title3)
                 }
                 .buttonStyle(.bordered)
                 
-                Picker("main.controls.display_style", selection: $displayStyle) {
+                // Přepínač stylu (Ikony)
+                Picker("Display", selection: $displayStyle) {
                     ForEach(RecipeDisplayStyle.allCases) { style in
-                        Text(style.title).tag(style)
+                        Image(systemName: style == .compact ? "list.bullet" : "square.grid.2x2")
+                            .tag(style)
                     }
                 }
                 .pickerStyle(.segmented)
+                .frame(width: 80)
             }
         }
     }
@@ -147,7 +143,6 @@ struct MainPageView: View {
                 .fontWeight(.semibold)
 
             ForEach(visibleRecipes) { recipe in
-                // Wrap the row in a NavigationLink
                 NavigationLink {
                     RecipeDetailView(recipe: recipe, store: store)
                 } label: {
@@ -169,11 +164,8 @@ struct MainPageView: View {
 
     private var bottomNavigationBar: some View {
         HStack {
-            
-            // Voice regime
             NavigationBarButton(titleKey: "navigation.voice_regime", systemImage: "mic")
             
-            // Timer
             NavigationLink {
                 TimerView()
             } label: {
@@ -181,20 +173,18 @@ struct MainPageView: View {
             }
             .buttonStyle(.plain)
             
-            // Home
             NavigationBarButton(titleKey: "navigation.home", systemImage: "house.fill", isSelected: true)
             
-            // New recipe
             NavigationLink {
                 RecipeFormView(store: store) { newRecipe in
-                    recipes.append(newRecipe)
+                    // Recept se uloží do store, UI se díky @Observable samo překreslí
+                    store.saveRecipe(newRecipe, newImageData: nil)
                 }
             } label: {
                 NavigationBarButton(titleKey: "navigation.add", systemImage: "plus")
             }
             .buttonStyle(.plain)
             
-            // Settings
             NavigationBarButton(titleKey: "navigation.settings", systemImage: "gearshape")
         }
         .padding(.horizontal, 12)
@@ -203,11 +193,11 @@ struct MainPageView: View {
     }
 
     private func toggleFavorite(for recipeID: UUID) {
-        guard let index = recipes.firstIndex(where: { $0.id == recipeID }) else {
-            return
+        if let index = store.recipes.firstIndex(where: { $0.id == recipeID }) {
+            var updatedRecipe = store.recipes[index]
+            updatedRecipe.isFavorite.toggle()
+            store.saveRecipe(updatedRecipe, newImageData: nil)
         }
-
-        recipes[index].isFavorite.toggle()
     }
 }
 

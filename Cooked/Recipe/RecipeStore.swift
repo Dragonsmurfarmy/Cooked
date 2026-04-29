@@ -26,16 +26,15 @@ import SwiftUI
     }
     
     private func copyBundleRecipesIfNeeded() {
-        let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore_v3") // Změnil jsem verzi pro nový pokus
+        let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore_v1")
         
         if !hasLaunchedBefore {
-            print("首次运行: Kopíruji JSONy z App Bundlu...")
+            print("Copying bult-in JSON files")
             
-            // Najde všechny JSON soubory kdekoli v hlavním balíčku (bez ohledu na složku)
             let bundleJSONs = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
             
             if bundleJSONs.isEmpty {
-                print("⚠️ Warning: No JSON files found in App Bundle!")
+                print("No JSON files found in App")
             }
             
             for fileURL in bundleJSONs {
