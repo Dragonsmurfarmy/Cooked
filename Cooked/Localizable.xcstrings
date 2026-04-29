@@ -10,10 +10,19 @@
     "Add" : {
 
     },
+    "Add New Category" : {
+
+    },
     "Alarm is ringing" : {
 
     },
+    "Alarm Sound" : {
+
+    },
     "All" : {
+
+    },
+    "Are you sure you want to delete '%@'? This action cannot be undone." : {
 
     },
     "Basic Info" : {
@@ -201,6 +210,15 @@
     "Choose Sound" : {
 
     },
+    "Data Management" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete Recipe?" : {
+
+    },
     "Description" : {
 
     },
@@ -214,6 +232,15 @@
 
     },
     "Edit Recipe" : {
+
+    },
+    "Export Recipes (JSON)" : {
+
+    },
+    "General" : {
+
+    },
+    "Import Recipes (JSON)" : {
 
     },
     "Ingredients" : {
@@ -255,6 +282,9 @@
           }
         }
       }
+    },
+    "Language" : {
+
     },
     "main.controls.display_style" : {
       "extractionState" : "stale",
@@ -418,6 +448,9 @@
           }
         }
       }
+    },
+    "Manage Categories" : {
+
     },
     "navigation.add" : {
       "localizations" : {
@@ -599,10 +632,16 @@
     "Select Image" : {
 
     },
+    "Settings" : {
+
+    },
     "Sort" : {
 
     },
     "Tap to change photo" : {
+
+    },
+    "Timer & Sounds" : {
 
     },
     "timer.action.pause" : {

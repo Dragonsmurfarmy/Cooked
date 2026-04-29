@@ -11,6 +11,13 @@ struct MainPageView: View {
     @State private var sortOption: RecipeSortOption = .name
     @State private var displayStyle: RecipeDisplayStyle = .compact
     @State private var selectedCategory: RecipeCategory? = nil
+    @State private var recipeToDelete: Recipe?
+    @State private var showDeleteConfirmation = false
+    
+    private let columns = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
+    ]
     
     
     private var visibleRecipes: [Recipe] {
@@ -25,7 +32,7 @@ struct MainPageView: View {
             }
         }
         
-        // 2. Poté seřadíme
+        
         switch sortOption {
         case .name:
             return filtered.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
@@ -39,7 +46,7 @@ struct MainPageView: View {
         }
     }
     
-    // MARK: - Body (Tohle v tvém kódu chybělo)
+    // MARK: - Body
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -73,7 +80,7 @@ struct MainPageView: View {
     private var controlsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
-                // Počítadlo (používáme visibleRecipes, aby odpovídalo filtru)
+                
                 Text("\(visibleRecipes.count)")
                     .font(.subheadline.bold())
                     .padding(.horizontal, 10)
@@ -83,7 +90,7 @@ struct MainPageView: View {
                 
                 Spacer()
                 
-                // Tlačítko Řazení
+                
                 Menu {
                     Picker("Sort", selection: $sortOption) {
                         ForEach(RecipeSortOption.allCases) { option in
@@ -142,22 +149,52 @@ struct MainPageView: View {
                 .font(.title2)
                 .fontWeight(.semibold)
 
-            ForEach(visibleRecipes) { recipe in
-                NavigationLink {
-                    RecipeDetailView(recipe: recipe, store: store)
-                } label: {
-                    switch displayStyle {
-                    case .compact:
-                        CompactRecipeRow(recipe: recipe) {
-                            toggleFavorite(for: recipe.id)
+            Group {
+                if displayStyle == .compact {
+                    VStack(spacing: 12) {
+                        ForEach(visibleRecipes) { recipe in
+                            recipeRowWrapper(recipe: recipe, isCard: false)
                         }
-                    case .card:
-                        CardRecipeRow(recipe: recipe) {
-                            toggleFavorite(for: recipe.id)
+                    }
+                } else {
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(visibleRecipes) { recipe in
+                            recipeRowWrapper(recipe: recipe, isCard: true)
                         }
                     }
                 }
-                .buttonStyle(.plain)
+            }
+            // Confirmation Popup
+            .alert("Delete Recipe?", isPresented: $showDeleteConfirmation, presenting: recipeToDelete) { recipe in
+                Button("Delete", role: .destructive) {
+                    deleteRecipe(recipe)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: { recipe in
+                Text("Are you sure you want to delete '\(recipe.name)'? This action cannot be undone.")
+            }
+        }
+    }
+
+    
+    @ViewBuilder
+    private func recipeRowWrapper(recipe: Recipe, isCard: Bool) -> some View {
+        NavigationLink {
+            RecipeDetailView(recipe: recipe, store: store)
+        } label: {
+            if isCard {
+                CardRecipeRow(recipe: recipe) { toggleFavorite(for: recipe.id) }
+            } else {
+                CompactRecipeRow(recipe: recipe, store: store) { toggleFavorite(for: recipe.id) }
+            }
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button(role: .destructive) {
+                recipeToDelete = recipe
+                showDeleteConfirmation = true
+            } label: {
+                Label("Delete", systemImage: "trash")
             }
         }
     }
@@ -177,7 +214,6 @@ struct MainPageView: View {
             
             NavigationLink {
                 RecipeFormView(store: store) { newRecipe in
-                    // Recept se uloží do store, UI se díky @Observable samo překreslí
                     store.saveRecipe(newRecipe, newImageData: nil)
                 }
             } label: {
@@ -185,7 +221,13 @@ struct MainPageView: View {
             }
             .buttonStyle(.plain)
             
-            NavigationBarButton(titleKey: "navigation.settings", systemImage: "gearshape")
+            NavigationLink {
+                SettingsView(store: store)
+            } label: {
+                NavigationBarButton(titleKey: "navigation.settings", systemImage: "gearshape")
+            }
+            .buttonStyle(.plain)
+            
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -199,10 +241,19 @@ struct MainPageView: View {
             store.saveRecipe(updatedRecipe, newImageData: nil)
         }
     }
+    
+    private func deleteRecipe(_ recipe: Recipe) {
+        if let index = store.recipes.firstIndex(where: { $0.id == recipe.id }) {
+                    
+            store.deleteRecipe(at: IndexSet(integer: index))
+        }
+    }
+    
 }
 
 private struct CompactRecipeRow: View {
     let recipe: Recipe
+    let store: RecipeStore
     let onToggleFavorite: () -> Void
 
     var body: some View {
@@ -210,7 +261,6 @@ private struct CompactRecipeRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(recipe.name)
                     .font(.headline)
-
                 
             }
 

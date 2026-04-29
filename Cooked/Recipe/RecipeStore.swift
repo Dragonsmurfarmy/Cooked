@@ -10,43 +10,40 @@ import SwiftUI
 
 @Observable class RecipeStore {
     var recipes: [Recipe] = []
-    var categories: [RecipeCategory] = [
-        RecipeCategory(name: "Breakfast"),
-        RecipeCategory(name: "Lunch"),
-        RecipeCategory(name: "Dinner")
-    ]
+    var settings: UserSettings = UserSettings()
+    var categories: [RecipeCategory] {
+            get { settings.categories }
+            set { settings.categories = newValue }
+        }
     
     private var documentsDirectory: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
     
     init() {
+        loadSettings()
         copyBundleRecipesIfNeeded()
         loadRecipesFromDisk()
     }
     
     private func copyBundleRecipesIfNeeded() {
-        let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore_v1")
         
-        if !hasLaunchedBefore {
-            print("Copying bult-in JSON files")
+        let launchKey = "hasLaunchedBefore_v4"
+        let hasLaunchedBefore = UserDefaults.standard.bool(forKey: launchKey)
+        
+        guard !hasLaunchedBefore else { return }
+        
+        print("First launch: Copying built-in JSON files")
+        
+        let bundleJSONs = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
+        
+        for fileURL in bundleJSONs {
+            let destURL = documentsDirectory.appendingPathComponent(fileURL.lastPathComponent)
             
-            let bundleJSONs = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
-            
-            if bundleJSONs.isEmpty {
-                print("No JSON files found in App")
-            }
-            
-            for fileURL in bundleJSONs {
-                let destURL = documentsDirectory.appendingPathComponent(fileURL.lastPathComponent)
-                
-                if !FileManager.default.fileExists(atPath: destURL.path) {
-                    try? FileManager.default.copyItem(at: fileURL, to: destURL)
-                    print("✅ Copied: \(fileURL.lastPathComponent)")
-                }
-            }
-            UserDefaults.standard.set(true, forKey: "hasLaunchedBefore_v3")
+            try? FileManager.default.copyItem(at: fileURL, to: destURL)
         }
+        
+        UserDefaults.standard.set(true, forKey: launchKey)
     }
     
     func loadRecipesFromDisk() {
@@ -83,21 +80,37 @@ import SwiftUI
     }
     
     func deleteRecipe(at offsets: IndexSet) {
-        offsets.map { recipes[$0] }.forEach { recipe in
-            let jsonURL = documentsDirectory.appendingPathComponent("\(recipe.id.uuidString).json")
-            try? FileManager.default.removeItem(at: jsonURL)
-            if let imgName = recipe.imageFileName {
-                try? FileManager.default.removeItem(at: documentsDirectory.appendingPathComponent(imgName))
+            offsets.map { recipes[$0] }.forEach { recipe in
+                let jsonURL = documentsDirectory.appendingPathComponent("\(recipe.id.uuidString).json")
+                try? FileManager.default.removeItem(at: jsonURL)
+                
+                if let imgName = recipe.imageFileName {
+                    let imgURL = documentsDirectory.appendingPathComponent(imgName)
+                    try? FileManager.default.removeItem(at: imgURL)
+                }
+            }
+            recipes.remove(atOffsets: offsets)
+        }
+    
+    func saveSettings() {
+            if let encoded = try? JSONEncoder().encode(settings) {
+                UserDefaults.standard.set(encoded, forKey: "user_settings_data")
             }
         }
-        recipes.remove(atOffsets: offsets)
-    }
+        
+        private func loadSettings() {
+            if let data = UserDefaults.standard.data(forKey: "user_settings_data"),
+               let decoded = try? JSONDecoder().decode(UserSettings.self, from: data) {
+                self.settings = decoded
+            }
+        }
 
     func addCategory(_ name: String) -> RecipeCategory {
-        let new = RecipeCategory(name: name)
-        categories.append(new)
-        return new
-    }
+            let new = RecipeCategory(name: name)
+            settings.categories.append(new)
+            saveSettings()
+            return new
+        }
     
     
 }
