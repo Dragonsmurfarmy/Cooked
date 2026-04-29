@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ActivityKit
 import UIKit
 
 struct TimerView: View {
@@ -46,12 +47,14 @@ struct TimerView: View {
         .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemGroupedBackground))
         .animation(.easeInOut(duration: 0.25), value: shouldShowPicker)
-        .onAppear {
-            syncPickerSelection(with: viewModel.totalDuration)
-        }
         .onChange(of: selectedDuration) { _, newValue in
             guard !viewModel.isRunning else { return }
             viewModel.selectDuration(newValue)
+        }
+        .onAppear {
+            syncPickerSelection(with: viewModel.totalDuration)
+            print("Enabled:", ActivityAuthorizationInfo().areActivitiesEnabled)
+            syncPickerSelection(with: viewModel.totalDuration)
         }
     }
 
@@ -251,7 +254,7 @@ private struct LoopingTimePicker: UIViewRepresentable {
     @Binding var minutes: Int
     @Binding var seconds: Int
 
-    private let hourRange = Array(0...99)
+    private let hourRange = Array(0...24)
     private let minuteSecondRange = Array(0...59)
     private let repeatCount = 200
 

@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		CAF388B42FA110CF00162458 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAF388B32FA110CF00162458 /* WidgetKit.framework */; };
+		CAF388B62FA110CF00162458 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CAF388B52FA110CF00162458 /* SwiftUI.framework */; };
+		CAF388C72FA110D000162458 /* CookedWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CAF388B12FA110CF00162458 /* CookedWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		CA045E312F9E5C1E00E11729 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,17 +27,61 @@
 			remoteGlobalIDString = CA045E202F9E5C1D00E11729;
 			remoteInfo = Cooked;
 		};
+		CAF388C52FA110D000162458 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CA045E192F9E5C1D00E11729 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CAF388B02FA110CF00162458;
+			remoteInfo = CookedWidgetExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		CA23994A2FA0ED3D004552E9 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				CAF388C72FA110D000162458 /* CookedWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		CA045E212F9E5C1D00E11729 /* Cooked.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cooked.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA045E302F9E5C1E00E11729 /* CookedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CookedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA045E3A2F9E5C1E00E11729 /* CookedUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CookedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CAF388B12FA110CF00162458 /* CookedWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CookedWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		CAF388B32FA110CF00162458 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		CAF388B52FA110CF00162458 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		CAF388C82FA110D000162458 /* Exceptions for "CookedWidget" folder in "CookedWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = CAF388B02FA110CF00162458 /* CookedWidgetExtension */;
+		};
+		CAF388CD2FA1116800162458 /* Exceptions for "Cooked" folder in "CookedWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Timer/TimerActivityAttributes.swift,
+			);
+			target = CAF388B02FA110CF00162458 /* CookedWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		CA045E232F9E5C1D00E11729 /* Cooked */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				CAF388CD2FA1116800162458 /* Exceptions for "Cooked" folder in "CookedWidgetExtension" target */,
+			);
 			path = Cooked;
 			sourceTree = "<group>";
 		};
@@ -43,6 +93,14 @@
 		CA045E3D2F9E5C1E00E11729 /* CookedUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = CookedUITests;
+			sourceTree = "<group>";
+		};
+		CAF388B72FA110CF00162458 /* CookedWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				CAF388C82FA110D000162458 /* Exceptions for "CookedWidget" folder in "CookedWidgetExtension" target */,
+			);
+			path = CookedWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -69,6 +127,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CAF388AE2FA110CF00162458 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CAF388B62FA110CF00162458 /* SwiftUI.framework in Frameworks */,
+				CAF388B42FA110CF00162458 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -78,6 +145,8 @@
 				CA045E232F9E5C1D00E11729 /* Cooked */,
 				CA045E332F9E5C1E00E11729 /* CookedTests */,
 				CA045E3D2F9E5C1E00E11729 /* CookedUITests */,
+				CAF388B72FA110CF00162458 /* CookedWidget */,
+				CAF388B22FA110CF00162458 /* Frameworks */,
 				CA045E222F9E5C1D00E11729 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,8 +157,18 @@
 				CA045E212F9E5C1D00E11729 /* Cooked.app */,
 				CA045E302F9E5C1E00E11729 /* CookedTests.xctest */,
 				CA045E3A2F9E5C1E00E11729 /* CookedUITests.xctest */,
+				CAF388B12FA110CF00162458 /* CookedWidgetExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		CAF388B22FA110CF00162458 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				CAF388B32FA110CF00162458 /* WidgetKit.framework */,
+				CAF388B52FA110CF00162458 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -102,10 +181,12 @@
 				CA045E1D2F9E5C1D00E11729 /* Sources */,
 				CA045E1E2F9E5C1D00E11729 /* Frameworks */,
 				CA045E1F2F9E5C1D00E11729 /* Resources */,
+				CA23994A2FA0ED3D004552E9 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				CAF388C62FA110D000162458 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				CA045E232F9E5C1D00E11729 /* Cooked */,
@@ -163,6 +244,28 @@
 			productReference = CA045E3A2F9E5C1E00E11729 /* CookedUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		CAF388B02FA110CF00162458 /* CookedWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CAF388C92FA110D000162458 /* Build configuration list for PBXNativeTarget "CookedWidgetExtension" */;
+			buildPhases = (
+				CAF388AD2FA110CF00162458 /* Sources */,
+				CAF388AE2FA110CF00162458 /* Frameworks */,
+				CAF388AF2FA110CF00162458 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				CAF388B72FA110CF00162458 /* CookedWidget */,
+			);
+			name = CookedWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = CookedWidgetExtension;
+			productReference = CAF388B12FA110CF00162458 /* CookedWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -184,6 +287,9 @@
 						CreatedOnToolsVersion = 26.4.1;
 						TestTargetID = CA045E202F9E5C1D00E11729;
 					};
+					CAF388B02FA110CF00162458 = {
+						CreatedOnToolsVersion = 26.4.1;
+					};
 				};
 			};
 			buildConfigurationList = CA045E1C2F9E5C1D00E11729 /* Build configuration list for PBXProject "Cooked" */;
@@ -203,6 +309,7 @@
 				CA045E202F9E5C1D00E11729 /* Cooked */,
 				CA045E2F2F9E5C1E00E11729 /* CookedTests */,
 				CA045E392F9E5C1E00E11729 /* CookedUITests */,
+				CAF388B02FA110CF00162458 /* CookedWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -223,6 +330,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		CA045E382F9E5C1E00E11729 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CAF388AF2FA110CF00162458 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -253,6 +367,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CAF388AD2FA110CF00162458 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -265,6 +386,11 @@
 			isa = PBXTargetDependency;
 			target = CA045E202F9E5C1D00E11729 /* Cooked */;
 			targetProxy = CA045E3B2F9E5C1E00E11729 /* PBXContainerItemProxy */;
+		};
+		CAF388C62FA110D000162458 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CAF388B02FA110CF00162458 /* CookedWidgetExtension */;
+			targetProxy = CAF388C52FA110D000162458 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -321,6 +447,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -378,6 +506,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -395,13 +525,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7TFVHY6W73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -426,13 +558,15 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7TFVHY6W73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -530,6 +664,66 @@
 			};
 			name = Release;
 		};
+		CAF388CA2FA110D000162458 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7TFVHY6W73;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CookedWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CookedWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = myOrg.Cooked.CookedWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CAF388CB2FA110D000162458 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7TFVHY6W73;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CookedWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = CookedWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = myOrg.Cooked.CookedWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -565,6 +759,15 @@
 			buildConfigurations = (
 				CA045E4B2F9E5C1E00E11729 /* Debug */,
 				CA045E4C2F9E5C1E00E11729 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CAF388C92FA110D000162458 /* Build configuration list for PBXNativeTarget "CookedWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CAF388CA2FA110D000162458 /* Debug */,
+				CAF388CB2FA110D000162458 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
