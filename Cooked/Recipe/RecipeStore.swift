@@ -16,7 +16,7 @@ import SwiftUI
             set { settings.categories = newValue }
         }
     
-    private var documentsDirectory: URL {
+    var documentsDirectory: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
     

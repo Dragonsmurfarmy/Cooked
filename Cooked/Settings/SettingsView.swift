@@ -14,11 +14,11 @@ struct SettingsView: View {
     @State private var showingSoundPicker = false
     
     @State private var showNewCategoryAlert = false
+    @State private var showingSoundImporter = false
     @State private var showingImporter = false
     @State private var newCategoryName = ""
     
     var body: some View {
-        // NavigationStack odstraněn – SettingsView ho dědí z hlavní strany
         Form {
             // --- JAZYK ---
             Section("General") {
@@ -42,6 +42,18 @@ struct SettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+            }
+            Button {
+                showingSoundImporter = true
+            } label: {
+                Label("Add Custom Sound", systemImage: "music.note.list")
+            }
+            .fileImporter(
+                isPresented: $showingSoundImporter,
+                allowedContentTypes: [.mp3, .wav, .mpeg4Audio], // Povolíme audio formáty
+                allowsMultipleSelection: false
+            ) { result in
+                handleSoundImport(result: result)
             }
             
             // --- KATEGORIE ---
@@ -140,6 +152,27 @@ struct SettingsView: View {
             }
         case .failure(let error):
             print("Import failed: \(error.localizedDescription)")
+        }
+    }
+    
+    private func handleSoundImport(result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            
+            // Cesta, kam zvuk uložíš (do tvé složky Documents)
+            let destURL = store.documentsDirectory.appendingPathComponent(url.lastPathComponent)
+            
+            // Musíš mít přístup k souboru
+            if url.startAccessingSecurityScopedResource() {
+                try? FileManager.default.copyItem(at: url, to: destURL)
+                url.stopAccessingSecurityScopedResource()
+                
+                // Tady bys mohl informovat TimerViewModel, že má nový zvuk
+                timerViewModel.refreshAvailableSounds()
+            }
+        case .failure(let error):
+            print(error)
         }
     }
 }
