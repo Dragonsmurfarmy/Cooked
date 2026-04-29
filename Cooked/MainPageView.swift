@@ -13,61 +13,26 @@ struct MainPageView: View {
     @State private var displayStyle: RecipeDisplayStyle = .compact
     @State private var showCategoryFilter = false
     @State private var selectedCategory: RecipeCategory? = nil
-    @State private var recipes: [Recipe] = [
-        Recipe(
-            name: "Tomato Soup",
-            category: RecipeCategory(name: "Lunch"),
-            recipeDescription: "Classic soup with basil.",
-            ingredients: "flour",
-            instructions: "Cook tomatoes, blend them, and simmer with basil.",
-            isFavorite: true
-        ),
-        Recipe(
-            name: "Pancakes",
-            category: RecipeCategory(name: "Lunch"),
-            recipeDescription: "Quick breakfast pancakes.",
-            ingredients: "flour",
-            instructions: "Mix batter, pour into pan, and cook until golden.",
-            isFavorite: true
-        ),
-        Recipe(
-            name: "Grilled Chicken",
-            category: RecipeCategory(name: "Lunch"),
-            recipeDescription: "Simple grilled chicken breast.",
-            instructions: "Season chicken and grill until fully cooked.",
-            isFavorite: false
-        ),
-        Recipe(
-            name: "Vegetable Salad",
-            category: RecipeCategory(name: "Lunch"),
-            recipeDescription: "Fresh mixed salad.",
-            ingredients: "flour",
-            instructions: "Chop vegetables, mix, and serve.",
-            isFavorite: false
-        )
-    ]
+    @State private var recipes: [Recipe] = []
     
     
     private var sortedRecipes: [Recipe] {
-        // Switch determining by what criteria should the recipes be sorted
         switch sortOption {
         case .name:
-            recipes.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
+            return store.recipes.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
         case .favorites:
-            recipes.sorted {
+            return store.recipes.sorted {
                 if $0.isFavorite == $1.isFavorite {
                     return $0.name.localizedCompare($1.name) == .orderedAscending
                 }
-                
-                return $0.isFavorite && !$1.isFavorite // Put favourite recipes first, not favourite second
+                return $0.isFavorite && !$1.isFavorite
             }
         }
     }
-    
+
     private var visibleRecipes: [Recipe] {
-        recipes
-            .filter {
-                selectedCategory == nil || $0.category == selectedCategory }
+        store.recipes
+            .filter { selectedCategory == nil || $0.category == selectedCategory }
             .sorted { lhs, rhs in
                 if lhs.isFavorite == rhs.isFavorite {
                     return lhs.name.localizedCompare(rhs.name) == .orderedAscending

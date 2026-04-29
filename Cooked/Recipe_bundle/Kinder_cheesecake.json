@@ -1,0 +1,13 @@
+{
+  "id": "B5C8D3E2-A1B2-4C3D-8E9F-1A2B3C4D5E6F",
+  "name": "Kinder Cheesecake",
+  "category": {
+    "id": "661f9500-f30c-52e5-b827-557766551111",
+    "name": "Dezerty"
+  },
+  "recipeDescription": "Božský, krémový cheesecake s nezaměnitelnou chutí Kinder čokolády a ganáží navrchu.",
+  "ingredients": "KORPUS:\n• 250 g máslových sušenek\n• 100 g másla\n\nNÁPLŇ:\n• 500 g odtučněného tvarohu\n• 200 g cream cheese (nebo mascarpone)\n• 140 g řeckého jogurtu\n• 100 g moučkového cukru\n• 2 ks vajec\n• 100 g Kinder čokolády (rozpuštěné)\n\nGANÁŽ:\n• 80 ml mléka\n• 150 g Kinder čokolády",
+  "instructions": "1. Korpus: Sušenky rozmixujte, smíchejte s rozpuštěným máslem a natlačte do formy. Pečte 10 min při 180 °C.\n2. Náplň: Postupně smíchejte tvaroh, cream cheese, jogurt, cukr a vejce. Nakonec vmíchejte rozpuštěnou čokoládu. Míchejte na nízké otáčky.\n3. Pečení: Směs nalijte na korpus a pečte ve vodní lázni na 160 °C přibližně 50 min.\n4. Chlazení: Cheesecake nechte úplně vychladnout v pootevřené troubě.\n5. Ganáž: Mléko zahřejte a rozpusťte v něm Kinder čokoládu. Polijte vychladnutý dort a dejte ztuhnout do lednice.",
+  "isFavorite": true,
+  "imageFileName": null
+}

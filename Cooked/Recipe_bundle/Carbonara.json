@@ -1,0 +1,13 @@
+{
+  "id": "A4B9C2D1-E5F6-4321-8765-C9D8B7A6F5E4",
+  "name": "Vynikající špagety carbonara",
+  "category": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Oběd"
+  },
+  "recipeDescription": "Pravá italská klasika bez smetany. Základem jsou kvalitní žloutky, sýr Pecorino nebo Parmazán a italská slanina.",
+  "ingredients": "• 400 g špaget\n• 400 g pancetty (nebo guanciale)\n• 6 žloutků\n• 120 g parmazánu (nebo pecorina)\n• Čerstvě mletý černý pepř\n• Sůl na vaření těstovin",
+  "instructions": "1. Špagety dejte vařit do vroucí osolené vody. Vařte je 'al dente' (na skus).\n2. Mezitím na pánvi orestujte na kostičky nakrájenou pancettu dozlatova.\n3. V misce smíchejte žloutky s nastrouhaným sýrem a čerstvým pepřem.\n4. Slijte špagety (trochu vody z vaření si nechte stranou).\n5. Do vaječné směsi vmíchejte trochu horké vody z těstovin pro krémovou konzistenci.\n6. Smíchejte špagety s omáčkou a orestovanou pancettou. Ihned servírujte.",
+  "isFavorite": true,
+  "imageFileName": null
+}

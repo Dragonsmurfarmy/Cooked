@@ -208,9 +208,6 @@
     "Choose Sound" : {
 
     },
-    "Create a custom category for your recipe." : {
-
-    },
     "Description" : {
 
     },
@@ -218,6 +215,9 @@
 
     },
     "Edit" : {
+
+    },
+    "Edit Recipe" : {
 
     },
     "Filter" : {
