@@ -22,8 +22,8 @@ struct SettingsView: View {
     var body: some View {
             Form {
                 // --- JAZYK ---
-                Section("General") {
-                    Picker("Language", selection: $store.settings.language) {
+                Section("settings.general") {
+                    Picker("settings.language", selection: $store.settings.language) {
                         ForEach(AppLanguage.allCases) { lang in
                             Text(lang.rawValue).tag(lang)
                         }
@@ -31,7 +31,7 @@ struct SettingsView: View {
                     .onChange(of: store.settings.language) { store.saveSettings() }
                 }
                 HStack {
-                        Text("Default Portions")
+                        Text("settings.portions")
                         Spacer()
                         Stepper("\(store.settings.defaultPortions)", value: $store.settings.defaultPortions, in: 1...50)
                             .onChange(of: store.settings.defaultPortions) {
@@ -40,14 +40,14 @@ struct SettingsView: View {
                     }
                 
                 // --- BUDÍK ---
-                Section("Timer & Sounds") {
+                Section("settings.timer") {
                     Button {
                         showingSoundPicker = true
                     } label: {
                         HStack {
-                            Text("Alarm Sound")
+                            Text("settings.alarm.sound")
                             Spacer()
-                            Text(timerViewModel.selectedSoundUrl?.lastPathComponent ?? "Default")
+                            Text(timerViewModel.selectedSoundUrl?.lastPathComponent ?? "settings.alarm.default")
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -56,12 +56,12 @@ struct SettingsView: View {
                     Button {
                         showingSoundImporter = true
                     } label: {
-                        Label("Add Custom Sound", systemImage: "music.note.list")
+                        Label("settings.custom.sound", systemImage: "music.note.list")
                     }
                 }
                 
                 // --- KATEGORIE ---
-                Section("Manage Categories") {
+                Section("settings.manage.categories") {
                     ForEach(store.categories) { category in
                         Text(category.name)
                     }

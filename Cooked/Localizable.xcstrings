@@ -34,6 +34,7 @@
     "Basic Info" : {
 
     },
+    // Universal buttons
     "button.cancel" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -105,6 +106,8 @@
     "Cancel" : {
 
     },
+    
+    // Categories
     "Category name" : {
 
     },
@@ -651,7 +654,142 @@
 
     },
     "Settings" : {
-
+        "settings.general" : {
+          "extractionState" : "stale",
+          "localizations" : {
+            "cs" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Obecná nastavení"
+              }
+            },
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "General"
+              }
+            }
+          }
+        },
+        "settings.language" : {
+          "extractionState" : "stale",
+          "localizations" : {
+            "cs" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Jazyk"
+              }
+            },
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Language"
+              }
+            }
+          }
+        },
+        "settings.portions" : {
+          "extractionState" : "stale",
+          "localizations" : {
+            "cs" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Standardní počet porcí"
+              }
+            },
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Standard portions count"
+              }
+            }
+          }
+        },
+        "settings.timer" : {
+          "extractionState" : "stale",
+          "localizations" : {
+            "cs" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Časovač"
+              }
+            },
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Timer"
+              }
+            }
+          }
+        },
+        "settings.alarm.sound" : {
+          "extractionState" : "stale",
+          "localizations" : {
+            "cs" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Zvuk časovače"
+              }
+            },
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Timer sound"
+              }
+            }
+          }
+        },
+        "settings.alarm.default" : {
+          "extractionState" : "stale",
+          "localizations" : {
+            "cs" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Standardní"
+              }
+            },
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Default"
+              }
+            }
+          }
+        },
+        "settings.custom.sound" : {
+          "extractionState" : "stale",
+          "localizations" : {
+            "cs" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Vlastní zvuk"
+              }
+            },
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Custom sound"
+              }
+            }
+          }
+        },
+        "settings.manage.categories" : {
+          "extractionState" : "stale",
+          "localizations" : {
+            "cs" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Spravovat kategorie"
+              }
+            },
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Manage categories"
+              }
+            }
+          }
+        },
     },
     "Sort" : {
 
