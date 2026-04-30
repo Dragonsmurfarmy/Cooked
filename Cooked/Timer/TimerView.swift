@@ -42,8 +42,6 @@ struct TimerView: View {
                 }
                 .padding(20)
             }
-
-            bottomNavigationBar
         }
         .navigationTitle("timer.navigation.title")
         .navigationBarTitleDisplayMode(.inline)
@@ -154,21 +152,6 @@ struct TimerView: View {
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         }
         .buttonStyle(.plain)
-    }
-
-    private var bottomNavigationBar: some View {
-        HStack {
-            TimerNavigationBarButton(titleKey: "navigation.voice_regime", systemImage: "mic")
-            TimerNavigationBarButton(titleKey: "navigation.timer", systemImage: "timer", isSelected: true)
-            TimerNavigationBarButton(titleKey: "navigation.home", systemImage: "house.fill") {
-                dismiss()
-            }
-            TimerNavigationBarButton(titleKey: "navigation.add", systemImage: "plus.circle")
-            TimerNavigationBarButton(titleKey: "navigation.settings", systemImage: "gearshape")
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(.thinMaterial)
     }
 
     private var pickerSection: some View {

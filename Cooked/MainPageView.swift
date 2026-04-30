@@ -7,7 +7,7 @@
 import SwiftUI
 
 struct MainPageView: View {
-    @State private var store = RecipeStore()
+    @Bindable var store: RecipeStore
     @State private var sortOption: RecipeSortOption = .name
     @State private var displayStyle: RecipeDisplayStyle = .compact
     @State private var selectedCategory: RecipeCategory? = nil
@@ -48,7 +48,6 @@ struct MainPageView: View {
     
     // MARK: - Body
     var body: some View {
-        NavigationStack {
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
@@ -58,10 +57,8 @@ struct MainPageView: View {
                     }
                     .padding(20)
                 }
-                
-                bottomNavigationBar
             }
-        }
+        
     }
 
     // MARK: - Sections
@@ -199,41 +196,6 @@ struct MainPageView: View {
         }
     }
 
-    private var bottomNavigationBar: some View {
-        HStack {
-            NavigationBarButton(titleKey: "navigation.voice_regime", systemImage: "mic")
-            
-            NavigationLink {
-                TimerView()
-            } label: {
-                NavigationBarButton(titleKey: "navigation.timer", systemImage: "timer")
-            }
-            .buttonStyle(.plain)
-            
-            NavigationBarButton(titleKey: "navigation.home", systemImage: "house.fill", isSelected: true)
-            
-            NavigationLink {
-                RecipeFormView(store: store) { newRecipe in
-                    store.saveRecipe(newRecipe, newImageData: nil)
-                }
-            } label: {
-                NavigationBarButton(titleKey: "navigation.add", systemImage: "plus")
-            }
-            .buttonStyle(.plain)
-            
-            NavigationLink {
-                SettingsView(store: store)
-            } label: {
-                NavigationBarButton(titleKey: "navigation.settings", systemImage: "gearshape")
-            }
-            .buttonStyle(.plain)
-            
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(.thinMaterial)
-    }
-
     private func toggleFavorite(for recipeID: UUID) {
         if let index = store.recipes.firstIndex(where: { $0.id == recipeID }) {
             var updatedRecipe = store.recipes[index]
@@ -337,7 +299,7 @@ public struct RecipeImage: View {
     }
 }
 
-private struct NavigationBarButton: View {
+struct NavigationBarButton: View {
     let titleKey: LocalizedStringKey
     let systemImage: String
     var isSelected: Bool = false
@@ -389,6 +351,42 @@ private enum RecipeDisplayStyle: String, CaseIterable, Identifiable {
     }
 }
 
+
+struct AlarmOverlay: View {
+    @Environment(TimerViewModel.self) private var viewModel
+
+    var body: some View {
+        VStack {
+            HStack(spacing: 12) {
+                Image(systemName: "alarm.fill")
+                    .foregroundStyle(.white)
+
+                Text("Alarm is ringing")
+                    .foregroundStyle(.white)
+                    .font(.subheadline.weight(.semibold))
+
+                Spacer()
+
+                Button {
+                    viewModel.stopAlarm()
+                } label: {
+                    Image(systemName: "xmark")
+                        .foregroundStyle(.white)
+                        .padding(6)
+                }
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .background(Color.red.opacity(0.9))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+
+            Spacer()
+        }
+    }
+}
+
 #Preview {
-    MainPageView()
+    MainPageView(store: RecipeStore())
 }

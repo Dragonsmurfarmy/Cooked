@@ -17,7 +17,7 @@ struct CookedApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            RootView(store: RecipeStore())
                 .environment(timerViewModel)
         }
     }
