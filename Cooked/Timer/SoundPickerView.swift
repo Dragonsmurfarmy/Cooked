@@ -8,47 +8,65 @@
 import SwiftUI
 import AVFoundation
 
+
 struct SoundPickerView: View {
     @Environment(\.dismiss) private var dismiss
-    let viewModel: TimerViewModel
+    let viewModel: TimerViewModel // Necháme let, bindable vytvoříme v body
 
-    @State private var sounds: [TimerSoundFile] = []
     @State private var player: AVAudioPlayer?
 
     var body: some View {
+        // Tímto vyřešíme chybu "Referencing subscript"
+        @Bindable var viewModel = viewModel
+        
         NavigationStack {
             List {
-                ForEach(sounds) { sound in
+                ForEach(viewModel.availableSounds) { sound in
                     Button {
                         viewModel.setCustomSound(url: sound.url)
                         playPreview(sound.url)
                     } label: {
                         HStack {
-                            Text(sound.displayName)
+                            Text(sound.url.deletingPathExtension().lastPathComponent)
+                                .foregroundStyle(.primary)
+                            
                             Spacer()
 
                             if viewModel.selectedSoundUrl == sound.url {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.blue)
+                                    .fontWeight(.bold)
                             }
                         }
                     }
                 }
+                // Voláme metodu přímo na viewModelu
+                .onDelete { offsets in
+                    viewModel.deleteSound(at: offsets)
+                }
             }
             .navigationTitle("Choose Sound")
             .toolbar {
-                Button("Done") { dismiss() }
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton() // Umožní pohodlné mazání
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
             }
             .onAppear {
-                let loaded = SoundLoader.loadSounds()
-                sounds = loaded
-                viewModel.availableSounds = loaded
+                viewModel.refreshAvailableSounds()
             }
         }
     }
 
     private func playPreview(_ url: URL) {
-        player = try? AVAudioPlayer(contentsOf: url)
-        player?.play()
+        player?.stop()
+        do {
+            player = try AVAudioPlayer(contentsOf: url)
+            player?.play()
+        } catch {
+            print("Preview failed: \(error)")
+        }
     }
 }

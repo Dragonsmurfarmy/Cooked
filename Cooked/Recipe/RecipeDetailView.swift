@@ -12,7 +12,14 @@ import PhotosUI
 struct RecipeDetailView: View {
     @State var recipe: Recipe
     @State private var isShowingEditSheet = false
+    @State private var selectedPortions: Int
     @Bindable var store: RecipeStore
+    
+    init(recipe: Recipe, store: RecipeStore) {
+            self._recipe = State(initialValue: recipe)
+            self.store = store
+        self._selectedPortions = State(initialValue: store.settings.defaultPortions)
+        }
 
     var body: some View {
         ScrollView {
@@ -45,16 +52,59 @@ struct RecipeDetailView: View {
 
                 Divider()
 
-                // Ingredients Section
-                VStack(alignment: .leading, spacing: 12) {
-                    Label("Ingredients", systemImage: "list.bullet")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                    
-                    Text(recipe.ingredients)
-                        .font(.body)
-                        .lineSpacing(4)
-                }
+                HStack {
+                        Label("Portions", systemImage: "person.2.fill")
+                            .font(.headline)
+                                    
+                        Spacer()
+                                    
+                        Stepper("\(selectedPortions)", value: $selectedPortions, in: 1...50)
+                            .labelsHidden() // Schováme label stepperu, protože máme vlastní text
+                                    
+                        Text("\(selectedPortions)")
+                            .font(.title3.monospacedDigit())
+                            .fontWeight(.semibold)
+                            .frame(minWidth: 30)
+                    }
+                    .padding()
+                    .background(Color.secondary.opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                    // --- UPRAVENÁ SEKCE INGREDIENCÍ ---
+                    VStack(alignment: .leading, spacing: 16) {
+                        Label("Ingredients", systemImage: "list.bullet")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                                    
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(recipe.ingredients) { ingredient in
+                                HStack(alignment: .firstTextBaseline) {
+                                    Image(systemName: "circle.fill")
+                                        .font(.system(size: 6))
+                                        .foregroundStyle(.tint)
+                                        .padding(.bottom, 4)
+                                                
+                                    Text(ingredient.name)
+                                        .font(.body)
+                                                
+                                    Spacer()
+                                                
+                                    // Výpočet množství: (množství / původní porce) * aktuální porce
+                                    Text(calculateAmount(for: ingredient))
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.primary)
+                                                
+                                    Text(ingredient.unit)
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                            
+                                if ingredient != recipe.ingredients.last {
+                                    Divider().opacity(0.5)
+                                }
+                            }
+                        }
+                    }
 
                 Divider()
 
@@ -86,6 +136,21 @@ struct RecipeDetailView: View {
                     }
                 }
     }
+    
+    // Pomocná funkce pro výpočet množství podle počtu porcí
+        private func calculateAmount(for ingredient: Ingredient) -> String {
+            // Výpočet: (původní množství / výchozí porce) * vybrané porce
+            let baseAmount = Double(ingredient.amount) / Double(recipe.defaultPortions)
+            let finalAmount = baseAmount * Double(selectedPortions)
+            
+            // Formátování: Pokud je to celé číslo, nepoužíváme desetinná místa
+            if finalAmount.truncatingRemainder(dividingBy: 1) == 0 {
+                return String(format: "%.0f", finalAmount)
+            } else {
+                // Jinak zaokrouhlíme na 1 desetinné místo (např. 1.5)
+                return String(format: "%.1f", finalAmount)
+            }
+        }
 }
 
 

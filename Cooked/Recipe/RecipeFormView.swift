@@ -12,24 +12,35 @@ struct RecipeFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable var store: RecipeStore
     
-    // 1. ADD THIS LINE: This allows the rest of the View to see the recipe
     let recipeToEdit: Recipe?
     let onSave: (Recipe) -> Void
     
     @State private var name = ""
     @State private var category: RecipeCategory
     @State private var recipeDescription = ""
-    @State private var ingredientsLines: [String] = [""]
+    
+    // Používáme pole objektů Ingredient
+    @State private var ingredients: [Ingredient]
     @State private var instructionsLines: [String] = [""]
+    
     @State private var isFavorite = false
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImageData: Data?
     @State private var showNewCategoryAlert = false
     @State private var newCategoryName = ""
 
+    // --- TADY MUSÍ BÝT FOCUS STATE ---
+    enum Field: Hashable {
+        case name(UUID)
+        case amount(UUID)
+        case unit(UUID)
+    }
+    @FocusState private var focusedField: Field?
+    // ---------------------------------
+
     init(store: RecipeStore, recipeToEdit: Recipe? = nil, onSave: @escaping (Recipe) -> Void) {
         self.store = store
-        self.recipeToEdit = recipeToEdit // 2. SAVE IT HERE
+        self.recipeToEdit = recipeToEdit
         self.onSave = onSave
         
         _name = State(initialValue: recipeToEdit?.name ?? "")
@@ -38,8 +49,8 @@ struct RecipeFormView: View {
         _isFavorite = State(initialValue: recipeToEdit?.isFavorite ?? false)
         _selectedImageData = State(initialValue: recipeToEdit?.imageData)
         
-        let ing = recipeToEdit?.ingredients.components(separatedBy: "\n") ?? [""]
-        _ingredientsLines = State(initialValue: ing)
+        // Načtení ingrediencí jako objektů
+        _ingredients = State(initialValue: recipeToEdit?.ingredients ?? [Ingredient(name: "", amount: 1, unit: "")])
         
         let ins = recipeToEdit?.instructions.components(separatedBy: "\n") ?? [""]
         _instructionsLines = State(initialValue: ins)
@@ -47,7 +58,7 @@ struct RecipeFormView: View {
 
     private var isFormValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !ingredientsLines.joined().trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        !ingredients.isEmpty &&
         !instructionsLines.joined().trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
@@ -90,8 +101,40 @@ struct RecipeFormView: View {
                 }
                 
                 Section {
-                    SmartListEditor(lines: $ingredientsLines, style: .bulleted).frame(minHeight: 160)
-                } header: { Label("Ingredients", systemImage: "list.bullet") }
+                    ForEach($ingredients) { $ingredient in
+                        HStack {
+                            TextField("Name", text: $ingredient.name)
+                                .focused($focusedField, equals: .name(ingredient.id))
+                                .submitLabel(.next)
+                            
+                            TextField("Qty", value: $ingredient.amount, format: .number)
+                                .keyboardType(.decimalPad)
+                                .frame(width: 50)
+                                .multilineTextAlignment(.center)
+                                .focused($focusedField, equals: .amount(ingredient.id))
+                                .submitLabel(.next)
+                            
+                            TextField("Unit", text: $ingredient.unit)
+                                .frame(width: 60)
+                                .focused($focusedField, equals: .unit(ingredient.id))
+                                .submitLabel(.next)
+                        }
+                        .onSubmit {
+                            handleNextField(currentId: ingredient.id)
+                        }
+                    }
+                    .onDelete { ingredients.remove(atOffsets: $0) }
+
+                    Button(action: {
+                        let newIng = Ingredient(name: "", amount: 1, unit: "")
+                        ingredients.append(newIng)
+                        focusedField = .name(newIng.id)
+                    }) {
+                        Label("Add Ingredient", systemImage: "plus.circle")
+                    }
+                } header: {
+                    Label("Ingredients", systemImage: "list.bullet")
+                }
 
                 Section {
                     SmartListEditor(lines: $instructionsLines, style: .numbered).frame(minHeight: 160)
@@ -105,12 +148,15 @@ struct RecipeFormView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        // Filtrujeme pouze ingredience, které mají název
+                        let finalIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
+                        
                         let recipe = Recipe(
                             id: recipeToEdit?.id ?? UUID(),
                             name: name,
                             category: category,
                             recipeDescription: recipeDescription,
-                            ingredients: ingredientsLines.joined(separator: "\n"),
+                            ingredients: finalIngredients,
                             instructions: instructionsLines.joined(separator: "\n"),
                             isFavorite: isFavorite
                         )
@@ -134,13 +180,29 @@ struct RecipeFormView: View {
         }
     }
 
+    // Pomocná funkce pro přepínání polí
+    private func handleNextField(currentId: UUID) {
+        switch focusedField {
+        case .name(let id):
+            focusedField = .amount(id)
+        case .amount(let id):
+            focusedField = .unit(id)
+        case .unit(let id):
+            // Pokud jsme na konci řádku, vytvoříme nový nebo zrušíme focus
+            let newIng = Ingredient(name: "", amount: 1, unit: "")
+            ingredients.append(newIng)
+            focusedField = .name(newIng.id)
+        default:
+            focusedField = nil
+        }
+    }
+
     private func loadSelectedPhoto() async {
         guard let selectedPhoto else { return }
         selectedImageData = try? await selectedPhoto.loadTransferable(type: Data.self)
     }
 }
 
-// Missing Preview Helper
 private struct RecipeSelectedImagePreview: View {
     let imageData: Data?
     var body: some View {
@@ -157,4 +219,6 @@ private struct RecipeSelectedImagePreview: View {
         .frame(width: 56, height: 56)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
+    
+   
 }

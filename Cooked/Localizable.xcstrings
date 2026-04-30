@@ -10,6 +10,12 @@
     "Add" : {
 
     },
+    "Add Custom Sound" : {
+
+    },
+    "Add Ingredient" : {
+
+    },
     "Add New Category" : {
 
     },
@@ -211,6 +217,9 @@
 
     },
     "Data Management" : {
+
+    },
+    "Default Portions" : {
 
     },
     "Delete" : {
@@ -452,6 +461,9 @@
     "Manage Categories" : {
 
     },
+    "Name" : {
+
+    },
     "navigation.add" : {
       "localizations" : {
         "cs" : {
@@ -536,6 +548,12 @@
 
     },
     "New Recipe" : {
+
+    },
+    "Portions" : {
+
+    },
+    "Qty" : {
 
     },
     "Recipe Name" : {
@@ -867,6 +885,9 @@
           }
         }
       }
+    },
+    "Unit" : {
+
     }
   },
   "version" : "1.0"

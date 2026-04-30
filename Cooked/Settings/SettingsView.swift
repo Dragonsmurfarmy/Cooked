@@ -17,95 +17,108 @@ struct SettingsView: View {
     @State private var showingSoundImporter = false
     @State private var showingImporter = false
     @State private var newCategoryName = ""
+  
     
     var body: some View {
-        Form {
-            // --- JAZYK ---
-            Section("General") {
-                Picker("Language", selection: $store.settings.language) {
-                    ForEach(AppLanguage.allCases) { lang in
-                        Text(lang.rawValue).tag(lang)
+            Form {
+                // --- JAZYK ---
+                Section("General") {
+                    Picker("Language", selection: $store.settings.language) {
+                        ForEach(AppLanguage.allCases) { lang in
+                            Text(lang.rawValue).tag(lang)
+                        }
                     }
+                    .onChange(of: store.settings.language) { store.saveSettings() }
                 }
-                .onChange(of: store.settings.language) { store.saveSettings() }
-            }
-            
-            // --- BUDÍK ---
-            Section("Timer & Sounds") {
-                Button {
-                    showingSoundPicker = true
-                } label: {
-                    HStack {
-                        Text("Alarm Sound")
+                HStack {
+                        Text("Default Portions")
                         Spacer()
-                        Text(timerViewModel.selectedSoundUrl?.lastPathComponent ?? "Default")
-                            .foregroundStyle(.secondary)
+                        Stepper("\(store.settings.defaultPortions)", value: $store.settings.defaultPortions, in: 1...50)
+                            .onChange(of: store.settings.defaultPortions) {
+                                store.saveSettings()
+                            }
+                    }
+                
+                // --- BUDÍK ---
+                Section("Timer & Sounds") {
+                    Button {
+                        showingSoundPicker = true
+                    } label: {
+                        HStack {
+                            Text("Alarm Sound")
+                            Spacer()
+                            Text(timerViewModel.selectedSoundUrl?.lastPathComponent ?? "Default")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    
+                    // Tlačítko pro přidání zvuku
+                    Button {
+                        showingSoundImporter = true
+                    } label: {
+                        Label("Add Custom Sound", systemImage: "music.note.list")
+                    }
+                }
+                
+                // --- KATEGORIE ---
+                Section("Manage Categories") {
+                    ForEach(store.categories) { category in
+                        Text(category.name)
+                    }
+                    .onDelete(perform: deleteCategory)
+                    
+                    Button {
+                        showNewCategoryAlert = true
+                    } label: {
+                        Label("Add New Category", systemImage: "plus")
+                    }
+                }
+                
+                // --- DATA ---
+                Section("Data Management") {
+                    Button(action: exportRecipes) {
+                        Label("Export Recipes (JSON)", systemImage: "square.and.arrow.up")
+                    }
+                    
+                    Button {
+                        showingImporter = true
+                    } label: {
+                        Label("Import Recipes (JSON)", systemImage: "square.and.arrow.down")
                     }
                 }
             }
-            Button {
-                showingSoundImporter = true
-            } label: {
-                Label("Add Custom Sound", systemImage: "music.note.list")
+            .navigationTitle("Settings")
+            // --- VŠECHNY MODIFIKÁTORY NA KONCI (MIMO FORM) ---
+            .alert("New Category", isPresented: $showNewCategoryAlert) {
+                TextField("Category name", text: $newCategoryName)
+                Button("Add") {
+                    let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else { return }
+                    _ = store.addCategory(trimmed)
+                    newCategoryName = ""
+                }
+                Button("Cancel", role: .cancel) { newCategoryName = "" }
             }
+            .sheet(isPresented: $showingSoundPicker) {
+                SoundPickerView(viewModel: timerViewModel)
+            }
+            // Importer pro RECEPTY
+            .fileImporter(
+                isPresented: $showingImporter,
+                allowedContentTypes: [.json],
+                allowsMultipleSelection: false
+            ) { result in
+                handleImport(result: result)
+            }
+            // Importer pro ZVUKY (přesunut sem, aby fungoval)
             .fileImporter(
                 isPresented: $showingSoundImporter,
-                allowedContentTypes: [.mp3, .wav, .mpeg4Audio], // Povolíme audio formáty
+                allowedContentTypes: [.mp3, .wav, .mpeg4Audio],
                 allowsMultipleSelection: false
             ) { result in
                 handleSoundImport(result: result)
             }
-            
-            // --- KATEGORIE ---
-            Section("Manage Categories") {
-                ForEach(store.categories) { category in
-                    Text(category.name)
-                }
-                .onDelete(perform: deleteCategory)
-                
-                Button {
-                    showNewCategoryAlert = true
-                } label: {
-                    Label("Add New Category", systemImage: "plus")
-                }
-            }
-            
-            // --- DATA ---
-            Section("Data Management") {
-                Button(action: exportRecipes) {
-                    Label("Export Recipes (JSON)", systemImage: "square.and.arrow.up")
-                }
-                
-                Button {
-                    showingImporter = true
-                } label: {
-                    Label("Import Recipes (JSON)", systemImage: "square.and.arrow.down")
-                }
-            }
         }
-        .navigationTitle("Settings")
-        // Všechny modifikátory (popupy) pohromadě na konci
-        .alert("New Category", isPresented: $showNewCategoryAlert) {
-            TextField("Category name", text: $newCategoryName)
-            Button("Add") {
-                let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !trimmed.isEmpty else { return }
-                _ = store.addCategory(trimmed)
-                newCategoryName = ""
-            }
-            Button("Cancel", role: .cancel) { newCategoryName = "" }
-        }
-        .sheet(isPresented: $showingSoundPicker) {
-            SoundPickerView(viewModel: timerViewModel)
-        }
-        .fileImporter(
-            isPresented: $showingImporter,
-            allowedContentTypes: [.json],
-            allowsMultipleSelection: false
-        ) { result in
-            handleImport(result: result)
-        }
-    }
     
     // --- POMOCNÉ FUNKCE ---
     
@@ -158,21 +171,45 @@ struct SettingsView: View {
     private func handleSoundImport(result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
-            guard let url = urls.first else { return }
+            guard let url = urls.first else {
+                print("❌ Žádný soubor nebyl vybrán")
+                return
+            }
             
-            // Cesta, kam zvuk uložíš (do tvé složky Documents)
+            print("📁 Vybrán soubor: \(url.lastPathComponent)")
+            
+            // Cesta do Documents
             let destURL = store.documentsDirectory.appendingPathComponent(url.lastPathComponent)
             
-            // Musíš mít přístup k souboru
+            // Start Accessing Security Scoped Resource je u FilePickeru KLÍČOVÉ
             if url.startAccessingSecurityScopedResource() {
-                try? FileManager.default.copyItem(at: url, to: destURL)
-                url.stopAccessingSecurityScopedResource()
+                defer { url.stopAccessingSecurityScopedResource() }
                 
-                // Tady bys mohl informovat TimerViewModel, že má nový zvuk
-                timerViewModel.refreshAvailableSounds()
+                do {
+                    // Pokud soubor už existuje, smažeme ho
+                    if FileManager.default.fileExists(atPath: destURL.path) {
+                        try FileManager.default.removeItem(at: destURL)
+                        print("🗑️ Starý soubor smazán")
+                    }
+                    
+                    // Kopírování dat
+                    let data = try Data(contentsOf: url)
+                    try data.write(to: destURL)
+                    print("✅ Soubor úspěšně zkopírován do: \(destURL.lastPathComponent)")
+                    
+                    // Aktualizace seznamu
+                    timerViewModel.refreshAvailableSounds()
+                    print("🎶 Seznam zvuků v TimerViewModelu aktualizován")
+                    
+                } catch {
+                    print("❌ Chyba při ukládání souboru: \(error.localizedDescription)")
+                }
+            } else {
+                print("❌ Systém zamítl přístup k vybranému souboru (Security Scope)")
             }
+            
         case .failure(let error):
-            print(error)
+            print("❌ Import selhal: \(error.localizedDescription)")
         }
     }
 }

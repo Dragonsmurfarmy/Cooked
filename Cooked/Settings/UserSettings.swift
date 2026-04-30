@@ -6,6 +6,7 @@
 //
 
 struct UserSettings: Codable {
+    var defaultPortions: Int = 1
     var hasLaunchedBefore: Bool = false
     var language: AppLanguage = .english
     var selectedAlarmSound: String = "Default"

@@ -22,7 +22,7 @@ struct TimerSoundFile: Identifiable, Hashable {
 
 struct SoundLoader {
     static func loadSounds() -> [TimerSoundFile] {
-           let exts = ["caf", "mp3", "wav", "aiff"]
+           let exts = ["caf", "mp3", "wav", "aiff", "m4a"]
 
            return exts.flatMap { ext in
                Bundle.main.urls(forResourcesWithExtension: ext, subdirectory: nil) ?? []

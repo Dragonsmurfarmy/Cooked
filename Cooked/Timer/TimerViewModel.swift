@@ -205,6 +205,52 @@ final class TimerViewModel {
         alarmPlayer?.stop()
         alarmPlayer = nil
     }
+    
+    func refreshAvailableSounds() {
+        let bundleExtensions = ["mp3", "wav", "m4a"]
+        var allUrls: [URL] = []
+        
+        // 1. Najdeme všechna URL v Bundle
+        for ext in bundleExtensions {
+            if let urls = Bundle.main.urls(forResourcesWithExtension: ext, subdirectory: nil) {
+                allUrls.append(contentsOf: urls)
+            }
+        }
+        
+        // 2. Najdeme všechna URL v Documents
+        let fileManager = FileManager.default
+        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let customFiles = (try? fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)) ?? []
+            let customSounds = customFiles.filter { url in
+                bundleExtensions.contains(url.pathExtension.lowercased())
+            }
+            allUrls.append(contentsOf: customSounds)
+        }
+        
+        // 3. PŘEVOD URL -> TimerSoundFile (Tady byla chyba)
+        // Předpokládám, že tvůj TimerSoundFile má init(url: URL)
+        // nebo podobný způsob, jak ho vytvořit.
+        let soundFiles = allUrls.map { url in
+            TimerSoundFile(url: url) // Pokud tvůj struct vypadá jinak, uprav to podle něj
+        }
+        
+        // 4. Seřadíme podle jména
+        self.availableSounds = soundFiles.sorted { $0.url.lastPathComponent < $1.url.lastPathComponent }
+    }
+    
+    func deleteSound(at offsets: IndexSet) {
+        for index in offsets {
+            let sound = availableSounds[index]
+            let url = sound.url
+            
+
+            if url.path.contains("/Documents/") {
+                try? FileManager.default.removeItem(at: url)
+            }
+        }
+        
+        refreshAvailableSounds()
+    }
 
     enum TimerStatus {
         case ready
