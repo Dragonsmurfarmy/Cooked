@@ -1,5 +1,5 @@
 //
-//  MainPage.swift
+//  RecipeFormView.swift
 //  Cooked
 //
 //  Created by Tomáš Kříž on 26.04.2026.
@@ -45,7 +45,7 @@ struct RecipeFormView: View {
         
         _name = State(initialValue: recipeToEdit?.name ?? "")
         _recipeDescription = State(initialValue: recipeToEdit?.recipeDescription ?? "")
-        _category = State(initialValue: recipeToEdit?.category ?? store.categories.first ?? RecipeCategory(name: "Lunch"))
+        _category = State(initialValue: recipeToEdit?.category ?? store.categories.first ?? RecipeCategory(name: "category.lunch"))
         _isFavorite = State(initialValue: recipeToEdit?.isFavorite ?? false)
         _selectedImageData = State(initialValue: recipeToEdit?.imageData)
         
@@ -65,56 +65,56 @@ struct RecipeFormView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Basic Info") {
+                Section("info.basic") {
                     PhotosPicker(selection: $selectedPhoto, matching: .images) {
                         HStack(spacing: 12) {
                             RecipeSelectedImagePreview(imageData: selectedImageData)
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("Select Image").foregroundStyle(.primary)
-                                Text(selectedImageData == nil ? "Choose from gallery" : "Tap to change photo")
+                                Text("image.select").foregroundStyle(.primary)
+                                Text(selectedImageData == nil ? "image.choose" : "image.change")
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                         }
                     }
                     .buttonStyle(.plain)
                     
-                    TextField("Recipe Name", text: $name)
+                    TextField("recipe.name", text: $name)
                     
                     Menu {
                         ForEach(store.categories) { cat in
                             Button { category = cat } label: {
-                                Label(cat.name, systemImage: category == cat ? "checkmark" : "circle")
+                                Label(LocalizedStringKey(cat.name), systemImage: category == cat ? "checkmark" : "circle")
                             }
                         }
                         Divider()
                         Button { showNewCategoryAlert = true } label: {
-                            Label("New Category", systemImage: "plus")
+                            Label("category.new", systemImage: "plus")
                         }
                     } label: {
                         HStack {
-                            Text(category.name)
+                            Text(LocalizedStringKey(category.name))
                             Spacer()
                             Image(systemName: "chevron.down").font(.caption).foregroundStyle(.secondary)
                         }
                     }
-                    TextField("Description", text: $recipeDescription)
+                    TextField("recipe.description", text: $recipeDescription)
                 }
                 
                 Section {
                     ForEach($ingredients) { $ingredient in
                         HStack {
-                            TextField("Name", text: $ingredient.name)
+                            TextField("ingredient.name", text: $ingredient.name)
                                 .focused($focusedField, equals: .name(ingredient.id))
                                 .submitLabel(.next)
                             
-                            TextField("Qty", value: $ingredient.amount, format: .number)
+                            TextField("ingredient.quantity", value: $ingredient.amount, format: .number)
                                 .keyboardType(.decimalPad)
                                 .frame(width: 50)
                                 .multilineTextAlignment(.center)
                                 .focused($focusedField, equals: .amount(ingredient.id))
                                 .submitLabel(.next)
                             
-                            TextField("Unit", text: $ingredient.unit)
+                            TextField("ingredient.unit", text: $ingredient.unit)
                                 .frame(width: 60)
                                 .focused($focusedField, equals: .unit(ingredient.id))
                                 .submitLabel(.next)
@@ -130,24 +130,24 @@ struct RecipeFormView: View {
                         ingredients.append(newIng)
                         focusedField = .name(newIng.id)
                     }) {
-                        Label("Add Ingredient", systemImage: "plus.circle")
+                        Label("ingredient.add", systemImage: "plus.circle")
                     }
                 } header: {
-                    Label("Ingredients", systemImage: "list.bullet")
+                    Label("ingredients", systemImage: "list.bullet")
                 }
 
                 Section {
                     SmartListEditor(lines: $instructionsLines, style: .numbered).frame(minHeight: 160)
-                } header: { Label("Instructions", systemImage: "frying.pan") }
+                } header: { Label("instructions", systemImage: "frying.pan") }
             }
-            .navigationTitle(recipeToEdit == nil ? "New Recipe" : "Edit Recipe")
+            .navigationTitle(recipeToEdit == nil ? "recipe.new" : "recipe.edit")
             .task(id: selectedPhoto) { await loadSelectedPhoto() }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("button.cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button("button.save") {
                         // Filtrujeme pouze ingredience, které mají název
                         let finalIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
                         
@@ -168,19 +168,18 @@ struct RecipeFormView: View {
                 }
             }
         }
-        .alert("New Category", isPresented: $showNewCategoryAlert) {
-            TextField("Category name", text: $newCategoryName)
-            Button("Add") {
+        .alert("category.new", isPresented: $showNewCategoryAlert) {
+            TextField("category.name", text: $newCategoryName)
+            Button("button.add") {
                 let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !trimmed.isEmpty else { return }
                 category = store.addCategory(trimmed)
                 newCategoryName = ""
             }
-            Button("Cancel", role: .cancel) { newCategoryName = "" }
+            Button("button.cancel", role: .cancel) { newCategoryName = "" }
         }
     }
-
-    // Pomocná funkce pro přepínání polí
+    
     private func handleNextField(currentId: UUID) {
         switch focusedField {
         case .name(let id):

@@ -45,13 +45,13 @@ struct SoundPickerView: View {
                     viewModel.deleteSound(at: offsets)
                 }
             }
-            .navigationTitle("Choose Sound")
+            .navigationTitle("sound.choose")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     EditButton() // Umožní pohodlné mazání
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button("button.save") { dismiss() }
                 }
             }
             .onAppear {

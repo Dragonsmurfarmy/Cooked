@@ -15,6 +15,9 @@ import SwiftUI
             get { settings.categories }
             set { settings.categories = newValue }
         }
+    var currentLanguageIdentifier: String {
+            settings.language.rawValue
+        }
     
     var documentsDirectory: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]

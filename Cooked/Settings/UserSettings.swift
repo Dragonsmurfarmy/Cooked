@@ -11,14 +11,21 @@ struct UserSettings: Codable {
     var language: AppLanguage = .english
     var selectedAlarmSound: String = "Default"
     var categories: [RecipeCategory] = [
-        RecipeCategory(name: "Breakfast"),
-        RecipeCategory(name: "Lunch"),
-        RecipeCategory(name: "Dinner")
+        RecipeCategory(name: "category.breakfast"),
+        RecipeCategory(name: "category.lunch"),
+        RecipeCategory(name: "category.dinner")
     ]
 }
 
 enum AppLanguage: String, Codable, CaseIterable, Identifiable {
-    case english = "English"
-    case czech = "Čeština"
+    case english = "en"
+    case czech = "cs"
     var id: String { rawValue }
+    
+    var displayName: String {
+            switch self {
+            case .english: return "English"
+            case .czech: return "Čeština"
+            }
+        }
 }

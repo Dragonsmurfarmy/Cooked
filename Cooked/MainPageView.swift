@@ -89,7 +89,7 @@ struct MainPageView: View {
                 
                 
                 Menu {
-                    Picker("Sort", selection: $sortOption) {
+                    Picker("sort", selection: $sortOption) {
                         ForEach(RecipeSortOption.allCases) { option in
                             Label(option.title, systemImage: option == .name ? "textformat" : "star.fill")
                                 .tag(option)
@@ -106,7 +106,7 @@ struct MainPageView: View {
                     Button {
                         selectedCategory = nil
                     } label: {
-                        Label("All", systemImage: selectedCategory == nil ? "checkmark.circle.fill" : "circle")
+                        Label("category.all", systemImage: selectedCategory == nil ? "checkmark.circle.fill" : "circle")
                     }
                     
                     Divider()
@@ -127,7 +127,7 @@ struct MainPageView: View {
                 }
                 .buttonStyle(.bordered)
                 
-                // Přepínač stylu (Ikony)
+                // Přepínač stylu
                 Picker("Display", selection: $displayStyle) {
                     ForEach(RecipeDisplayStyle.allCases) { style in
                         Image(systemName: style == .compact ? "list.bullet" : "square.grid.2x2")
@@ -162,13 +162,13 @@ struct MainPageView: View {
                 }
             }
             // Confirmation Popup
-            .alert("Delete Recipe?", isPresented: $showDeleteConfirmation, presenting: recipeToDelete) { recipe in
-                Button("Delete", role: .destructive) {
+            .alert("\(recipeToDelete?.name ?? "")", isPresented: $showDeleteConfirmation, presenting: recipeToDelete) { recipe in
+                Button("button.delete", role: .destructive) {
                     deleteRecipe(recipe)
                 }
-                Button("Cancel", role: .cancel) { }
-            } message: { recipe in
-                Text("Are you sure you want to delete '\(recipe.name)'? This action cannot be undone.")
+                Button("button.cancel", role: .cancel) { }
+            } message: { _ in
+                Text("delete.question")
             }
         }
     }
@@ -191,7 +191,7 @@ struct MainPageView: View {
                 recipeToDelete = recipe
                 showDeleteConfirmation = true
             } label: {
-                Label("Delete", systemImage: "trash")
+                Label("button.delete", systemImage: "trash")
             }
         }
     }
@@ -361,7 +361,7 @@ struct AlarmOverlay: View {
                 Image(systemName: "alarm.fill")
                     .foregroundStyle(.white)
 
-                Text("Alarm is ringing")
+                Text("timer.ring")
                     .foregroundStyle(.white)
                     .font(.subheadline.weight(.semibold))
 

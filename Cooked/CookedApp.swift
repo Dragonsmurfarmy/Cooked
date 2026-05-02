@@ -4,6 +4,7 @@ import UserNotifications
 @main
 struct CookedApp: App {
     @State private var timerViewModel = TimerViewModel()
+    @State private var store = RecipeStore()
 
     init() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
@@ -19,6 +20,8 @@ struct CookedApp: App {
         WindowGroup {
             RootView(store: RecipeStore())
                 .environment(timerViewModel)
+                .environment(store)
+                .environment(\.locale, Locale(identifier: store.settings.language.rawValue))
         }
     }
 

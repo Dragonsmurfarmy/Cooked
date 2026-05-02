@@ -30,7 +30,7 @@ struct RecipeDetailView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(recipe.category.name)
+                    Text(LocalizedStringKey(recipe.category.name))
                         .font(.caption)
                         .fontWeight(.bold)
                         .foregroundStyle(.secondary)
@@ -53,18 +53,18 @@ struct RecipeDetailView: View {
                 Divider()
 
                 HStack {
-                        Label("Portions", systemImage: "person.2.fill")
+                        Label("portions.count", systemImage: "person.2.fill")
                             .font(.headline)
+                        Text("\(selectedPortions)")
+                            .font(.title3.monospacedDigit())
+                            .fontWeight(.semibold)
+                            .frame(minWidth: 30)
                                     
                         Spacer()
                                     
                         Stepper("\(selectedPortions)", value: $selectedPortions, in: 1...50)
                             .labelsHidden() // Schováme label stepperu, protože máme vlastní text
                                     
-                        Text("\(selectedPortions)")
-                            .font(.title3.monospacedDigit())
-                            .fontWeight(.semibold)
-                            .frame(minWidth: 30)
                     }
                     .padding()
                     .background(Color.secondary.opacity(0.05))
@@ -72,7 +72,7 @@ struct RecipeDetailView: View {
 
                     // --- UPRAVENÁ SEKCE INGREDIENCÍ ---
                     VStack(alignment: .leading, spacing: 16) {
-                        Label("Ingredients", systemImage: "list.bullet")
+                        Label("ingredients", systemImage: "list.bullet")
                             .font(.title3)
                             .fontWeight(.bold)
                                     
@@ -94,7 +94,7 @@ struct RecipeDetailView: View {
                                         .fontWeight(.semibold)
                                         .foregroundStyle(.primary)
                                                 
-                                    Text(ingredient.unit)
+                                    Text("ingredient.unit")
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
                                 }
@@ -110,7 +110,7 @@ struct RecipeDetailView: View {
 
                 // Instructions Section
                 VStack(alignment: .leading, spacing: 12) {
-                    Label("Instructions", systemImage: "frying.pan")
+                    Label("instructions", systemImage: "frying.pan")
                         .font(.title3)
                         .fontWeight(.bold)
                     
@@ -125,7 +125,7 @@ struct RecipeDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("Edit") {
+                Button("button.edit") {
                     isShowingEditSheet = true
                 }
             }

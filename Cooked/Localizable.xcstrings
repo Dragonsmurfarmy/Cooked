@@ -4,39 +4,29 @@
     "" : {
 
     },
+    "%@" : {
+
+    },
     "%lld" : {
 
     },
-    "Add" : {
-
+    "button.add" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        }
+      }
     },
-    "Add Custom Sound" : {
-
-    },
-    "Add Ingredient" : {
-
-    },
-    "Add New Category" : {
-
-    },
-    "Alarm is ringing" : {
-
-    },
-    "Alarm Sound" : {
-
-    },
-    "All" : {
-
-    },
-    "Are you sure you want to delete '%@'? This action cannot be undone." : {
-
-    },
-    "Basic Info" : {
-
-    },
-    // Universal buttons
     "button.cancel" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -69,6 +59,38 @@
         }
       }
     },
+    "button.delete" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Smazat"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        }
+      }
+    },
+    "button.edit" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upravit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upravit"
+          }
+        }
+      }
+    },
     "button.filter" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -87,7 +109,6 @@
       }
     },
     "button.save" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -103,13 +124,21 @@
         }
       }
     },
-    "Cancel" : {
-
-    },
-    
-    // Categories
-    "Category name" : {
-
+    "category.all" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vše"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        }
+      }
     },
     "category.breakfast" : {
       "extractionState" : "stale",
@@ -124,40 +153,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Breakfast"
-          }
-        }
-      }
-    },
-    "category.cake" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dorty"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cakes"
-          }
-        }
-      }
-    },
-    "category.dessert" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dezerty"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dessert"
           }
         }
       }
@@ -179,23 +174,6 @@
         }
       }
     },
-    "category.drink" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "cs" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pití"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drinks"
-          }
-        }
-      }
-    },
     "category.lunch" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -213,53 +191,232 @@
         }
       }
     },
-    "Choose from gallery" : {
-
+    "category.name" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Název kategorie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category Name"
+          }
+        }
+      }
     },
-    "Choose Sound" : {
-
+    "category.new" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat novou kategorii"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add New Category"
+          }
+        }
+      }
     },
-    "Data Management" : {
-
+    "category.new.name" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Název nové kategorie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New category name"
+          }
+        }
+      }
     },
-    "Default Portions" : {
-
-    },
-    "Delete" : {
-
-    },
-    "Delete Recipe?" : {
-
-    },
-    "Description" : {
-
+    "delete.question" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opravdu si přejete smazat tento recept?"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do you really want to delete this recipe?"
+          }
+        }
+      }
     },
     "Display" : {
 
     },
-    "Done" : {
-
+    "image.change" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Změnit Obrázek"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change Image"
+          }
+        }
+      }
     },
-    "Edit" : {
-
+    "image.choose" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrat z Galerie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose from Galery"
+          }
+        }
+      }
     },
-    "Edit Recipe" : {
-
+    "image.select" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrat Obrázek"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Image"
+          }
+        }
+      }
     },
-    "Export Recipes (JSON)" : {
-
+    "info.basic" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Základní Informace"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Basic Information"
+          }
+        }
+      }
     },
-    "General" : {
-
+    "ingredient.add" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat Ingredienci"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Ingredient"
+          }
+        }
+      }
     },
-    "Import Recipes (JSON)" : {
-
+    "ingredient.name" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Název Ingredience"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingredient Name"
+          }
+        }
+      }
     },
-    "Ingredients" : {
-
+    "ingredient.quantity" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Počet"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quantity"
+          }
+        }
+      }
     },
-    "Instructions" : {
-
+    "ingredient.unit" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "j."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "un."
+          }
+        }
+      }
+    },
+    "ingredients" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingredience"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingredients"
+          }
+        }
+      }
+    },
+    "instructions" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Postup"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instructions"
+          }
+        }
+      }
     },
     "label.all" : {
       "extractionState" : "stale",
@@ -274,6 +431,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "All"
+          }
+        }
+      }
+    },
+    "label.default" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Základní"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Default"
           }
         }
       }
@@ -294,9 +468,6 @@
           }
         }
       }
-    },
-    "Language" : {
-
     },
     "main.controls.display_style" : {
       "extractionState" : "stale",
@@ -461,12 +632,6 @@
         }
       }
     },
-    "Manage Categories" : {
-
-    },
-    "Name" : {
-
-    },
     "navigation.add" : {
       "localizations" : {
         "cs" : {
@@ -547,19 +712,7 @@
         }
       }
     },
-    "New Category" : {
-
-    },
-    "New Recipe" : {
-
-    },
-    "Portions" : {
-
-    },
-    "Qty" : {
-
-    },
-    "Recipe Name" : {
+    "portions.count" : {
 
     },
     "recipe.category" : {
@@ -580,18 +733,33 @@
       }
     },
     "recipe.description" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Popis"
+            "value" : "Popis Receptu"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Description"
+            "value" : "Recipe Description"
+          }
+        }
+      }
+    },
+    "recipe.edit" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upravit Recept"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Recipe"
           }
         }
       }
@@ -631,173 +799,262 @@
       }
     },
     "recipe.name" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Název"
+            "value" : "Název Receptu"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Name"
+            "value" : "Recipe Name"
           }
         }
       }
     },
-    "Save" : {
-
+    "recipe.new" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nový Recept"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New Recipe"
+          }
+        }
+      }
     },
-    "Select Image" : {
-
+    "settings" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nastavení"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        }
+      }
     },
-    "Settings" : {
-        "settings.general" : {
-          "extractionState" : "stale",
-          "localizations" : {
-            "cs" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Obecná nastavení"
-              }
-            },
-            "en" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "General"
-              }
-            }
+    "settings.add.category" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat Novou Kategorii"
           }
         },
-        "settings.language" : {
-          "extractionState" : "stale",
-          "localizations" : {
-            "cs" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Jazyk"
-              }
-            },
-            "en" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Language"
-              }
-            }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add New Category"
           }
-        },
-        "settings.portions" : {
-          "extractionState" : "stale",
-          "localizations" : {
-            "cs" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Standardní počet porcí"
-              }
-            },
-            "en" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Standard portions count"
-              }
-            }
-          }
-        },
-        "settings.timer" : {
-          "extractionState" : "stale",
-          "localizations" : {
-            "cs" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Časovač"
-              }
-            },
-            "en" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Timer"
-              }
-            }
-          }
-        },
-        "settings.alarm.sound" : {
-          "extractionState" : "stale",
-          "localizations" : {
-            "cs" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Zvuk časovače"
-              }
-            },
-            "en" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Timer sound"
-              }
-            }
-          }
-        },
-        "settings.alarm.default" : {
-          "extractionState" : "stale",
-          "localizations" : {
-            "cs" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Standardní"
-              }
-            },
-            "en" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Default"
-              }
-            }
-          }
-        },
-        "settings.custom.sound" : {
-          "extractionState" : "stale",
-          "localizations" : {
-            "cs" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Vlastní zvuk"
-              }
-            },
-            "en" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Custom sound"
-              }
-            }
-          }
-        },
-        "settings.manage.categories" : {
-          "extractionState" : "stale",
-          "localizations" : {
-            "cs" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Spravovat kategorie"
-              }
-            },
-            "en" : {
-              "stringUnit" : {
-                "state" : "translated",
-                "value" : "Manage categories"
-              }
-            }
-          }
-        },
+        }
+      }
     },
-    "Sort" : {
-
+    "settings.alarm.sound" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zvuk časovače"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer sound"
+          }
+        }
+      }
     },
-    "Tap to change photo" : {
-
+    "settings.custom.sound" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat Vlastní Zvuk Časovače"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add Custom Timer Sound"
+          }
+        }
+      }
     },
-    "Timer & Sounds" : {
+    "settings.data" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data"
+          }
+        }
+      }
+    },
+    "settings.export" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportovat recepty (JSON)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export recipes (JSON)"
+          }
+        }
+      }
+    },
+    "settings.general" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obecné"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        }
+      }
+    },
+    "settings.import" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importovat recepty (JSON)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import recipes (JSON)"
+          }
+        }
+      }
+    },
+    "settings.language" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jazyk"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        }
+      }
+    },
+    "settings.manage.categories" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upravit kategorie receptů"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage recipe categories"
+          }
+        }
+      }
+    },
+    "settings.portions" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standardní počet porcí:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standard portion count:"
+          }
+        }
+      }
+    },
+    "settings.timer" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Časovač"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer"
+          }
+        }
+      }
+    },
+    "sort" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seřadit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort"
+          }
+        }
+      }
+    },
+    "sound.choose" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Výběr zvuku časovače"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer sound options"
+          }
+        }
+      }
+    },
+    "system.button.add" : {
 
     },
     "timer.action.pause" : {
@@ -896,6 +1153,22 @@
         }
       }
     },
+    "timer.ring" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Časovač zvoní"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer is ringing"
+          }
+        }
+      }
+    },
     "timer.tip.pause" : {
       "localizations" : {
         "cs" : {
@@ -949,7 +1222,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Otáčením každého sloupce vyberte hodiny, minuty a sekundy."
+            "value" : "Otáčením každého sloupce vyberte čas, po který má bežet časovač."
           }
         },
         "en" : {
@@ -1023,9 +1296,6 @@
           }
         }
       }
-    },
-    "Unit" : {
-
     },
     "Voice Regime" : {
 

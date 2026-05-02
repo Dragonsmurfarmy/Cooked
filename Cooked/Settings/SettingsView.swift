@@ -25,7 +25,7 @@ struct SettingsView: View {
                 Section("settings.general") {
                     Picker("settings.language", selection: $store.settings.language) {
                         ForEach(AppLanguage.allCases) { lang in
-                            Text(lang.rawValue).tag(lang)
+                            Text(lang.displayName).tag(lang)
                         }
                     }
                     .onChange(of: store.settings.language) { store.saveSettings() }
@@ -47,7 +47,7 @@ struct SettingsView: View {
                         HStack {
                             Text("settings.alarm.sound")
                             Spacer()
-                            Text(timerViewModel.selectedSoundUrl?.lastPathComponent ?? "settings.alarm.default")
+                            Text(LocalizedStringKey(timerViewModel.selectedSoundUrl?.lastPathComponent ?? "label.default"))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -63,41 +63,40 @@ struct SettingsView: View {
                 // --- KATEGORIE ---
                 Section("settings.manage.categories") {
                     ForEach(store.categories) { category in
-                        Text(category.name)
+                        Text(LocalizedStringKey(category.name))
                     }
                     .onDelete(perform: deleteCategory)
                     
                     Button {
                         showNewCategoryAlert = true
                     } label: {
-                        Label("Add New Category", systemImage: "plus")
+                        Label("settings.add.category", systemImage: "plus")
                     }
                 }
                 
                 // --- DATA ---
-                Section("Data Management") {
+                Section("settings.data") {
                     Button(action: exportRecipes) {
-                        Label("Export Recipes (JSON)", systemImage: "square.and.arrow.up")
+                        Label("settings.export", systemImage: "square.and.arrow.up")
                     }
                     
                     Button {
                         showingImporter = true
                     } label: {
-                        Label("Import Recipes (JSON)", systemImage: "square.and.arrow.down")
+                        Label("settings.import", systemImage: "square.and.arrow.down")
                     }
                 }
             }
-            .navigationTitle("Settings")
-            // --- VŠECHNY MODIFIKÁTORY NA KONCI (MIMO FORM) ---
-            .alert("New Category", isPresented: $showNewCategoryAlert) {
-                TextField("Category name", text: $newCategoryName)
-                Button("Add") {
+            .navigationTitle("settings")
+            .alert("category.new.name", isPresented: $showNewCategoryAlert) {
+                TextField("category.new.name", text: $newCategoryName)
+                Button("system.button.add") {
                     let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !trimmed.isEmpty else { return }
                     _ = store.addCategory(trimmed)
                     newCategoryName = ""
                 }
-                Button("Cancel", role: .cancel) { newCategoryName = "" }
+                Button("button.cancel", role: .cancel) { newCategoryName = "" }
             }
             .sheet(isPresented: $showingSoundPicker) {
                 SoundPickerView(viewModel: timerViewModel)

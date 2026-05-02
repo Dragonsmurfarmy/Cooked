@@ -28,11 +28,11 @@ struct RootView: View {
                             selectedTab = .home // po uložení se vrať domů
                         }
                     case .voice:
-                        Text("Voice Regime") // Vaše budoucí view
+                        Text("Voice Regime") //TBD
                     }
                 }
                 .safeAreaInset(edge: .bottom) {
-                    // Tímto zajistíme, že panel nezakryje obsah ScrollView
+                    
                     customBottomBar
                 }
             }
@@ -44,9 +44,10 @@ struct RootView: View {
                     .zIndex(1) // Jistota, že bude nad vším
             }
         }
+        .environment(\.locale, Locale(identifier: store.currentLanguageIdentifier))
     }
 
-    // PŘESUNUTÝ PANEL Z MAINPAGEVIEW
+    
     private var customBottomBar: some View {
         HStack {
             tabButton(tab: .voice, title: "navigation.voice_regime", icon: "mic")
