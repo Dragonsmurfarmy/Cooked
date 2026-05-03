@@ -200,7 +200,7 @@ struct MainPageView: View {
         if let index = store.recipes.firstIndex(where: { $0.id == recipeID }) {
             var updatedRecipe = store.recipes[index]
             updatedRecipe.isFavorite.toggle()
-            store.saveRecipe(updatedRecipe, newImageData: nil)
+            _ = store.saveRecipe(updatedRecipe, newImageData: nil)
         }
     }
     

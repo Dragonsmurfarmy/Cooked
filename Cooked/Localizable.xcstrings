@@ -713,7 +713,20 @@
       }
     },
     "portions.count" : {
-
+        "localizations" : {
+          "cs" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Počet porcí:"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Portions count:"
+            }
+          }
+        }
     },
     "recipe.category" : {
       "extractionState" : "stale",

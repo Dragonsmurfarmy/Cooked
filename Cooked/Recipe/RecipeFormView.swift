@@ -151,7 +151,7 @@ struct RecipeFormView: View {
                         // Filtrujeme pouze ingredience, které mají název
                         let finalIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
                         
-                        let recipe = Recipe(
+                        let recipeToSave = Recipe(
                             id: recipeToEdit?.id ?? UUID(),
                             name: name,
                             category: category,
@@ -160,8 +160,8 @@ struct RecipeFormView: View {
                             instructions: instructionsLines.joined(separator: "\n"),
                             isFavorite: isFavorite
                         )
-                        store.saveRecipe(recipe, newImageData: selectedImageData)
-                        onSave(recipe)
+                        let savedRecipe = store.saveRecipe(recipeToSave, newImageData: selectedImageData)
+                        onSave(savedRecipe)
                         dismiss()
                     }
                     .disabled(!isFormValid)

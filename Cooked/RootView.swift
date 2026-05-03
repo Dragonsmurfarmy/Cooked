@@ -23,9 +23,8 @@ struct RootView: View {
                     case .settings:
                         SettingsView(store: store)
                     case .add:
-                        RecipeFormView(store: store) { newRecipe in
-                            store.saveRecipe(newRecipe, newImageData: nil)
-                            selectedTab = .home // po uložení se vrať domů
+                        RecipeFormView(store: store) { _ in
+                            selectedTab = .home
                         }
                     case .voice:
                         Text("Voice Regime") //TBD

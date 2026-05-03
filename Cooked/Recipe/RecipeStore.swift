@@ -58,28 +58,32 @@ import SwiftUI
         }
     }
     
-    func saveRecipe(_ recipe: Recipe, newImageData: Data?) {
+    func saveRecipe(_ recipe: Recipe, newImageData: Data?) -> Recipe {
         var recipeToSave = recipe
         
-        // Save Image if it exists
+        // 1. Uložíme obrázek a aktualizujeme jméno v objektu
         if let data = newImageData {
-            let imageName = "\(recipe.id.uuidString).jpg"
-            try? data.write(to: documentsDirectory.appendingPathComponent(imageName))
+            let imageName = "\(recipeToSave.id.uuidString).jpg"
+            let destURL = documentsDirectory.appendingPathComponent(imageName)
+            try? data.write(to: destURL)
             recipeToSave.imageFileName = imageName
+            print("Store: Obrázek uložen jako \(imageName)")
         }
         
-        // Save JSON
+        // 2. Uložíme JSON
         if let data = try? JSONEncoder().encode(recipeToSave) {
-            let fileURL = documentsDirectory.appendingPathComponent("\(recipe.id.uuidString).json")
+            let fileURL = documentsDirectory.appendingPathComponent("\(recipeToSave.id.uuidString).json")
             try? data.write(to: fileURL)
         }
         
-        // Update local array for UI
-        if let index = recipes.firstIndex(where: { $0.id == recipe.id }) {
+        // 3. Aktualizujeme pole v paměti
+        if let index = recipes.firstIndex(where: { $0.id == recipeToSave.id }) {
             recipes[index] = recipeToSave
         } else {
             recipes.append(recipeToSave)
         }
+        
+        return recipeToSave
     }
     
     func deleteRecipe(at offsets: IndexSet) {
