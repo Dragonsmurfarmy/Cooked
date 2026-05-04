@@ -11,17 +11,21 @@ import UIKit
 import AVFoundation
 
 struct TimerView: View {
-    @Environment(TimerViewModel.self) private var viewModel // To make sure timer persists even when user leaves screen
+    @Environment(TimerViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
+    // Make all values start at 0
     @State private var selectedHours = 0
     @State private var selectedMinutes = 0
     @State private var selectedSeconds = 0
+    
     @State private var showSoundPicker = false
 
+    // Transform selected time to seconds
     private var selectedDuration: TimeInterval {
         TimeInterval(selectedHours * 3600 + selectedMinutes * 60 + selectedSeconds)
     }
-
+    
+    // Dont show picker when timer is running
     private var shouldShowPicker: Bool {
         viewModel.status == .ready || viewModel.status == .finished
     }
@@ -30,6 +34,7 @@ struct TimerView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 24) {
+                    // show either Picker(Selection) or Progress(timer) part
                     if shouldShowPicker {
                         pickerSection
                             .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -37,7 +42,7 @@ struct TimerView: View {
                         progressSection
                             .transition(.scale.combined(with: .opacity))
                     }
-                    buttonLine
+                    buttonLine // Reset, Play and Sound selection buttons
                     tipsSection
                 }
                 .padding(20)
@@ -52,8 +57,6 @@ struct TimerView: View {
             viewModel.selectDuration(newValue)
         }
         .onAppear {
-            syncPickerSelection(with: viewModel.totalDuration)
-            print("Enabled:", ActivityAuthorizationInfo().areActivitiesEnabled)
             syncPickerSelection(with: viewModel.totalDuration)
         }
     }
@@ -82,24 +85,28 @@ struct TimerView: View {
                 }
             }
             .frame(width: 240, height: 240)
-
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: 240)
         .padding(20)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
-    
+
     private var buttonLine: some View {
         HStack(spacing: 16) {
+            // --- RESET ---
             timerActionButton(
                 titleKey: "timer.action.reset",
                 systemImage: "arrow.counterclockwise",
                 tint: Color(.secondarySystemBackground)
             ) {
                 viewModel.reset()
+                syncPickerSelection(with: viewModel.totalDuration)
             }
-
+            .disabled(shouldShowPicker) // Disable clicking reset when no timer is active
+            .opacity(shouldShowPicker ? 0.5 : 1.0) // Make the button dim when disabled
+            
+            // --- PAUSE/PLAY ---
             timerActionButton(
                 titleKey: viewModel.isRunning ? "timer.action.pause" : "timer.action.play",
                 systemImage: viewModel.isRunning ? "pause.fill" : "play.fill",
@@ -115,6 +122,7 @@ struct TimerView: View {
                 }
             }
 
+            // --- SOUND ---
             timerActionButton(
                 titleKey: "timer.action.sound",
                 systemImage: "bell.fill",
@@ -138,7 +146,6 @@ struct TimerView: View {
             VStack(spacing: 10) {
                 Image(systemName: systemImage)
                     .font(.title2)
-
                 Text(titleKey)
                     .font(.caption)
                     .fontWeight(.semibold)
@@ -154,35 +161,43 @@ struct TimerView: View {
         .buttonStyle(.plain)
     }
 
+    
     private var pickerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("timer.picker.title")
                 .font(.headline)
 
-            LoopingTimePicker(
-                hours: $selectedHours,
-                minutes: $selectedMinutes,
-                seconds: $selectedSeconds
-            )
+            HStack(spacing: 0) {
+                unitColumn(selection: $selectedHours, range: Array(0...23), label: "timer.unit.hours")
+                unitColumn(selection: $selectedMinutes, range: Array(0...59), label: "timer.unit.minutes")
+                unitColumn(selection: $selectedSeconds, range: Array(0...59), label: "timer.unit.seconds")
+            }
             .frame(height: 180)
-            .clipped()
             .allowsHitTesting(!viewModel.isRunning)
             .opacity(viewModel.isRunning ? 0.55 : 1)
-
-            HStack {
-                Text("timer.unit.hours")
-                    .frame(maxWidth: .infinity)
-                Text("timer.unit.minutes")
-                    .frame(maxWidth: .infinity)
-                Text("timer.unit.seconds")
-                    .frame(maxWidth: .infinity)
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
         }
         .padding(18)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private func unitColumn(selection: Binding<Int>, range: [Int], label: LocalizedStringKey) -> some View {
+        GeometryReader { geometry in
+                VStack(spacing: 0) {
+                    LoopingTimePicker(selection: selection, range: range)
+                        .frame(width: geometry.size.width - 4)
+                        .clipped()
+                    
+                    Text(label)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, -10)
+                }
+                .frame(width: geometry.size.width)
+            }
+            .frame(maxWidth: .infinity)
+        
     }
 
     private var tipsSection: some View {
@@ -196,15 +211,15 @@ struct TimerView: View {
                 Label("timer.tip.start", systemImage: "play")
             }
             Label("timer.tip.reset", systemImage: "gobackward")
+            Label("timer.tip.sound", systemImage: "bell.fill")
         }
         .font(.subheadline)
         .foregroundStyle(.secondary)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: 240)
         .padding(18)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
-
 
     private func syncPickerSelection(with duration: TimeInterval) {
         let totalSeconds = max(Int(duration.rounded(.down)), 0)
@@ -214,38 +229,11 @@ struct TimerView: View {
     }
 }
 
-private struct TimerNavigationBarButton: View {
-    let titleKey: LocalizedStringKey
-    let systemImage: String
-    var isSelected: Bool = false
-    var action: () -> Void = {}
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 6) {
-                Image(systemName: systemImage)
-                    .font(.headline)
-                Text(titleKey)
-                    .font(.caption2)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-            .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
-            .background(isSelected ? Color.accentColor.opacity(0.14) : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-        }
-        .buttonStyle(.plain)
-    }
-}
 
 private struct LoopingTimePicker: UIViewRepresentable {
-    @Binding var hours: Int
-    @Binding var minutes: Int
-    @Binding var seconds: Int
-
-    private let hourRange = Array(0...24)
-    private let minuteSecondRange = Array(0...59)
-    private let repeatCount = 200
+    @Binding var selection: Int
+    let range: [Int]
+    let repeatCount = 200
 
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
@@ -255,129 +243,51 @@ private struct LoopingTimePicker: UIViewRepresentable {
         let picker = UIPickerView()
         picker.dataSource = context.coordinator
         picker.delegate = context.coordinator
-        context.coordinator.selectCurrentValues(in: picker, animated: false)
+        
+        picker.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        
+        let middleRow = (range.count * repeatCount) / 2 + selection
+        picker.selectRow(middleRow, inComponent: 0, animated: false)
         return picker
     }
 
     func updateUIView(_ uiView: UIPickerView, context: Context) {
         context.coordinator.parent = self
-        context.coordinator.syncSelectionIfNeeded(in: uiView)
+        let currentRow = uiView.selectedRow(inComponent: 0)
+        if currentRow % range.count != selection {
+            let newRow = (range.count * repeatCount) / 2 + selection
+            uiView.selectRow(newRow, inComponent: 0, animated: false)
+        }
     }
 
     final class Coordinator: NSObject, UIPickerViewDataSource, UIPickerViewDelegate {
         var parent: LoopingTimePicker
+        init(parent: LoopingTimePicker) { self.parent = parent }
 
-        init(parent: LoopingTimePicker) {
-            self.parent = parent
-        }
-
-        func numberOfComponents(in pickerView: UIPickerView) -> Int {
-            3
-        }
-
+        func numberOfComponents(in pickerView: UIPickerView) -> Int { 1 }
         func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-            switch component {
-            case 0:
-                parent.hourRange.count * parent.repeatCount
-            case 1, 2:
-                parent.minuteSecondRange.count * parent.repeatCount
-            default:
-                0
-            }
+            parent.range.count * parent.repeatCount
         }
-
-        func pickerView(_ pickerView: UIPickerView, widthForComponent component: Int) -> CGFloat {
-            96
-        }
-
-        func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat {
-            40
-        }
-
+        func pickerView(_ pickerView: UIPickerView, rowHeightForComponent component: Int) -> CGFloat { 45 }
+        
         func pickerView(_ pickerView: UIPickerView, attributedTitleForRow row: Int, forComponent component: Int) -> NSAttributedString? {
-            let value = valueForRow(row, component: component)
+            let value = row % parent.range.count
             return NSAttributedString(
                 string: String(format: "%02d", value),
                 attributes: [
-                    .font: UIFont.monospacedDigitSystemFont(ofSize: 28, weight: .semibold),
+                    .font: UIFont.monospacedDigitSystemFont(ofSize: 26, weight: .semibold),
                     .foregroundColor: UIColor.label
                 ]
             )
         }
 
         func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-            let value = valueForRow(row, component: component)
-
-            switch component {
-            case 0:
-                parent.hours = value
-            case 1:
-                parent.minutes = value
-            case 2:
-                parent.seconds = value
-            default:
-                break
-            }
-
-            recenterIfNeeded(in: pickerView, component: component, value: value)
-        }
-
-        func selectCurrentValues(in pickerView: UIPickerView, animated: Bool) {
-            pickerView.selectRow(centeredRow(for: parent.hours, component: 0), inComponent: 0, animated: animated)
-            pickerView.selectRow(centeredRow(for: parent.minutes, component: 1), inComponent: 1, animated: animated)
-            pickerView.selectRow(centeredRow(for: parent.seconds, component: 2), inComponent: 2, animated: animated)
-        }
-
-        func syncSelectionIfNeeded(in pickerView: UIPickerView) {
-            let expectedHourRow = centeredRow(for: parent.hours, component: 0)
-            let expectedMinuteRow = centeredRow(for: parent.minutes, component: 1)
-            let expectedSecondRow = centeredRow(for: parent.seconds, component: 2)
-
-            if pickerView.selectedRow(inComponent: 0) != expectedHourRow {
-                pickerView.selectRow(expectedHourRow, inComponent: 0, animated: false)
-            }
-
-            if pickerView.selectedRow(inComponent: 1) != expectedMinuteRow {
-                pickerView.selectRow(expectedMinuteRow, inComponent: 1, animated: false)
-            }
-
-            if pickerView.selectedRow(inComponent: 2) != expectedSecondRow {
-                pickerView.selectRow(expectedSecondRow, inComponent: 2, animated: false)
-            }
-        }
-
-        private func valueForRow(_ row: Int, component: Int) -> Int {
-            switch component {
-            case 0:
-                row % parent.hourRange.count
-            case 1, 2:
-                row % parent.minuteSecondRange.count
-            default:
-                0
-            }
-        }
-
-        private func centeredRow(for value: Int, component: Int) -> Int {
-            let itemCount = component == 0 ? parent.hourRange.count : parent.minuteSecondRange.count
-            let middle = itemCount * parent.repeatCount / 2
-            return middle + value
-        }
-
-        private func recenterIfNeeded(in pickerView: UIPickerView, component: Int, value: Int) {
-            let centered = centeredRow(for: value, component: component)
-            if pickerView.selectedRow(inComponent: component) != centered {
-                pickerView.selectRow(centered, inComponent: component, animated: false)
-            }
+            let value = row % parent.range.count
+            parent.selection = value
+            
+            // Okamžité vycentrování pro plynulý scroll (bez animace)
+            let middleRow = (parent.range.count * parent.repeatCount) / 2 + value
+            pickerView.selectRow(middleRow, inComponent: 0, animated: false)
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        TimerView()
-    }
-    .environment(TimerViewModel())
-}
-
-
-

@@ -27,7 +27,7 @@ final class TimerViewModel {
 
     private var countdownTask: Task<Void, Never>?
 
-    init(initialDuration: TimeInterval = 10 * 60) {
+    init(initialDuration: TimeInterval = 0) {
         self.totalDuration = initialDuration
         self.remainingTime = initialDuration
     }
@@ -128,14 +128,24 @@ final class TimerViewModel {
     private func startLiveActivity(endDate: Date) {
         let attributes = TimerActivityAttributes(title: "Cooking Timer")
         let state = TimerActivityAttributes.ContentState(endDate: endDate)
+        
+        let staleDate = endDate.addingTimeInterval(1)
 
         do {
             activity = try Activity.request(
-                attributes: attributes,
-                content: .init(state: state, staleDate: nil)
-            )
+                        attributes: attributes,
+                        content: .init(state: state, staleDate: staleDate),
+                        pushType: nil
+                    )
+            
+            Task {
+                let duration = max(endDate.timeIntervalSinceNow, 0)
+                try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+                await stopLiveActivity() // Hide widget
+            }
+            
         } catch {
-            print("X - Live Activity failed:", error)
+            
         }
     }
 

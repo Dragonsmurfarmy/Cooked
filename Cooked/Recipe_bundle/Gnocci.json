@@ -2,12 +2,62 @@
   "id": "C6D9E4F3-B2C3-5D4E-9F0A-2B3C4D5E6F7A",
   "name": "Gnocchi se špenátem",
   "category": {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Oběd"
+    "id": "661f9500-f30c-52e5-b827-557766551111",
+    "name": "category.lunch"
   },
+  "defaultPortions": 1,
   "recipeDescription": "Rychlá a jemná italská klasika. Osvědčená kombinace smetanové omáčky, listového špenátu a parmazánu.",
-  "ingredients": "• 750 g bramborových gnocchi\n• 3 lžíce másla\n• 5 stroužků česneku (na plátky)\n• 300 g mraženého nebo čerstvého listového špenátu\n• 150 ml smetany na vaření\n• 2 lžíce nastrouhaného parmazánu\n• Sůl a pepř\n• Oregano na ozdobu",
-  "instructions": "1. Gnocchi uvařte v osolené vodě podle návodu na obalu, dokud nevyplavou.\n2. V pánvi rozehřejte máslo a zlehka na něm opečte plátky česneku (pozor, nesmí zhnědnout, jinak zhořkne).\n3. Přidejte špenát a nechte ho úplně povolit nebo zvadnout.\n4. Směs osolte a zalijte smetanou. Nechte krátce povařit, dokud omáčka nezhoustne.\n5. Přimíchejte nastrouhaný parmazán a uvařené gnocchi.\n6. Rozdělte na talíře a ozdobte čerstvým oreganem.",
+  "ingredients": [
+      {
+          "id": "A1EB2345-1234-4567-8901-A1B2C3D4E5F1",
+          "name": "bramborových gnocchi",
+          "amount": 750,
+          "unit": "g"
+      },
+      {
+          "id": "B2EB2345-1234-4567-8901-A1B2C3D4E5F2",
+          "name": "másla",
+          "amount": 3,
+          "unit": "lžíce"
+      },
+      {
+          "id": "C3EB2345-1234-4567-8901-A1B2C3D4E5F3",
+          "name": "česneku (na plátky)",
+          "amount": 5,
+          "unit": "stroužků"
+      },
+      {
+          "id": "D4EB2345-1234-4567-8901-A1B2C3D4E5F4",
+          "name": "mraženého nebo čerstvého listového špenátu",
+          "amount": 300,
+          "unit": "g"
+      },
+      {
+          "id": "E5EB2345-1234-4567-8901-A1B2C3D4E5F5",
+          "name": "smetany na vaření",
+          "amount": 150,
+          "unit": "ml"
+      },
+      {
+          "id": "F6EB2345-1234-4567-8901-A1B2C3D4E5F6",
+          "name": "nastrouhaného parmazánu",
+          "amount": 2,
+          "unit": "lžíce"
+      },
+      {
+          "id": "G7EB2345-1234-4567-8901-A1B2C3D4E5F7",
+          "name": "Sůl a pepř",
+          "amount": 1,
+          "unit": "špetka"
+      },
+      {
+          "id": "H8EB2345-1234-4567-8901-A1B2C3D4E5F8",
+          "name": "Oregano",
+          "amount": 1,
+          "unit": "špetka"
+      }
+  ],
+  "instructions": " Gnocchi uvařte v osolené vodě podle návodu na obalu, dokud nevyplavou.\n V pánvi rozehřejte máslo a zlehka na něm opečte plátky česneku (pozor, nesmí zhnědnout, jinak zhořkne).\n Přidejte špenát a nechte ho úplně povolit nebo zvadnout.\n Směs osolte a zalijte smetanou. Nechte krátce povařit, dokud omáčka nezhoustne.\n Přimíchejte nastrouhaný parmazán a uvařené gnocchi.\n Rozdělte na talíře a ozdobte čerstvým oreganem.",
   "isFavorite": false,
   "imageFileName": null
 }

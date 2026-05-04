@@ -11,27 +11,27 @@ import AVFoundation
 
 struct SoundPickerView: View {
     @Environment(\.dismiss) private var dismiss
-    let viewModel: TimerViewModel // Necháme let, bindable vytvoříme v body
+    let viewModel: TimerViewModel
 
     @State private var player: AVAudioPlayer?
 
     var body: some View {
-        // Tímto vyřešíme chybu "Referencing subscript"
         @Bindable var viewModel = viewModel
         
         NavigationStack {
+            // --- AVAILABLE SOUNDS SECTION ---
             List {
                 ForEach(viewModel.availableSounds) { sound in
                     Button {
                         viewModel.setCustomSound(url: sound.url)
-                        playPreview(sound.url)
+                        playPreview(sound.url) // Play the sound when user selects it
                     } label: {
                         HStack {
                             Text(sound.url.deletingPathExtension().lastPathComponent)
                                 .foregroundStyle(.primary)
                             
                             Spacer()
-
+                            // Show checkmark by selected sound
                             if viewModel.selectedSoundUrl == sound.url {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.blue)
@@ -40,7 +40,6 @@ struct SoundPickerView: View {
                         }
                     }
                 }
-                // Voláme metodu přímo na viewModelu
                 .onDelete { offsets in
                     viewModel.deleteSound(at: offsets)
                 }
@@ -48,7 +47,7 @@ struct SoundPickerView: View {
             .navigationTitle("sound.choose")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    EditButton() // Umožní pohodlné mazání
+                    EditButton()
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("button.save") { dismiss() }

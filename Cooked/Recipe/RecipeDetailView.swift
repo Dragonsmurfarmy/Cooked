@@ -18,13 +18,13 @@ struct RecipeDetailView: View {
     init(recipe: Recipe, store: RecipeStore) {
             self._recipe = State(initialValue: recipe)
             self.store = store
-        self._selectedPortions = State(initialValue: store.settings.defaultPortions)
-        }
+            self._selectedPortions = State(initialValue: store.settings.defaultPortions)
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                // Large Image Header
+                // --- IMAGE SECTION ---
                 RecipeImage(imageData: recipe.imageData)
                     .frame(height: 280)
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
@@ -51,7 +51,8 @@ struct RecipeDetailView: View {
                 }
 
                 Divider()
-
+                
+                // --- PORTIONS SECTION ---
                 HStack {
                         Label("portions.count", systemImage: "person.2.fill")
                             .font(.headline)
@@ -63,14 +64,14 @@ struct RecipeDetailView: View {
                         Spacer()
                                     
                         Stepper("\(selectedPortions)", value: $selectedPortions, in: 1...50)
-                            .labelsHidden() // Schováme label stepperu, protože máme vlastní text
+                            .labelsHidden() // Hide stepper label since we use our own
                                     
                     }
                     .padding()
                     .background(Color.secondary.opacity(0.05))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    // --- UPRAVENÁ SEKCE INGREDIENCÍ ---
+                    // --- INGREDIENT SECTION ---
                     VStack(alignment: .leading, spacing: 16) {
                         Label("ingredients", systemImage: "list.bullet")
                             .font(.title3)
@@ -89,12 +90,12 @@ struct RecipeDetailView: View {
                                                 
                                     Spacer()
                                                 
-                                    // Výpočet množství: (množství / původní porce) * aktuální porce
+                                    // count amount to be showed
                                     Text(calculateAmount(for: ingredient))
                                         .fontWeight(.semibold)
                                         .foregroundStyle(.primary)
                                                 
-                                    Text("ingredient.unit")
+                                    Text(ingredient.unit)
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
                                 }
@@ -108,15 +109,25 @@ struct RecipeDetailView: View {
 
                 Divider()
 
-                // Instructions Section
+                // --- INSTRUCTION SECTION ---
                 VStack(alignment: .leading, spacing: 12) {
                     Label("instructions", systemImage: "frying.pan")
                         .font(.title3)
                         .fontWeight(.bold)
-                    
-                    Text(recipe.instructions)
-                        .font(.body)
-                        .lineSpacing(4)
+
+                    let steps = recipe.instructions.components(separatedBy: "\n").filter { !$0.isEmpty }
+                        
+                    ForEach(steps.indices, id: \.self) { index in
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(index + 1).")
+                                .fontWeight(.bold)
+                                .foregroundStyle(.tint)
+                                
+                            Text(steps[index])
+                                .font(.body)
+                                .lineSpacing(4)
+                        }
+                    }
                 }
             }
             .padding(20)
@@ -131,25 +142,36 @@ struct RecipeDetailView: View {
             }
         }
         .sheet(isPresented: $isShowingEditSheet) {
-                    RecipeFormView(store: store, recipeToEdit: recipe) { updatedRecipe in
-                        self.recipe = updatedRecipe
+            NavigationStack {
+                RecipeFormView(store: store, recipeToEdit: recipe) { updatedRecipe in
+                    self.recipe = updatedRecipe
+                    isShowingEditSheet = false // Close sheet
+                }
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("button.cancel") {
+                            isShowingEditSheet = false // Close sheet
+                        }
                     }
                 }
+            }
+        }
     }
     
-    // Pomocná funkce pro výpočet množství podle počtu porcí
+    // Helper function to calculate amount of ingredients for portions
         private func calculateAmount(for ingredient: Ingredient) -> String {
-            // Výpočet: (původní množství / výchozí porce) * vybrané porce
+            // Base amount is: showed amount / default portions
             let baseAmount = Double(ingredient.amount) / Double(recipe.defaultPortions)
+            // Final amount is base * portions
             let finalAmount = baseAmount * Double(selectedPortions)
             
-            // Formátování: Pokud je to celé číslo, nepoužíváme desetinná místa
-            if finalAmount.truncatingRemainder(dividingBy: 1) == 0 {
-                return String(format: "%.0f", finalAmount)
-            } else {
-                // Jinak zaokrouhlíme na 1 desetinné místo (např. 1.5)
-                return String(format: "%.1f", finalAmount)
-            }
+            
+            let formatter = NumberFormatter()
+                formatter.numberStyle = .decimal
+                formatter.maximumFractionDigits = 3 // Up to 3 decimals for doubles
+                formatter.minimumFractionDigits = 0 // 0 digits for ints
+                
+                return formatter.string(from: NSNumber(value: finalAmount)) ?? "\(finalAmount)"
         }
 }
 

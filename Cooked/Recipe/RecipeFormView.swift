@@ -19,24 +19,30 @@ struct RecipeFormView: View {
     @State private var category: RecipeCategory
     @State private var recipeDescription = ""
     
-    // Používáme pole objektů Ingredient
     @State private var ingredients: [Ingredient]
     @State private var instructionsLines: [String] = [""]
+    
+    @State private var instructions: [String] = [""]
+    @FocusState private var focusedField: Field?
     
     @State private var isFavorite = false
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var selectedImageData: Data?
     @State private var showNewCategoryAlert = false
     @State private var newCategoryName = ""
-
-    // --- TADY MUSÍ BÝT FOCUS STATE ---
+    
+    // --- ENUMS ---
     enum Field: Hashable {
         case name(UUID)
         case amount(UUID)
         case unit(UUID)
+        case ingredientName(UUID)
+        case ingredientAmount(UUID)
+        case ingredientUnit(UUID)
+        case instruction(Int)
     }
-    @FocusState private var focusedField: Field?
-    // ---------------------------------
+    
+    
 
     init(store: RecipeStore, recipeToEdit: Recipe? = nil, onSave: @escaping (Recipe) -> Void) {
         self.store = store
@@ -49,7 +55,7 @@ struct RecipeFormView: View {
         _isFavorite = State(initialValue: recipeToEdit?.isFavorite ?? false)
         _selectedImageData = State(initialValue: recipeToEdit?.imageData)
         
-        // Načtení ingrediencí jako objektů
+        // Load ingredients
         _ingredients = State(initialValue: recipeToEdit?.ingredients ?? [Ingredient(name: "", amount: 1, unit: "")])
         
         let ins = recipeToEdit?.instructions.components(separatedBy: "\n") ?? [""]
@@ -63,9 +69,11 @@ struct RecipeFormView: View {
     }
 
     var body: some View {
-        NavigationStack {
             Form {
+                // --- BASIC INFO SECTION ---
                 Section("info.basic") {
+                    
+                    // --- IMAGE ---
                     PhotosPicker(selection: $selectedPhoto, matching: .images) {
                         HStack(spacing: 12) {
                             RecipeSelectedImagePreview(imageData: selectedImageData)
@@ -78,18 +86,23 @@ struct RecipeFormView: View {
                     }
                     .buttonStyle(.plain)
                     
+                    // --- NAME ---
                     TextField("recipe.name", text: $name)
                     
+                    // --- CATEGORIES ---
                     Menu {
                         ForEach(store.categories) { cat in
                             Button { category = cat } label: {
                                 Label(LocalizedStringKey(cat.name), systemImage: category == cat ? "checkmark" : "circle")
                             }
                         }
+                        
                         Divider()
+                        // --- ADD NEW CATEGORY ---
                         Button { showNewCategoryAlert = true } label: {
                             Label("category.new", systemImage: "plus")
                         }
+                        
                     } label: {
                         HStack {
                             Text(LocalizedStringKey(category.name))
@@ -97,10 +110,12 @@ struct RecipeFormView: View {
                             Image(systemName: "chevron.down").font(.caption).foregroundStyle(.secondary)
                         }
                     }
+                    // --- DESCRIPTION ---
                     TextField("recipe.description", text: $recipeDescription)
                 }
                 
                 Section {
+                    // --- INGREDIENT SECTION ---
                     ForEach($ingredients) { $ingredient in
                         HStack {
                             TextField("ingredient.name", text: $ingredient.name)
@@ -137,38 +152,27 @@ struct RecipeFormView: View {
                 }
 
                 Section {
-                    SmartListEditor(lines: $instructionsLines, style: .numbered).frame(minHeight: 160)
+                    // --- INSTRUCTIONS SECTION ---
+                    SmartListEditor(
+                        focusBinding: $focusedField,
+                        lines: $instructionsLines,
+                        style: .numbered
+                    )
                 } header: { Label("instructions", systemImage: "frying.pan") }
             }
             .navigationTitle(recipeToEdit == nil ? "recipe.new" : "recipe.edit")
+            .navigationBarTitleDisplayMode(.inline)
             .task(id: selectedPhoto) { await loadSelectedPhoto() }
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("button.cancel") { dismiss() }
-                }
+                // ---- Cancel button is in rootView  for better UX ----
                 ToolbarItem(placement: .confirmationAction) {
                     Button("button.save") {
-                        // Filtrujeme pouze ingredience, které mají název
-                        let finalIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
-                        
-                        let recipeToSave = Recipe(
-                            id: recipeToEdit?.id ?? UUID(),
-                            name: name,
-                            category: category,
-                            recipeDescription: recipeDescription,
-                            ingredients: finalIngredients,
-                            instructions: instructionsLines.joined(separator: "\n"),
-                            isFavorite: isFavorite
-                        )
-                        let savedRecipe = store.saveRecipe(recipeToSave, newImageData: selectedImageData)
-                        onSave(savedRecipe)
-                        dismiss()
+                        saveAction()
                     }
                     .disabled(!isFormValid)
                 }
             }
-        }
-        .alert("category.new", isPresented: $showNewCategoryAlert) {
+            .alert("category.new", isPresented: $showNewCategoryAlert) {
             TextField("category.name", text: $newCategoryName)
             Button("button.add") {
                 let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -180,14 +184,32 @@ struct RecipeFormView: View {
         }
     }
     
+    private func saveAction(){
+        // We filter only ingredients which have a name
+        let finalIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
+        
+        let recipeToSave = Recipe(
+            id: recipeToEdit?.id ?? UUID(),
+            name: name,
+            category: category,
+            recipeDescription: recipeDescription,
+            ingredients: finalIngredients,
+            instructions: instructionsLines.joined(separator: "\n"),
+            isFavorite: isFavorite
+        )
+        let savedRecipe = store.saveRecipe(recipeToSave, newImageData: selectedImageData)
+        onSave(savedRecipe)
+        dismiss()
+    }
+    
     private func handleNextField(currentId: UUID) {
         switch focusedField {
         case .name(let id):
             focusedField = .amount(id)
         case .amount(let id):
             focusedField = .unit(id)
-        case .unit(let id):
-            // Pokud jsme na konci řádku, vytvoříme nový nebo zrušíme focus
+        case .unit:
+            // If we are at the end of line, we create new line and move focus there
             let newIng = Ingredient(name: "", amount: 1, unit: "")
             ingredients.append(newIng)
             focusedField = .name(newIng.id)
@@ -218,6 +240,5 @@ private struct RecipeSelectedImagePreview: View {
         .frame(width: 56, height: 56)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
-    
    
 }

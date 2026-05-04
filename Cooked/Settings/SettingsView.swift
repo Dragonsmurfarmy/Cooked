@@ -90,7 +90,7 @@ struct SettingsView: View {
             .navigationTitle("settings")
             .alert("category.new.name", isPresented: $showNewCategoryAlert) {
                 TextField("category.new.name", text: $newCategoryName)
-                Button("system.button.add") {
+                Button("button.add") {
                     let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !trimmed.isEmpty else { return }
                     _ = store.addCategory(trimmed)
@@ -158,7 +158,7 @@ struct SettingsView: View {
             if let data = try? Data(contentsOf: url),
                let importedRecipes = try? JSONDecoder().decode([Recipe].self, from: data) {
                 for recipe in importedRecipes {
-                    store.saveRecipe(recipe, newImageData: nil)
+                   _ = store.saveRecipe(recipe, newImageData: nil)
                 }
                 store.loadRecipesFromDisk()
             }
@@ -170,45 +170,37 @@ struct SettingsView: View {
     private func handleSoundImport(result: Result<[URL], Error>) {
         switch result {
         case .success(let urls):
-            guard let url = urls.first else {
-                print("❌ Žádný soubor nebyl vybrán")
-                return
-            }
+            guard let url = urls.first else { return }
             
-            print("📁 Vybrán soubor: \(url.lastPathComponent)")
-            
-            // Cesta do Documents
+            // Path to Documents
             let destURL = store.documentsDirectory.appendingPathComponent(url.lastPathComponent)
             
-            // Start Accessing Security Scoped Resource je u FilePickeru KLÍČOVÉ
+            // Ask for permission to use selected file
             if url.startAccessingSecurityScopedResource() {
                 defer { url.stopAccessingSecurityScopedResource() }
                 
                 do {
-                    // Pokud soubor už existuje, smažeme ho
+                    // If file already exists, remove the old one
                     if FileManager.default.fileExists(atPath: destURL.path) {
                         try FileManager.default.removeItem(at: destURL)
-                        print("🗑️ Starý soubor smazán")
                     }
                     
-                    // Kopírování dat
+                    // Copy data
                     let data = try Data(contentsOf: url)
                     try data.write(to: destURL)
-                    print("✅ Soubor úspěšně zkopírován do: \(destURL.lastPathComponent)")
                     
-                    // Aktualizace seznamu
+                    // Refresh sound list
                     timerViewModel.refreshAvailableSounds()
-                    print("🎶 Seznam zvuků v TimerViewModelu aktualizován")
                     
                 } catch {
-                    print("❌ Chyba při ukládání souboru: \(error.localizedDescription)")
+                    print(" Error saving file: \(error.localizedDescription)")
                 }
             } else {
-                print("❌ Systém zamítl přístup k vybranému souboru (Security Scope)")
+                print("Acces to chosen file has been denied by system")
             }
             
         case .failure(let error):
-            print("❌ Import selhal: \(error.localizedDescription)")
+            print("Import failed: \(error.localizedDescription)")
         }
     }
 }

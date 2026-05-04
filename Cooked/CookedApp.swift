@@ -9,16 +9,12 @@ struct CookedApp: App {
     init() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
 
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            print("🔔 Notification permission:", settings.authorizationStatus.rawValue)
-        }
-
         UNUserNotificationCenter.current().delegate = NotificationDelegate()
     }
 
     var body: some Scene {
         WindowGroup {
-            RootView(store: RecipeStore())
+            RootView(store: store)
                 .environment(timerViewModel)
                 .environment(store)
                 .environment(\.locale, Locale(identifier: store.settings.language.rawValue))

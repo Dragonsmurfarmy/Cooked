@@ -1,13 +1,13 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-
-    },
     "%@" : {
 
     },
     "%lld" : {
+
+    },
+    "%lld." : {
 
     },
     "button.add" : {
@@ -153,6 +153,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Breakfast"
+          }
+        }
+      }
+    },
+    "category.dessert" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dezerty"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dessert"
           }
         }
       }
@@ -713,20 +730,20 @@
       }
     },
     "portions.count" : {
-        "localizations" : {
-          "cs" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Počet porcí:"
-            }
-          },
-          "en" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Portions count:"
-            }
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Počet porcí:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portions count:"
           }
         }
+      }
     },
     "recipe.category" : {
       "extractionState" : "stale",
@@ -842,6 +859,9 @@
           }
         }
       }
+    },
+    "recipe.step_placeholder" : {
+
     },
     "settings" : {
       "localizations" : {
@@ -1067,9 +1087,6 @@
         }
       }
     },
-    "system.button.add" : {
-
-    },
     "timer.action.pause" : {
       "localizations" : {
         "cs" : {
@@ -1203,13 +1220,13 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reset vrátí vybraný čas a znovu zobrazí výběr."
+            "value" : "Reset ukončí běžící časovač a znovu zobrazí výběr."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Reset returns to the selected time and shows the picker again."
+            "value" : "Reset ends running timer and shows selection again."
           }
         }
       }
@@ -1242,6 +1259,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Spin each wheel to choose hours, minutes, and seconds."
+          }
+        }
+      }
+    },
+    "timer.tip.sound" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zvuk vám dovolí změnit zvuk budíku."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sound lets you change timer sound."
           }
         }
       }

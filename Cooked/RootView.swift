@@ -23,8 +23,17 @@ struct RootView: View {
                     case .settings:
                         SettingsView(store: store)
                     case .add:
-                        RecipeFormView(store: store) { _ in
-                            selectedTab = .home
+                        NavigationStack{
+                            RecipeFormView(store: store) { _ in
+                                selectedTab = .home
+                            }
+                            .toolbar {
+                                ToolbarItem(placement: .cancellationAction) {
+                                    Button("button.cancel") {
+                                        selectedTab = .home
+                                    }
+                                }
+                            }
                         }
                     case .voice:
                         Text("Voice Regime") //TBD
