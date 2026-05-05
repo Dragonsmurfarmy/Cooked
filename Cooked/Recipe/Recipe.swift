@@ -12,6 +12,11 @@ struct RecipeCategory: Identifiable, Equatable, Codable {
     
 }
 
+struct InstructionLine: Identifiable, Hashable {
+    let id = UUID()
+    var text: String
+}
+
 struct Ingredient: Identifiable, Equatable, Codable {
         var id = UUID()
         var name: String

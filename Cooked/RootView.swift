@@ -4,57 +4,66 @@ import SwiftUI
 struct RootView: View {
     @Environment(TimerViewModel.self) private var viewModel
     @Bindable var store: RecipeStore
-    @State private var selectedTab: Tab = .home // enum pro sledování aktivní záložky
+    @State private var selectedTab: Tab = .home
+    @State private var slideDirection: Edge = .trailing
+    @State private var isVoiceRegimeActive = false
     @State private var isKeyboardVisible = false
 
-    enum Tab {
-        case voice, timer, home, add, settings
+    enum Tab: Int, Comparable {
+        case timer = 0, home = 1, add = 2, settings = 3
+        static func < (lhs: Tab, rhs: Tab) -> Bool { lhs.rawValue < rhs.rawValue }
     }
 
     var body: some View {
-        ZStack {
-            // OBSAH PODLE ZVOLENÉHO TABU
-            NavigationStack {
-                Group {
-                    switch selectedTab {
-                    case .home:
-                        MainPageView(store: store)
-                    case .timer:
-                        TimerView()
-                    case .settings:
-                        SettingsView(store: store)
-                    case .add:
-                        NavigationStack{
-                            RecipeFormView(store: store) { _ in
+        ZStack(alignment: .bottom) { // Aligns the navbar to bottom
+
+            Group {
+                switch selectedTab {
+                case .home:
+                    NavigationStack { MainPageView(store: store) }
+                case .timer:
+                    NavigationStack { TimerView() }
+                case .settings:
+                    NavigationStack { SettingsView(store: store) }
+                case .add:
+                    NavigationStack {
+                        RecipeFormView(store: store) { _ in
+                            slideDirection = .leading
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 selectedTab = .home
                             }
-                            .toolbar {
-                                ToolbarItem(placement: .cancellationAction) {
-                                    Button("button.cancel") {
-                                        selectedTab = .home
-                                    }
-                                }
-                            }
                         }
-                    case .voice:
-                        Text("Voice Regime") //TBD
-                    }
-                }
-                .safeAreaInset(edge: .bottom) {
-                    if !isKeyboardVisible { // Appearance condition
-                        customBottomBar
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
             }
+            .ignoresSafeArea(.all, edges: .bottom)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(UIColor.systemBackground))
+            .id(selectedTab)
+            .transition(.asymmetric(
+                insertion: .move(edge: slideDirection),
+                removal: .move(edge: slideDirection == .trailing ? .leading : .trailing)
+            ))
 
-            // ALARM OVERLAY (vždy úplně nahoře)
+            // Persistent Navbar
+            if !isKeyboardVisible {
+                VStack(spacing: 0) {
+                    customBottomBar
+                }
+                .background(.thinMaterial)
+                .background(ignoresSafeAreaEdges: .bottom)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .zIndex(10)
+            }
+
+            // Alarm Overlay
             if viewModel.isAlarmActive {
                 AlarmOverlay()
                     .transition(.move(edge: .top).combined(with: .opacity))
-                    .zIndex(1) // Jistota, že bude nad vším
+                    .zIndex(20)
             }
         }
+        .ignoresSafeArea(.keyboard) // Prevents the whole screen from jumping
         .environment(\.locale, Locale(identifier: store.currentLanguageIdentifier))
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             withAnimation(.easeOut(duration: 0.2)) { isKeyboardVisible = true }
@@ -64,10 +73,22 @@ struct RootView: View {
         }
     }
 
-    
     private var customBottomBar: some View {
         HStack {
-            tabButton(tab: .voice, title: "navigation.voice_regime", icon: "mic")
+            // Voice toggle
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                    isVoiceRegimeActive.toggle()
+                }
+            } label: {
+                NavigationBarButton(
+                    titleKey: "navigation.voice_regime",
+                    systemImage: isVoiceRegimeActive ? "mic.fill" : "mic",
+                    isSelected: isVoiceRegimeActive
+                )
+            }
+            .buttonStyle(.plain)
+
             tabButton(tab: .timer, title: "navigation.timer", icon: "timer")
             tabButton(tab: .home, title: "navigation.home", icon: "house.fill")
             tabButton(tab: .add, title: "navigation.add", icon: "plus")
@@ -75,12 +96,18 @@ struct RootView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(.thinMaterial)
+        .clipShape(Capsule())
+        .padding(.bottom, 10)
     }
 
     private func tabButton(tab: Tab, title: LocalizedStringKey, icon: String) -> some View {
         Button {
-            selectedTab = tab
+            if selectedTab != tab {
+                slideDirection = tab > selectedTab ? .trailing : .leading
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    selectedTab = tab
+                }
+            }
         } label: {
             NavigationBarButton(titleKey: title, systemImage: icon, isSelected: selectedTab == tab)
         }

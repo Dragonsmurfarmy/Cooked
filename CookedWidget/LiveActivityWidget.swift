@@ -10,24 +10,29 @@ import WidgetKit
 import SwiftUI
 
 struct TimerLiveActivityWidget: Widget {
+    
+    let label: LocalizedStringKey = "widget.text"
+    
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: TimerActivityAttributes.self) { context in
             
             // LOCK SCREEN
-            VStack (alignment: .leading){
-                HStack(spacing: 16){
-                    
+            VStack(alignment: .leading) {
+                HStack(spacing: 8) {
                     Spacer()
 
-                    Text("widget.text")
+                    Text(label)
                         .font(.title)
                         .fontWeight(.semibold)
+                        .lineLimit(1) // Force text to be on 1 line
+                        .minimumScaleFactor(0.5)
                     
                     Text(context.state.endDate, style: .timer)
-                        .font(.title)
+                        .font(.title) 
                         .fontWeight(.semibold)
                         .monospacedDigit()
                 }
+                .padding(.horizontal)
             }
 
         } dynamicIsland: { context in

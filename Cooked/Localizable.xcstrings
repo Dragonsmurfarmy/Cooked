@@ -256,6 +256,9 @@
         }
       }
     },
+    "Configuration" : {
+
+    },
     "delete.question" : {
       "localizations" : {
         "cs" : {
@@ -273,6 +276,9 @@
       }
     },
     "Display" : {
+
+    },
+    "Favorite Emoji" : {
 
     },
     "image.change" : {
@@ -415,6 +421,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ingredients"
+          }
+        }
+      }
+    },
+    "instruction.add" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat krok"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add step"
           }
         }
       }
@@ -893,20 +915,20 @@
       }
     },
     "recipe.step_placeholder" : {
-        "localizations" : {
-          "cs" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Krok vedoucí k úspěšné tvorbě vaší pochutiny"
-            }
-          },
-          "en" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Step leading towards creation of your meal"
-            }
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Krok vedoucí k úspěšné tvorbě vaší pochutiny"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Step leading towards creation of your meal"
           }
         }
+      }
     },
     "settings" : {
       "localizations" : {
@@ -1131,6 +1153,9 @@
           }
         }
       }
+    },
+    "This is an example widget." : {
+
     },
     "timer.action.pause" : {
       "localizations" : {
@@ -1388,11 +1413,7 @@
         }
       }
     },
-    "Voice Regime" : {
-
-    },
     "widget.text" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {

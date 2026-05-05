@@ -70,6 +70,7 @@
 		CAF388CD2FA1116800162458 /* Exceptions for "Cooked" folder in "CookedWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Localizable.xcstrings,
 				Timer/TimerActivityAttributes.swift,
 			);
 			target = CAF388B02FA110CF00162458 /* CookedWidgetExtension */;

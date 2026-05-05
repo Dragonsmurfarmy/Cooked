@@ -8,8 +8,8 @@ import SwiftUI
 
 struct MainPageView: View {
     @Bindable var store: RecipeStore
-    @AppStorage("recipeSortOption") private var sortOption: RecipeSortOption = .name
-    @AppStorage("recipeDisplayStyle") private var displayStyle: RecipeDisplayStyle = .compact
+    @State private var sortOption: RecipeSortOption = .name
+    @State private var displayStyle: RecipeDisplayStyle = .compact
     @State private var selectedCategory: RecipeCategory? = nil
     @State private var recipeToDelete: Recipe?
     @State private var showDeleteConfirmation = false
@@ -95,7 +95,6 @@ struct MainPageView: View {
                                 .tag(option)
                         }
                     }
-                    .id(sortOption)
                 } label: {
                     Image(systemName: "arrow.up.arrow.down.circle")
                         .font(.title3)

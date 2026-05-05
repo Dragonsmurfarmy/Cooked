@@ -20,9 +20,11 @@ struct RecipeFormView: View {
     @State private var recipeDescription = ""
     
     @State private var ingredients: [Ingredient]
-    @State private var instructionsLines: [String] = [""]
     
-    @State private var instructions: [String] = [""]
+    @State private var instructionsLines: [InstructionLine]
+   
+    
+    
     @FocusState private var focusedField: Field?
     
     @State private var isFavorite = false
@@ -59,13 +61,12 @@ struct RecipeFormView: View {
         _ingredients = State(initialValue: recipeToEdit?.ingredients ?? [Ingredient(name: "", amount: 1, unit: "")])
         
         let ins = recipeToEdit?.instructions.components(separatedBy: "\n") ?? [""]
-        _instructionsLines = State(initialValue: ins)
+        _instructionsLines = State(initialValue: ins.map { InstructionLine(text: $0) })
     }
 
     private var isFormValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !ingredients.isEmpty &&
-        !instructionsLines.joined().trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !ingredients.isEmpty
     }
 
     var body: some View {
@@ -120,19 +121,18 @@ struct RecipeFormView: View {
                         HStack {
                             TextField("ingredient.name", text: $ingredient.name)
                                 .focused($focusedField, equals: .name(ingredient.id))
-                                .submitLabel(.next)
+                                
                             
                             TextField("ingredient.quantity", value: $ingredient.amount, format: .number)
                                 .keyboardType(.numbersAndPunctuation)
                                 .frame(width: 50)
                                 .multilineTextAlignment(.center)
                                 .focused($focusedField, equals: .amount(ingredient.id))
-                                .submitLabel(.next)
+                                
                             
                             TextField("ingredient.unit", text: $ingredient.unit)
                                 .frame(width: 60)
                                 .focused($focusedField, equals: .unit(ingredient.id))
-                                .submitLabel(.next)
                                 .textInputAutocapitalization(.never)
                         }
                     }
@@ -150,13 +150,24 @@ struct RecipeFormView: View {
                 }
 
                 Section {
-                    // --- INSTRUCTIONS SECTION ---
-                    SmartListEditor(
-                        focusBinding: $focusedField,
-                        lines: $instructionsLines,
-                        style: .numbered
-                    )
-                } header: { Label("instructions", systemImage: "frying.pan") }
+                        // --- INSTRUCTIONS LIST ---
+                        SmartListEditor(
+                            focusBinding: $focusedField,
+                            lines: $instructionsLines,
+                            style: .numbered
+                        )
+                        Button(action: {
+                            let newLine = InstructionLine(text: "")
+                            instructionsLines.append(newLine)
+                            let lastIndex = instructionsLines.count - 1
+                            focusedField = .instruction(lastIndex)
+                        }) {
+                            Label("instruction.add", systemImage: "plus.circle")
+                        }
+                    
+                } header: {
+                    Label("instructions", systemImage: "frying.pan")
+                }
             }
             .navigationTitle(recipeToEdit == nil ? "recipe.new" : "recipe.edit")
             .navigationBarTitleDisplayMode(.inline)
@@ -182,9 +193,15 @@ struct RecipeFormView: View {
         }
     }
     
-    private func saveAction(){
-        // We filter only ingredients which have a name
+    private func saveAction() {
+        // Filter out empty ingredients
         let finalIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
+        
+        // Convert InstructionLine array back to a single String for the model
+        let finalInstructions = instructionsLines
+            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n")
         
         let recipeToSave = Recipe(
             id: recipeToEdit?.id ?? UUID(),
@@ -192,9 +209,10 @@ struct RecipeFormView: View {
             category: category,
             recipeDescription: recipeDescription,
             ingredients: finalIngredients,
-            instructions: instructionsLines.joined(separator: "\n"),
+            instructions: finalInstructions, // Saved as string
             isFavorite: isFavorite
         )
+        
         let savedRecipe = store.saveRecipe(recipeToSave, newImageData: selectedImageData)
         onSave(savedRecipe)
         dismiss()
