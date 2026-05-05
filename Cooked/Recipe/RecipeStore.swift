@@ -33,19 +33,20 @@ import SwiftUI
     // sample and user-created recipes through the same storage flow.
     private func copyBundleRecipes() {
         let launchKey = "hasLaunchedBefore"
-        let hasLaunchedBefore = UserDefaults.standard.bool(forKey: launchKey)
+        if UserDefaults.standard.bool(forKey: launchKey) { return }
         
-        guard !hasLaunchedBefore else {
-            return
-        }
-        
+        let decoder = JSONDecoder()
         let bundleJSONs = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
         
-        // Load all premade recipes
         for fileURL in bundleJSONs {
-            let destURL = documentsDirectory.appendingPathComponent(fileURL.lastPathComponent)
-            
-            try? FileManager.default.copyItem(at: fileURL, to: destURL)
+            // Load the data to get the ID
+            if let data = try? Data(contentsOf: fileURL),
+               let recipe = try? decoder.decode(Recipe.self, from: data) {
+                
+                // Save it using the UUID name
+                let destURL = documentsDirectory.appendingPathComponent("\(recipe.id.uuidString).json")
+                try? data.write(to: destURL)
+            }
         }
         
         UserDefaults.standard.set(true, forKey: launchKey)

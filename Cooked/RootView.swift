@@ -3,11 +3,13 @@ import SwiftUI
 
 struct RootView: View {
     @Environment(TimerViewModel.self) private var viewModel
+    @Environment(\.scenePhase) private var scenePhase
     @Bindable var store: RecipeStore
     @State private var selectedTab: Tab = .home
     @State private var slideDirection: Edge = .trailing
     @State private var isVoiceRegimeActive = false
     @State private var isKeyboardVisible = false
+    private let bottomBarReservedHeight: CGFloat = 200
 
     enum Tab: Int, Comparable {
         case timer = 0, home = 1, add = 2, settings = 3
@@ -20,11 +22,20 @@ struct RootView: View {
             Group {
                 switch selectedTab {
                 case .home:
-                    NavigationStack { MainPageView(store: store) }
+                    NavigationStack {
+                        MainPageView(store: store)
+                            .safeAreaPadding(.bottom, isKeyboardVisible ? 0 : bottomBarReservedHeight)
+                    }
                 case .timer:
-                    NavigationStack { TimerView() }
+                    NavigationStack {
+                        TimerView()
+                            .safeAreaPadding(.bottom, isKeyboardVisible ? 0 : bottomBarReservedHeight)
+                    }
                 case .settings:
-                    NavigationStack { SettingsView(store: store) }
+                    NavigationStack {
+                        SettingsView(store: store)
+                            .safeAreaPadding(.bottom, isKeyboardVisible ? 0 : bottomBarReservedHeight)
+                    }
                 case .add:
                     NavigationStack {
                         RecipeFormView(store: store) { _ in
@@ -33,10 +44,10 @@ struct RootView: View {
                                 selectedTab = .home
                             }
                         }
+                        .safeAreaPadding(.bottom, isKeyboardVisible ? 0 : bottomBarReservedHeight)
                     }
                 }
             }
-            .ignoresSafeArea(.all, edges: .bottom) // Keep tab layout stable while text fields are focused
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(UIColor.systemBackground))
             .id(selectedTab)
@@ -57,7 +68,7 @@ struct RootView: View {
             }
 
             // Alarm Overlay
-            if viewModel.isAlarmActive {
+            if (viewModel.isAlarmActive && scenePhase == .active) {
                 AlarmOverlay()
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .zIndex(20)

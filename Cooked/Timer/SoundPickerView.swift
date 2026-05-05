@@ -48,6 +48,13 @@ struct SoundPickerView: View {
                     ToolbarItem(placement: .topBarLeading) {
                         EditButton()
                     }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("button.done") {
+                            player?.stop()
+                            player = nil
+                            dismiss()
+                        }
+                    }
 
                 }
             }

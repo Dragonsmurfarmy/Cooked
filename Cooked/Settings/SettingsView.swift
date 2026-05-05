@@ -12,11 +12,15 @@ struct SettingsView: View {
     @Bindable var store: RecipeStore
     @Environment(TimerViewModel.self) private var timerViewModel
     @State private var showingSoundPicker = false
+    @State private var didLongPressDecrement = false
+    @State private var didLongPressIncrement = false
     
     @State private var showNewCategoryAlert = false
     @State private var showingSoundImporter = false
     @State private var showingImporter = false
     @State private var newCategoryName = ""
+    private let minPortions = 1
+    private let maxPortions = 50
   
     
     var body: some View {
@@ -32,11 +36,51 @@ struct SettingsView: View {
                 }
                 HStack {
                         Text("settings.portions")
+                    
+                        Text("\(store.settings.defaultPortions)")
+                            .font(.title3.monospacedDigit())
+                            .fontWeight(.semibold)
+                            .frame(minWidth: 30)
+                    
                         Spacer()
-                        Stepper("\(store.settings.defaultPortions)", value: $store.settings.defaultPortions, in: 1...50)
-                            .onChange(of: store.settings.defaultPortions) {
-                                store.saveSettings()
-                            }
+                    
+                        Button {
+                            handleDecrementTap()
+                        } label: {
+                            Image(systemName: "minus")
+                                .font(.headline)
+                                .frame(width: 34, height: 34)
+                                .background(Color.secondary.opacity(0.12))
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.5)
+                                .onEnded { _ in
+                                    didLongPressDecrement = true
+                                    store.settings.defaultPortions = minPortions
+                                    store.saveSettings()
+                                }
+                        )
+
+                        Button {
+                            handleIncrementTap()
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.headline)
+                                .frame(width: 34, height: 34)
+                                .background(Color.secondary.opacity(0.12))
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.5)
+                                .onEnded { _ in
+                                    didLongPressIncrement = true
+                                    store.settings.defaultPortions = maxPortions
+                                    store.saveSettings()
+                                }
+                        )
                     }
                 
                 // --- TIMER ---
@@ -120,6 +164,26 @@ struct SettingsView: View {
         }
     
     // --- HELPER FUNCTIONS ---
+
+    private func handleDecrementTap() {
+        if didLongPressDecrement {
+            didLongPressDecrement = false
+            return
+        }
+
+        store.settings.defaultPortions = max(minPortions, store.settings.defaultPortions - 1)
+        store.saveSettings()
+    }
+
+    private func handleIncrementTap() {
+        if didLongPressIncrement {
+            didLongPressIncrement = false
+            return
+        }
+
+        store.settings.defaultPortions = min(maxPortions, store.settings.defaultPortions + 1)
+        store.saveSettings()
+    }
     
     private func deleteCategory(at offsets: IndexSet) {
         store.categories.remove(atOffsets: offsets)

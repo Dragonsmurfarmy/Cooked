@@ -33,8 +33,12 @@ struct CookedApp: App {
             _ center: UNUserNotificationCenter,
             willPresent notification: UNNotification
         ) async -> UNNotificationPresentationOptions {
-            // Show alert and play sound even when user is looking at the app
-            return [.banner, .sound]
+            // If app is in background, play sound and show notification
+            if UIApplication.shared.applicationState != .active {
+                return [.banner, .sound]
+            }
+            // We already bother user in another code part, when he is looking at the app
+           return []
         }
     }
 }

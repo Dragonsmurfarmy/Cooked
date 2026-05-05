@@ -13,13 +13,17 @@ struct RecipeDetailView: View {
     @State var recipe: Recipe
     @State private var isShowingEditSheet = false
     @State private var selectedPortions: Int
+    @State private var didLongPressDecrement = false
+    @State private var didLongPressIncrement = false
     @Bindable var store: RecipeStore
+    private let minPortions = 1
+    private let maxPortions = 50
     
     init(recipe: Recipe, store: RecipeStore) {
             // Keep local copy so the detail screen can reflect edits after saving
             self._recipe = State(initialValue: recipe)
             self.store = store
-            self._selectedPortions = State(initialValue: store.settings.defaultPortions)
+            self._selectedPortions = State(initialValue: recipe.defaultPortions)
     }
 
     var body: some View {
@@ -57,16 +61,51 @@ struct RecipeDetailView: View {
                 HStack {
                         Label("portions.count", systemImage: "person.2.fill")
                             .font(.headline)
+                        
                         Text("\(selectedPortions)")
                             .font(.title3.monospacedDigit())
                             .fontWeight(.semibold)
                             .frame(minWidth: 30)
-                                    
+
                         Spacer()
-                                    
-                        Stepper("\(selectedPortions)", value: $selectedPortions, in: 1...50)
-                            .labelsHidden() // Hide stepper label since we use our own
-                                    
+
+                        Button {
+                            handleDecrementTap()
+                        } label: {
+                            Image(systemName: "minus")
+                                .font(.headline)
+                                .frame(width: 34, height: 34)
+                                .background(Color.secondary.opacity(0.12))
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.5)
+                                .onEnded { _ in
+                                    didLongPressDecrement = true
+                                    jumpDecrementPortions()
+                                }
+                        )
+
+                        
+
+                        Button {
+                            handleIncrementTap()
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.headline)
+                                .frame(width: 34, height: 34)
+                                .background(Color.secondary.opacity(0.12))
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.5)
+                                .onEnded { _ in
+                                    didLongPressIncrement = true
+                                    jumpIncrementPortions()
+                                }
+                        )
                     }
                     .padding()
                     .background(Color.secondary.opacity(0.05))
@@ -159,6 +198,40 @@ struct RecipeDetailView: View {
         }
     }
     
+    private func handleDecrementTap() {
+        if didLongPressDecrement {
+            didLongPressDecrement = false
+            return
+        }
+
+        selectedPortions = max(minPortions, selectedPortions - 1)
+    }
+
+    private func handleIncrementTap() {
+        if didLongPressIncrement {
+            didLongPressIncrement = false
+            return
+        }
+
+        selectedPortions = min(maxPortions, selectedPortions + 1)
+    }
+
+    private func jumpDecrementPortions() {
+        if selectedPortions > recipe.defaultPortions {
+            selectedPortions = recipe.defaultPortions
+        } else {
+            selectedPortions = minPortions
+        }
+    }
+
+    private func jumpIncrementPortions() {
+        if selectedPortions < recipe.defaultPortions {
+            selectedPortions = recipe.defaultPortions
+        } else {
+            selectedPortions = maxPortions
+        }
+    }
+
     // Helper function to scale ingredient amounts from recipe default portions to the selected amount.
         private func calculateAmount(for ingredient: Ingredient) -> String {
             // Base amount for one portion.
@@ -175,7 +248,6 @@ struct RecipeDetailView: View {
                 return formatter.string(from: NSNumber(value: finalAmount)) ?? "\(finalAmount)"
         }
 }
-
 
 
 

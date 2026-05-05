@@ -3,6 +3,8 @@ import Observation
 import ActivityKit
 import UserNotifications
 import AVFoundation
+import UIKit
+
 
 @MainActor
 @Observable
@@ -18,6 +20,7 @@ final class TimerViewModel {
     private(set) var status: TimerStatus = .ready
 
     private var countdownTask: Task<Void, Never>?
+    private let notificationIdentifier = "timer-finished"
     
     var errorMessage: String? = nil
     var selectedSoundUrl: URL?
@@ -34,6 +37,7 @@ final class TimerViewModel {
     init(initialDuration: TimeInterval = 0) {
         self.totalDuration = initialDuration
         self.remainingTime = initialDuration
+        refreshAvailableSounds()
     }
 
 
@@ -62,11 +66,15 @@ final class TimerViewModel {
     }
 
     func start() {
+        
+        if status == .finished {
+            reset()
+        }
+        
         guard status == .ready || status == .paused else { return }
 
         status = .running
-        // Keep one absolute end date so countdown, Live Activity, and notifications
-        // all derive from the same source of truth.
+        // Keep one absolute end date so countdown, Live Activity, and notifications all derive from the same place
         endDate = Date().addingTimeInterval(remainingTime)
 
         if let endDate {
@@ -81,6 +89,8 @@ final class TimerViewModel {
         guard status == .running else { return }
         countdownTask?.cancel()
         countdownTask = nil
+        
+        cancelScheduledNotification()
 
         if let endDate {
             remainingTime = max(endDate.timeIntervalSinceNow, 0)
@@ -92,7 +102,9 @@ final class TimerViewModel {
     func reset() {
         countdownTask?.cancel()
         countdownTask = nil
-
+        
+        cancelScheduledNotification()
+        
         remainingTime = totalDuration
         endDate = nil
         status = .ready
@@ -118,10 +130,16 @@ final class TimerViewModel {
                                 self.remainingTime = TimeInterval(seconds)
                             }
                 
-                if(remaining <= 0) {
+                if remaining <= 0 {
                     status = .finished
-                    isAlarmActive = true
-                    startAlarmSound()
+
+                    if UIApplication.shared.applicationState == .active {
+                        isAlarmActive = true
+                        startAlarmSound()
+                    } else {
+                        isAlarmActive = false
+                    }
+
                     await stopLiveActivity()
                     stop()
                     break
@@ -182,13 +200,19 @@ final class TimerViewModel {
             )
 
         let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
+            identifier: notificationIdentifier,
             content: content,
             trigger: trigger
         )
         
         UNUserNotificationCenter.current().add(request)
         
+    }
+    
+    private func cancelScheduledNotification() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(
+            withIdentifiers: [notificationIdentifier]
+        )
     }
     
     func setCustomSound(url: URL) {
@@ -248,6 +272,11 @@ final class TimerViewModel {
         
         // Keep sound order stable in the picker.
         self.availableSounds = soundFiles.sorted { $0.url.lastPathComponent < $1.url.lastPathComponent }
+        
+        // If none sound was selected, select 1st on the list
+        if selectedSoundUrl == nil {
+            selectedSoundUrl = availableSounds.first?.url
+        }
     }
     
     func deleteSound(at offsets: IndexSet) {

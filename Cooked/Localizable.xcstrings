@@ -75,6 +75,22 @@
         }
       }
     },
+    "button.done" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hotovo"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
     "button.edit" : {
       "localizations" : {
         "cs" : {
@@ -1223,6 +1239,22 @@
           }
         }
       }
+    },
+    "timer.action.stop" : {
+        "localizations" : {
+          "cs" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Zastavit"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Stop"
+            }
+          }
+        }
     },
     "timer.navigation.title" : {
       "localizations" : {

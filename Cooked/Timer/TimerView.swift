@@ -109,18 +109,27 @@ struct TimerView: View {
             // --- PAUSE/PLAY ---
             timerActionButton(
                 // Choose either Play or Pause visual, depending whether timer is running or not
-                titleKey: viewModel.isRunning ? "timer.action.pause" : "timer.action.play",
-                systemImage: viewModel.isRunning ? "pause.fill" : "play.fill",
+                titleKey: viewModel.isAlarmActive
+                    ? "timer.action.stop"
+                    : (viewModel.isRunning ? "timer.action.pause" : "timer.action.play"),
+
+                systemImage: viewModel.isAlarmActive
+                    ? "stop.fill"
+                    : (viewModel.isRunning ? "pause.fill" : "play.fill"),
+
                 tint: .blue
             ) {
-                if viewModel.isRunning {
-                    viewModel.pause() // Pause functionality if timer is running
-                } else {
+                if viewModel.isAlarmActive { // When alarm is ringing, make button stop it
+                    viewModel.stopAlarm()
+                } else if viewModel.isRunning { // If timer is running, stop it
+                    viewModel.pause()
+                } else { // Start timer logic
                     if viewModel.remainingTime == viewModel.totalDuration {
                         viewModel.selectDuration(selectedDuration)
                     }
-                    viewModel.start() // Start functionality if timer is not running
+                    viewModel.start()
                 }
+
             }
 
             // --- SOUND ---
@@ -243,8 +252,7 @@ private struct LoopingTimePicker: UIViewRepresentable {
         Coordinator(parent: self)
     }
     
-    // Create UIPickerView, link it with Coordinator and
-    // Set Picker to start in middle of the picking list for illusion of infinite scrolling
+    // Create UIPickerView, link it with Coordinator and set Picker to start in middle of the picking list for illusion of infinite scrolling
     func makeUIView(context: Context) -> UIPickerView {
         let picker = UIPickerView()
         picker.dataSource = context.coordinator
