@@ -157,8 +157,8 @@ final class TimerViewModel {
 
     private func scheduleNotification(for endDate: Date) {
         let content = UNMutableNotificationContent()
-        content.title = "Timer finished"
-        content.body = "Your cooking timer is done."
+        content.title = String(localized: "notification.title")
+        content.body = String(localized: "notification.body")
         if let url = selectedSoundUrl {
             let name = url.lastPathComponent
             content.sound = UNNotificationSound(named: UNNotificationSoundName(name))

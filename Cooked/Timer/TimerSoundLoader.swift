@@ -21,6 +21,7 @@ struct TimerSoundFile: Identifiable, Hashable {
 
 struct SoundLoader {
     static func loadSounds() -> [TimerSoundFile] {
+        // Extensions we are looking for
         let exts = ["caf", "mp3", "wav", "aiff", "m4a"]
         
         // Create single array with all sound files present

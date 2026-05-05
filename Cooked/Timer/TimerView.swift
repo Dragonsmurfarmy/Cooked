@@ -108,17 +108,18 @@ struct TimerView: View {
             
             // --- PAUSE/PLAY ---
             timerActionButton(
+                // Choose either Play or Pause visual, depending whether timer is running or not
                 titleKey: viewModel.isRunning ? "timer.action.pause" : "timer.action.play",
                 systemImage: viewModel.isRunning ? "pause.fill" : "play.fill",
                 tint: .blue
             ) {
                 if viewModel.isRunning {
-                    viewModel.pause()
+                    viewModel.pause() // Pause functionality if timer is running
                 } else {
                     if viewModel.remainingTime == viewModel.totalDuration {
                         viewModel.selectDuration(selectedDuration)
                     }
-                    viewModel.start()
+                    viewModel.start() // Start functionality if timer is not running
                 }
             }
 
@@ -128,6 +129,7 @@ struct TimerView: View {
                 systemImage: "bell.fill",
                 tint: .blue
             ) {
+                // Show sound selection menu
                 showSoundPicker = true
             }
             .sheet(isPresented: $showSoundPicker) {
@@ -136,6 +138,7 @@ struct TimerView: View {
         }
     }
 
+    // Timer Buttons factory
     private func timerActionButton(
         titleKey: LocalizedStringKey,
         systemImage: String,
@@ -161,7 +164,7 @@ struct TimerView: View {
         .buttonStyle(.plain)
     }
 
-    
+    // Timer time choosing section
     private var pickerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("timer.picker.title")
@@ -181,6 +184,7 @@ struct TimerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
+    // Factory for the rotating wheel picker columns
     private func unitColumn(selection: Binding<Int>, range: [Int], label: LocalizedStringKey) -> some View {
         GeometryReader { geometry in
                 VStack(spacing: 0) {
@@ -197,9 +201,9 @@ struct TimerView: View {
                 .frame(width: geometry.size.width)
             }
             .frame(maxWidth: .infinity)
-        
     }
 
+    // Factory for the tips section text
     private var tipsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             if viewModel.isRunning {
@@ -221,6 +225,7 @@ struct TimerView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
+    // Synces clock with remaining time
     private func syncPickerSelection(with duration: TimeInterval) {
         let totalSeconds = max(Int(duration.rounded(.down)), 0)
         selectedHours = totalSeconds / 3600
@@ -229,16 +234,17 @@ struct TimerView: View {
     }
 }
 
-
 private struct LoopingTimePicker: UIViewRepresentable {
     @Binding var selection: Int
     let range: [Int]
     let repeatCount = 200
-
+    
     func makeCoordinator() -> Coordinator {
         Coordinator(parent: self)
     }
-
+    
+    // Create UIPickerView, link it with Coordinator and
+    // Set Picker to start in middle of the picking list for illusion of infinite scrolling
     func makeUIView(context: Context) -> UIPickerView {
         let picker = UIPickerView()
         picker.dataSource = context.coordinator
@@ -250,7 +256,8 @@ private struct LoopingTimePicker: UIViewRepresentable {
         picker.selectRow(middleRow, inComponent: 0, animated: false)
         return picker
     }
-
+    
+    // Synces UI and data
     func updateUIView(_ uiView: UIPickerView, context: Context) {
         context.coordinator.parent = self
         let currentRow = uiView.selectedRow(inComponent: 0)
@@ -259,11 +266,12 @@ private struct LoopingTimePicker: UIViewRepresentable {
             uiView.selectRow(newRow, inComponent: 0, animated: false)
         }
     }
-
+    
+    // Adapter between SwiftUI and UIKit
     final class Coordinator: NSObject, UIPickerViewDataSource, UIPickerViewDelegate {
         var parent: LoopingTimePicker
         init(parent: LoopingTimePicker) { self.parent = parent }
-
+        
         func numberOfComponents(in pickerView: UIPickerView) -> Int { 1 }
         func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
             parent.range.count * parent.repeatCount
@@ -280,12 +288,12 @@ private struct LoopingTimePicker: UIViewRepresentable {
                 ]
             )
         }
-
+        
         func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
             let value = row % parent.range.count
             parent.selection = value
             
-            // Okamžité vycentrování pro plynulý scroll (bez animace)
+            // Centering for continuous animation
             let middleRow = (parent.range.count * parent.repeatCount) / 2 + value
             pickerView.selectRow(middleRow, inComponent: 0, animated: false)
         }

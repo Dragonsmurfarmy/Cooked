@@ -729,6 +729,38 @@
         }
       }
     },
+    "notification.body" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Časovač doběhl"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer has finished"
+          }
+        }
+      }
+    },
+    "notification.title" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Časovač"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer"
+          }
+        }
+      }
+    },
     "portions.count" : {
       "localizations" : {
         "cs" : {
@@ -861,7 +893,20 @@
       }
     },
     "recipe.step_placeholder" : {
-
+        "localizations" : {
+          "cs" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Krok vedoucí k úspěšné tvorbě vaší pochutiny"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Step leading towards creation of your meal"
+            }
+          }
+        }
     },
     "settings" : {
       "localizations" : {
@@ -1345,6 +1390,23 @@
     },
     "Voice Regime" : {
 
+    },
+    "widget.text" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zbývající čas: "
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remaining Time: "
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -19,7 +19,7 @@ struct TimerLiveActivityWidget: Widget {
                     
                     Spacer()
 
-                    Text("Cooking Timer:")
+                    Text("widget.text")
                         .font(.title)
                         .fontWeight(.semibold)
                     
