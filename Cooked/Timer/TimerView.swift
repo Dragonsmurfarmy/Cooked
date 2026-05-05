@@ -299,3 +299,27 @@ private struct LoopingTimePicker: UIViewRepresentable {
         }
     }
 }
+
+struct ErrorBannerView: View {
+    let message: String
+
+    var body: some View {
+        VStack {
+            Text(message)
+                .font(.subheadline)
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 24)
+                .background(Capsule().fill(.red))
+                .shadow(radius: 8)
+                .padding(.top, 20) 
+            
+            Spacer()
+        }
+        .padding(.horizontal)
+        .frame(maxWidth: .infinity)
+
+        .allowsHitTesting(false)
+    }
+}

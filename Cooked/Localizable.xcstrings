@@ -278,6 +278,9 @@
     "Display" : {
 
     },
+    "error.cannot_delete_builtin" : {
+
+    },
     "Favorite Emoji" : {
 
     },

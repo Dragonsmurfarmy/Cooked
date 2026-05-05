@@ -11,9 +11,16 @@ final class TimerViewModel {
     private(set) var totalDuration: TimeInterval
     private(set) var remainingTime: TimeInterval
     private var endDate: Date?
-    public var selectedSoundUrl: URL?
     private var alarmPlayer: AVAudioPlayer?
     private(set) var isAlarmActive: Bool = false
+    
+    private var activity: Activity<TimerActivityAttributes>?
+    private(set) var status: TimerStatus = .ready
+
+    private var countdownTask: Task<Void, Never>?
+    
+    var errorMessage: String? = nil
+    var selectedSoundUrl: URL?
     var availableSounds: [TimerSoundFile] = [] {
         didSet {
             if selectedSoundUrl == nil {
@@ -22,10 +29,7 @@ final class TimerViewModel {
         }
     }
 
-    private var activity: Activity<TimerActivityAttributes>?
-    private(set) var status: TimerStatus = .ready
-
-    private var countdownTask: Task<Void, Never>?
+   
 
     init(initialDuration: TimeInterval = 0) {
         self.totalDuration = initialDuration
@@ -252,15 +256,30 @@ final class TimerViewModel {
         for index in offsets {
             let sound = availableSounds[index]
             let url = sound.url
-            
 
             if url.path.contains("/Documents/") {
                 try? FileManager.default.removeItem(at: url)
+                
+                if selectedSoundUrl == url {
+                    selectedSoundUrl = nil
+                }
+            } else {
+                showTemporaryError(String(localized: "error.cannot_delete_builtin"))
             }
         }
         
+        // Update the UI
         refreshAvailableSounds()
     }
+    
+    private func showTemporaryError(_ message: String) {
+            errorMessage = message
+            // Automatically hide after 3 seconds
+            Task {
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                errorMessage = nil
+            }
+        }
 
     enum TimerStatus {
         case ready
