@@ -15,7 +15,7 @@ struct RootView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) { // Aligns the navbar to bottom
+        ZStack(alignment: .bottom) {
 
             Group {
                 switch selectedTab {
@@ -36,7 +36,7 @@ struct RootView: View {
                     }
                 }
             }
-            .ignoresSafeArea(.all, edges: .bottom)
+            .ignoresSafeArea(.all, edges: .bottom) // Keep tab layout stable while text fields are focused
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(UIColor.systemBackground))
             .id(selectedTab)
@@ -45,7 +45,7 @@ struct RootView: View {
                 removal: .move(edge: slideDirection == .trailing ? .leading : .trailing)
             ))
 
-            // Persistent Navbar
+            // Hide navbar when keyboard appears
             if !isKeyboardVisible {
                 VStack(spacing: 0) {
                     customBottomBar
@@ -63,7 +63,7 @@ struct RootView: View {
                     .zIndex(20)
             }
         }
-        .ignoresSafeArea(.keyboard) // Prevents the whole screen from jumping
+        .ignoresSafeArea(.keyboard)
         .environment(\.locale, Locale(identifier: store.currentLanguageIdentifier))
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             withAnimation(.easeOut(duration: 0.2)) { isKeyboardVisible = true }

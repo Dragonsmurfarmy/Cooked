@@ -2,7 +2,7 @@
 //  TimerView.swift
 //  Cooked
 //
-//  Created by Tomáš Kříž on 26.04.2026.
+//  Created by Tomáš Kříž on 20.04.2026.
 //
 
 import SwiftUI

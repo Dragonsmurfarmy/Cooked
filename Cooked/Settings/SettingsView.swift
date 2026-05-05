@@ -2,7 +2,7 @@
 //  SettingsView.swift
 //  Cooked
 //
-//  Created by Tomáš Kříž on 26.04.2026.
+//  Created by Tomáš Kříž on 20.04.2026.
 //
 
 import SwiftUI
@@ -21,7 +21,7 @@ struct SettingsView: View {
     
     var body: some View {
             Form {
-                // --- JAZYK ---
+                // --- LANGUAGE ---
                 Section("settings.general") {
                     Picker("settings.language", selection: $store.settings.language) {
                         ForEach(AppLanguage.allCases) { lang in
@@ -39,7 +39,7 @@ struct SettingsView: View {
                             }
                     }
                 
-                // --- BUDÍK ---
+                // --- TIMER ---
                 Section("settings.timer") {
                     Button {
                         showingSoundPicker = true
@@ -52,7 +52,7 @@ struct SettingsView: View {
                         }
                     }
                     
-                    // Tlačítko pro přidání zvuku
+                    // Add sound button
                     Button {
                         showingSoundImporter = true
                     } label: {
@@ -60,7 +60,7 @@ struct SettingsView: View {
                     }
                 }
                 
-                // --- KATEGORIE ---
+                // --- CATEGORIES ---
                 Section("settings.manage.categories") {
                     ForEach(store.categories) { category in
                         Text(LocalizedStringKey(category.name))
@@ -101,7 +101,7 @@ struct SettingsView: View {
             .sheet(isPresented: $showingSoundPicker) {
                 SoundPickerView(viewModel: timerViewModel)
             }
-            // Importer pro RECEPTY
+            // Recipe Importer
             .fileImporter(
                 isPresented: $showingImporter,
                 allowedContentTypes: [.json],
@@ -109,7 +109,7 @@ struct SettingsView: View {
             ) { result in
                 handleImport(result: result)
             }
-            // Importer pro ZVUKY (přesunut sem, aby fungoval)
+            // Sound Importer
             .fileImporter(
                 isPresented: $showingSoundImporter,
                 allowedContentTypes: [.mp3, .wav, .mpeg4Audio],
@@ -119,7 +119,7 @@ struct SettingsView: View {
             }
         }
     
-    // --- POMOCNÉ FUNKCE ---
+    // --- HELPER FUNCTIONS ---
     
     private func deleteCategory(at offsets: IndexSet) {
         store.categories.remove(atOffsets: offsets)
@@ -180,7 +180,7 @@ struct SettingsView: View {
                 defer { url.stopAccessingSecurityScopedResource() }
                 
                 do {
-                    // If file already exists, remove the old one
+                    // If file already exists, remove old one
                     if FileManager.default.fileExists(atPath: destURL.path) {
                         try FileManager.default.removeItem(at: destURL)
                     }

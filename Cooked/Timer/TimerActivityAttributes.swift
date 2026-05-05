@@ -2,7 +2,7 @@
 //  TimerActivityAttributes.swift
 //  Cooked
 //
-//  Created by Tomáš Kříž on 28.04.2026.
+//  Created by Tomáš Kříž on 23.04.2026.
 //
 
 import ActivityKit

@@ -2,7 +2,7 @@
 //  Settings.swift
 //  Cooked
 //
-//  Created by Tomáš Kříž on 26.04.2026.
+//  Created by Tomáš Kříž on 20.04.2026.
 //
 
 import SwiftUI
@@ -16,6 +16,7 @@ struct RecipeDetailView: View {
     @Bindable var store: RecipeStore
     
     init(recipe: Recipe, store: RecipeStore) {
+            // Keep local copy so the detail screen can reflect edits after saving
             self._recipe = State(initialValue: recipe)
             self.store = store
             self._selectedPortions = State(initialValue: store.settings.defaultPortions)
@@ -90,7 +91,7 @@ struct RecipeDetailView: View {
                                                 
                                     Spacer()
                                                 
-                                    // count amount to be showed
+                                    // Show ingredient amount scaled to currently selected portion count
                                     Text(calculateAmount(for: ingredient))
                                         .fontWeight(.semibold)
                                         .foregroundStyle(.primary)
@@ -158,11 +159,11 @@ struct RecipeDetailView: View {
         }
     }
     
-    // Helper function to calculate amount of ingredients for portions
+    // Helper function to scale ingredient amounts from recipe default portions to the selected amount.
         private func calculateAmount(for ingredient: Ingredient) -> String {
-            // Base amount is: showed amount / default portions
+            // Base amount for one portion.
             let baseAmount = Double(ingredient.amount) / Double(recipe.defaultPortions)
-            // Final amount is base * portions
+            // Final amount for the currently selected portion count.
             let finalAmount = baseAmount * Double(selectedPortions)
             
             

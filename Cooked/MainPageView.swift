@@ -2,7 +2,7 @@
 //  MainPageView.swift
 //  Cooked
 //
-//  Created by Tomáš Kříž on 26.04.2026.
+//  Created by Tomáš Kříž on 20.04.2026.
 //
 import SwiftUI
 
@@ -19,7 +19,8 @@ struct MainPageView: View {
         GridItem(.flexible(), spacing: 16)
     ]
     
-    
+    // Derive the visible list from the store by filtering by active category and selected sort order
+
     private var visibleRecipes: [Recipe] {
         
         let filtered = store.recipes.filter { recipe in
@@ -32,7 +33,7 @@ struct MainPageView: View {
             }
         }
         
-        
+        // Options by which to sort recipes
         switch sortOption {
         case .name:
             return filtered.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
@@ -46,7 +47,6 @@ struct MainPageView: View {
         }
     }
     
-    // MARK: - Body
     var body: some View {
             VStack(spacing: 0) {
                 ScrollView {
@@ -61,7 +61,6 @@ struct MainPageView: View {
         
     }
 
-    // MARK: - Sections
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("main.header.title")
@@ -74,10 +73,12 @@ struct MainPageView: View {
         }
     }
 
+    // recipe count, sorting, filtering, and switching between compact and card layouts
     private var controlsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 
+                // Recipes count
                 Text("\(visibleRecipes.count)")
                     .font(.subheadline.bold())
                     .padding(.horizontal, 10)
@@ -87,7 +88,7 @@ struct MainPageView: View {
                 
                 Spacer()
                 
-                
+                // Sorting
                 Menu {
                     Picker("sort", selection: $sortOption) {
                         ForEach(RecipeSortOption.allCases) { option in
@@ -100,8 +101,8 @@ struct MainPageView: View {
                         .font(.title3)
                 }
                 .buttonStyle(.bordered)
-
-                // Tlačítko Filtru
+                
+                // Filtering
                 Menu {
                     Button {
                         selectedCategory = nil
@@ -127,7 +128,7 @@ struct MainPageView: View {
                 }
                 .buttonStyle(.bordered)
                 
-                // Přepínač stylu
+                // Card/Compact view picker
                 Picker("Display", selection: $displayStyle) {
                     ForEach(RecipeDisplayStyle.allCases) { style in
                         Image(systemName: style == .compact ? "list.bullet" : "square.grid.2x2")
@@ -140,6 +141,7 @@ struct MainPageView: View {
         }
     }
 
+    // Show Card/Compact style from the filtered/sorted recipes
     private var recipesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("main.recipes.title")
@@ -147,13 +149,14 @@ struct MainPageView: View {
                 .fontWeight(.semibold)
 
             Group {
+                // Compact style
                 if displayStyle == .compact {
                     VStack(spacing: 12) {
                         ForEach(visibleRecipes) { recipe in
                             recipeRowWrapper(recipe: recipe, isCard: false)
                         }
                     }
-                } else {
+                } else { // Card style
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(visibleRecipes) { recipe in
                             recipeRowWrapper(recipe: recipe, isCard: true)
@@ -161,7 +164,7 @@ struct MainPageView: View {
                     }
                 }
             }
-            // Confirmation Popup
+            // Delete confirmation Popup
             .alert("\(recipeToDelete?.name ?? "")", isPresented: $showDeleteConfirmation, presenting: recipeToDelete) { recipe in
                 Button("button.delete", role: .destructive) {
                     deleteRecipe(recipe)
@@ -176,6 +179,7 @@ struct MainPageView: View {
     
     @ViewBuilder
     private func recipeRowWrapper(recipe: Recipe, isCard: Bool) -> some View {
+        // Keep actions in same place for both visual styles
         NavigationLink {
             RecipeDetailView(recipe: recipe, store: store)
         } label: {
@@ -196,6 +200,7 @@ struct MainPageView: View {
         }
     }
 
+    // Set recipe favourite/non-favourite
     private func toggleFavorite(for recipeID: UUID) {
         if let index = store.recipes.firstIndex(where: { $0.id == recipeID }) {
             var updatedRecipe = store.recipes[index]
@@ -204,15 +209,17 @@ struct MainPageView: View {
         }
     }
     
+    
     private func deleteRecipe(_ recipe: Recipe) {
         if let index = store.recipes.firstIndex(where: { $0.id == recipe.id }) {
-                    
             store.deleteRecipe(at: IndexSet(integer: index))
         }
     }
     
 }
 
+
+// Compact recipe showing style
 private struct CompactRecipeRow: View {
     let recipe: Recipe
     let store: RecipeStore
@@ -223,7 +230,6 @@ private struct CompactRecipeRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(recipe.name)
                     .font(.headline)
-                
             }
 
             Spacer()
@@ -244,6 +250,7 @@ private struct CompactRecipeRow: View {
     }
 }
 
+// Card recipe showing style
 private struct CardRecipeRow: View {
     let recipe: Recipe
     let onToggleFavorite: () -> Void
@@ -278,6 +285,8 @@ public struct RecipeImage: View {
     let imageData: Data?
     
     public var body: some View {
+        // Match loaded photo to frame caller gives to view
+        // component works for Compact and Card layout
         GeometryReader { proxy in
             ZStack {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)

@@ -65,6 +65,8 @@ final class TimerViewModel {
         guard status == .ready || status == .paused else { return }
 
         status = .running
+        // Keep one absolute end date so countdown, Live Activity, and notifications
+        // all derive from the same source of truth.
         endDate = Date().addingTimeInterval(remainingTime)
 
         if let endDate {
@@ -106,6 +108,8 @@ final class TimerViewModel {
         countdownTask?.cancel()
 
         countdownTask = Task {
+            // Recompute against the end date instead of subtracting fixed ticks so
+            // the timer stays accurate even if this task is delayed.
             while !Task.isCancelled, let endDate{
                 let remaining = max(endDate.timeIntervalSinceNow, 0)
                 let seconds = max(Int(ceil(remaining)), 0)
@@ -143,6 +147,7 @@ final class TimerViewModel {
                     )
             
             Task {
+                // End the Live Activity explicitly once the timer expires.
                 let duration = max(endDate.timeIntervalSinceNow, 0)
                 try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
                 await stopLiveActivity() // Hide widget
@@ -170,6 +175,7 @@ final class TimerViewModel {
             content.sound = .default
         }
 
+        // Notification trigger expects a duration from now, not an absolute date.
         let trigger = UNTimeIntervalNotificationTrigger(
                 timeInterval: max(endDate.timeIntervalSinceNow, 1),
                 repeats: false
@@ -181,13 +187,7 @@ final class TimerViewModel {
             trigger: trigger
         )
         
-        UNUserNotificationCenter.current().add(request) { error in
-                if let error = error {
-                    print("❌ Notification failed:", error)
-                } else {
-                    print("✅ Notification scheduled for", endDate)
-                }
-            }
+        UNUserNotificationCenter.current().add(request)
         
     }
     
@@ -224,14 +224,14 @@ final class TimerViewModel {
         let bundleExtensions = ["mp3", "wav", "m4a"]
         var allUrls: [URL] = []
         
-        // 1. Najdeme všechna URL v Bundle
+        // Load built-in sounds from the app bundle.
         for ext in bundleExtensions {
             if let urls = Bundle.main.urls(forResourcesWithExtension: ext, subdirectory: nil) {
                 allUrls.append(contentsOf: urls)
             }
         }
         
-        // 2. Najdeme všechna URL v Documents
+        // Load any custom sounds the user imported into Documents.
         let fileManager = FileManager.default
         if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
             let customFiles = (try? fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)) ?? []
@@ -241,14 +241,12 @@ final class TimerViewModel {
             allUrls.append(contentsOf: customSounds)
         }
         
-        // 3. PŘEVOD URL -> TimerSoundFile (Tady byla chyba)
-        // Předpokládám, že tvůj TimerSoundFile má init(url: URL)
-        // nebo podobný způsob, jak ho vytvořit.
+        // Convert collected file URLs into the picker model type.
         let soundFiles = allUrls.map { url in
-            TimerSoundFile(url: url) // Pokud tvůj struct vypadá jinak, uprav to podle něj
+            TimerSoundFile(url: url)
         }
         
-        // 4. Seřadíme podle jména
+        // Keep sound order stable in the picker.
         self.availableSounds = soundFiles.sorted { $0.url.lastPathComponent < $1.url.lastPathComponent }
     }
     

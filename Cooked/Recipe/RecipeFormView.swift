@@ -2,7 +2,7 @@
 //  RecipeFormView.swift
 //  Cooked
 //
-//  Created by Tomáš Kříž on 26.04.2026.
+//  Created by Tomáš Kříž on 20.04.2026.
 //
 import SwiftUI
 import UIKit
@@ -51,6 +51,7 @@ struct RecipeFormView: View {
         self.recipeToEdit = recipeToEdit
         self.onSave = onSave
         
+        // If recipe exists, prefill the form for editing. Otherwise use defaults for creation.
         _name = State(initialValue: recipeToEdit?.name ?? "")
         _recipeDescription = State(initialValue: recipeToEdit?.recipeDescription ?? "")
         _category = State(initialValue: recipeToEdit?.category ?? store.categories.first ?? RecipeCategory(name: "category.lunch"))
@@ -197,12 +198,13 @@ struct RecipeFormView: View {
         // Filter out empty ingredients
         let finalIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
         
-        // Convert InstructionLine array back to a single String for the model
+        // Convert instruction lines back into the newline-separated string stored in Recipe.
         let finalInstructions = instructionsLines
             .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
             .joined(separator: "\n")
         
+        // Reuse the existing id while editing so the stored recipe file is updated, not duplicated.
         let recipeToSave = Recipe(
             id: recipeToEdit?.id ?? UUID(),
             name: name,
@@ -219,6 +221,7 @@ struct RecipeFormView: View {
     }
 
     private func loadSelectedPhoto() async {
+        // Load photo data only after the picker resolves the selected item.
         guard let selectedPhoto else { return }
         selectedImageData = try? await selectedPhoto.loadTransferable(type: Data.self)
     }
