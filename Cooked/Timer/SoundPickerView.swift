@@ -17,7 +17,6 @@ struct SoundPickerView: View {
     var body: some View {
         @Bindable var viewModel = viewModel
         
-        // ZStack allows us to layer the error banner OVER the NavigationStack
         ZStack(alignment: .top) {
             NavigationStack {
                 List {
@@ -37,7 +36,7 @@ struct SoundPickerView: View {
                                 }
                             }
                         }
-                        // Visual hint: Disable delete for bundle sounds
+                        // Disable deletion of bundle sounds
                         .deleteDisabled(!sound.url.path.contains("/Documents/"))
                     }
                     .onDelete { offsets in
@@ -55,7 +54,6 @@ struct SoundPickerView: View {
             
             
         }
-        // This makes the transition smooth
         .animation(.snappy, value: viewModel.errorMessage)
         .onAppear {
             viewModel.refreshAvailableSounds()
