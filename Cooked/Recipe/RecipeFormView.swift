@@ -123,7 +123,7 @@ struct RecipeFormView: View {
                                 .submitLabel(.next)
                             
                             TextField("ingredient.quantity", value: $ingredient.amount, format: .number)
-                                .keyboardType(.decimalPad)
+                                .keyboardType(.numbersAndPunctuation)
                                 .frame(width: 50)
                                 .multilineTextAlignment(.center)
                                 .focused($focusedField, equals: .amount(ingredient.id))
@@ -133,9 +133,7 @@ struct RecipeFormView: View {
                                 .frame(width: 60)
                                 .focused($focusedField, equals: .unit(ingredient.id))
                                 .submitLabel(.next)
-                        }
-                        .onSubmit {
-                            handleNextField(currentId: ingredient.id)
+                                .textInputAutocapitalization(.never)
                         }
                     }
                     .onDelete { ingredients.remove(atOffsets: $0) }
@@ -200,22 +198,6 @@ struct RecipeFormView: View {
         let savedRecipe = store.saveRecipe(recipeToSave, newImageData: selectedImageData)
         onSave(savedRecipe)
         dismiss()
-    }
-    
-    private func handleNextField(currentId: UUID) {
-        switch focusedField {
-        case .name(let id):
-            focusedField = .amount(id)
-        case .amount(let id):
-            focusedField = .unit(id)
-        case .unit:
-            // If we are at the end of line, we create new line and move focus there
-            let newIng = Ingredient(name: "", amount: 1, unit: "")
-            ingredients.append(newIng)
-            focusedField = .name(newIng.id)
-        default:
-            focusedField = nil
-        }
     }
 
     private func loadSelectedPhoto() async {
