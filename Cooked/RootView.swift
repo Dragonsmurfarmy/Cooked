@@ -5,6 +5,7 @@ struct RootView: View {
     @Environment(TimerViewModel.self) private var viewModel
     @Bindable var store: RecipeStore
     @State private var selectedTab: Tab = .home // enum pro sledování aktivní záložky
+    @State private var isKeyboardVisible = false
 
     enum Tab {
         case voice, timer, home, add, settings
@@ -40,8 +41,10 @@ struct RootView: View {
                     }
                 }
                 .safeAreaInset(edge: .bottom) {
-                    
-                    customBottomBar
+                    if !isKeyboardVisible { // Appearance condition
+                        customBottomBar
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
                 }
             }
 
@@ -53,6 +56,12 @@ struct RootView: View {
             }
         }
         .environment(\.locale, Locale(identifier: store.currentLanguageIdentifier))
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
+            withAnimation(.easeOut(duration: 0.2)) { isKeyboardVisible = true }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
+            withAnimation(.easeIn(duration: 0.2)) { isKeyboardVisible = false }
+        }
     }
 
     
