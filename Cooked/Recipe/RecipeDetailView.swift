@@ -31,6 +31,7 @@ struct RecipeDetailView: View {
             VStack(alignment: .leading, spacing: 24) {
                 // --- IMAGE SECTION ---
                 RecipeImage(imageData: recipe.imageData)
+                    .id(recipe.imageData)
                     .frame(height: 280)
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 
