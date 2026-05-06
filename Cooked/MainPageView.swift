@@ -16,6 +16,7 @@ struct MainPageView: View {
     
     private let columns = [
         GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
     ]
     
@@ -250,63 +251,78 @@ private struct CompactRecipeRow: View {
     }
 }
 
-// Card recipe showing style
+
 private struct CardRecipeRow: View {
     let recipe: Recipe
     let onToggleFavorite: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text(recipe.name)
-                    .font(.headline)
-
-                Spacer()
-
-                Button(action: onToggleFavorite) {
-                    Image(systemName: recipe.isFavorite ? "star.fill" : "star")
-                        .foregroundStyle(recipe.isFavorite ? .yellow : .secondary)
+        GeometryReader { geometry in
+            // Set spacing to 0 to prevent internal offsets
+            VStack(alignment: .leading, spacing: 0) {
+                
+                // 1. Image Area (Top 75%)
+                RecipeImage(imageData: recipe.imageData, cornerRadius: 12)
+                    .frame(height: geometry.size.height * 0.75)
+                    .frame(maxWidth: .infinity)
+                    .clipped() // Prevents the image from "peeking" into the info area
+                
+                // 2. Info Area (Bottom 25%)
+                // Using a VStack with Spacers ensures the content is vertically centered
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    
+                    HStack(alignment: .center, spacing: 4) {
+                        Text(recipe.name)
+                            .font(.subheadline.bold())
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8) // Shrinks slightly if name is long
+                        
+                        Spacer()
+                        
+                        Button(action: onToggleFavorite) {
+                            Image(systemName: recipe.isFavorite ? "star.fill" : "star")
+                                .font(.system(size: 18, weight: .semibold)) // Explicit size for better visibility
+                                .foregroundStyle(recipe.isFavorite ? .yellow : .secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 10)
+                    
+                    Spacer(minLength: 0)
                 }
-                .buttonStyle(.plain)
+                .frame(maxWidth: .infinity, maxHeight: .infinity) // Fills the remaining 25%
             }
-
-            RecipeImage(imageData: recipe.imageData)
-                .frame(height: 150)
-                .contentShape(Rectangle())
-                .clipped()
         }
-        .padding(14)
+        .aspectRatio(1.0, contentMode: .fit)
         .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
-public struct RecipeImage: View {
-    let imageData: Data?
-    
-    public var body: some View {
-        // Match loaded photo to frame caller gives to view
-        // component works for Compact and Card layout
-        GeometryReader { proxy in
-            ZStack {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color(.tertiarySystemFill))
 
+struct RecipeImage: View {
+    let imageData: Data?
+        var cornerRadius: CGFloat = 12
+
+        var body: some View {
+            Group {
                 if let imageData, let uiImage = UIImage(data: imageData) {
                     Image(uiImage: uiImage)
                         .resizable()
-                        .scaledToFill()
-                        .frame(width: proxy.size.width, height: proxy.size.height)
-                        .clipped()
+                        .aspectRatio(1, contentMode: .fill) // Forces 1:1 ratio
                 } else {
-                    Image(systemName: "photo")
-                        .font(.title2)
-                        .foregroundStyle(.secondary)
+                    Rectangle()
+                        .fill(Color(.tertiarySystemFill))
+                        .aspectRatio(1, contentMode: .fill)
+                        .overlay {
+                            Image(systemName: "fork.knife")
+                                .foregroundStyle(.secondary)
+                        }
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         }
-    }
 }
 
 struct NavigationBarButton: View {

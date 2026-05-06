@@ -124,6 +124,22 @@
         }
       }
     },
+    "button.reset" : {
+        "localizations" : {
+          "cs" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Resetovat"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Reset"
+            }
+          }
+        }
+    },
     "button.save" : {
       "localizations" : {
         "cs" : {
@@ -331,6 +347,9 @@
           }
         }
       }
+    },
+    "image.crop" : {
+
     },
     "image.select" : {
       "localizations" : {
@@ -1241,20 +1260,20 @@
       }
     },
     "timer.action.stop" : {
-        "localizations" : {
-          "cs" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Zastavit"
-            }
-          },
-          "en" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Stop"
-            }
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zastavit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop"
           }
         }
+      }
     },
     "timer.navigation.title" : {
       "localizations" : {

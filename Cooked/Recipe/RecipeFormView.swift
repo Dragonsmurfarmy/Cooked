@@ -12,6 +12,9 @@ struct RecipeFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable var store: RecipeStore
     
+    @State private var rawSelectedImage: UIImage?
+    @State private var navigateToCropper = false
+    
     let recipeToEdit: Recipe?
     let onSave: (Recipe) -> Void
     
@@ -79,6 +82,7 @@ struct RecipeFormView: View {
                     PhotosPicker(selection: $selectedPhoto, matching: .images) {
                         HStack(spacing: 12) {
                             RecipeSelectedImagePreview(imageData: selectedImageData)
+                                .id(selectedImageData)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("image.select").foregroundStyle(.primary)
                                 Text(selectedImageData == nil ? "image.choose" : "image.change")
@@ -183,15 +187,22 @@ struct RecipeFormView: View {
                 }
             }
             .alert("category.new", isPresented: $showNewCategoryAlert) {
-            TextField("category.name", text: $newCategoryName)
-            Button("button.add") {
-                let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !trimmed.isEmpty else { return }
-                category = store.addCategory(trimmed)
-                newCategoryName = ""
+                TextField("category.name", text: $newCategoryName)
+                Button("button.add") {
+                    let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else { return }
+                    category = store.addCategory(trimmed)
+                    newCategoryName = ""
+                }
+                Button("button.cancel", role: .cancel) { newCategoryName = "" }
             }
-            Button("button.cancel", role: .cancel) { newCategoryName = "" }
-        }
+            .navigationDestination(isPresented: $navigateToCropper) {
+                if let rawImage = rawSelectedImage {
+                    ImageCropper(image: rawImage,
+                                 visibleImageData: $selectedImageData,
+                                 isShown: $navigateToCropper)
+                }
+            }
     }
     
     private func saveAction() {
@@ -221,9 +232,17 @@ struct RecipeFormView: View {
     }
 
     private func loadSelectedPhoto() async {
-        // Load photo data only after the picker resolves the selected item.
         guard let selectedPhoto else { return }
-        selectedImageData = try? await selectedPhoto.loadTransferable(type: Data.self)
+        
+        if let data = try? await selectedPhoto.loadTransferable(type: Data.self),
+           let uiImage = UIImage(data: data) {
+            
+            await MainActor.run {
+                self.rawSelectedImage = uiImage
+                self.selectedPhoto = nil
+                self.navigateToCropper = true
+            }
+        }
     }
 }
 
