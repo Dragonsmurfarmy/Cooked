@@ -11,8 +11,10 @@ struct MainPageView: View {
     @State private var sortOption: RecipeSortOption = .name
     @State private var displayStyle: RecipeDisplayStyle = .compact
     @State private var selectedCategory: RecipeCategory? = nil
+    @State private var recipeToEdit: Recipe?
     @State private var recipeToDelete: Recipe?
     @State private var showDeleteConfirmation = false
+    @State private var isShowingEditPage = false
     
     private let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -21,7 +23,6 @@ struct MainPageView: View {
     ]
     
     // Derive the visible list from the store by filtering by active category and selected sort order
-
     private var visibleRecipes: [Recipe] {
         
         let filtered = store.recipes.filter { recipe in
@@ -57,6 +58,13 @@ struct MainPageView: View {
                         recipesSection
                     }
                     .padding(20)
+                }
+            }
+            .navigationDestination(isPresented: $isShowingEditPage) {
+                if let recipe = recipeToEdit {
+                    RecipeFormView(store: store, recipeToEdit: recipe) { updatedRecipe in
+                        isShowingEditPage = false
+                    }
                 }
             }
         
@@ -192,6 +200,13 @@ struct MainPageView: View {
         }
         .buttonStyle(.plain)
         .contextMenu {
+            Button {
+                recipeToEdit = recipe
+                isShowingEditPage = true
+            } label: {
+                Label("button.edit", systemImage: "pencil")
+            }
+            
             Button(role: .destructive) {
                 recipeToDelete = recipe
                 showDeleteConfirmation = true

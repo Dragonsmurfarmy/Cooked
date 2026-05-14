@@ -205,14 +205,14 @@ struct TimerView: View {
         GeometryReader { geometry in
                 VStack(spacing: 0) {
                     LoopingTimePicker(selection: selection, range: range)
-                        .frame(width: geometry.size.width - 4)
+                        .frame(width: geometry.size.width - 4, height: 150)
                         .clipped()
                     
                     Text(label)
-                        .font(.caption)
-                        .fontWeight(.medium)
+                        .font(.caption2)
+                        .fontWeight(.bold)
                         .foregroundStyle(.secondary)
-                        .padding(.top, -10)
+                        .textCase(.uppercase)
                 }
                 .frame(width: geometry.size.width)
             }
@@ -222,23 +222,25 @@ struct TimerView: View {
     // Factory for the tips section text
     private var tipsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if viewModel.isRunning {
-                Label("timer.tip.pause", systemImage: "pause.circle")
-            } else if viewModel.isPaused {
-                Label("timer.tip.resume", systemImage: "play.circle")
-            } else {
-                Label("timer.tip.select_duration", systemImage: "timer")
-                Label("timer.tip.start", systemImage: "play") 
-            }
-            Label("timer.tip.reset", systemImage: "gobackward")
-            Label("timer.tip.sound", systemImage: "bell.fill")
-            Label("timer.tip.notification", systemImage: "bell.slash")
-        }
-        .font(.subheadline)
-        .foregroundStyle(.secondary)
-        .padding(18)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    Group {
+                        if viewModel.isRunning {
+                            tipRow(title: "timer.tip.pause", icon: "pause.circle")
+                        } else if viewModel.isPaused {
+                            tipRow(title: "timer.tip.resume", icon: "play.circle")
+                        } else {
+                            tipRow(title: "timer.tip.select_duration", icon: "timer")
+                            tipRow(title: "timer.tip.start", icon: "play")
+                        }
+                        tipRow(title: "timer.tip.reset", icon: "gobackward")
+                        tipRow(title: "timer.tip.sound", icon: "bell.fill")
+                        tipRow(title: "timer.tip.notification", icon: "bell.slash")
+                    }
+                }
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .padding(18)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
     // Synces clock with remaining time
@@ -248,6 +250,14 @@ struct TimerView: View {
         selectedMinutes = (totalSeconds % 3600) / 60
         selectedSeconds = totalSeconds % 60
     }
+    
+    private func tipRow(title: LocalizedStringKey, icon: String) -> some View {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .frame(width: 20, alignment: .center) // Fixed size for text alignment
+                Text(title)
+            }
+        }
 }
 
 private struct LoopingTimePicker: UIViewRepresentable {
@@ -313,6 +323,7 @@ private struct LoopingTimePicker: UIViewRepresentable {
             pickerView.selectRow(middleRow, inComponent: 0, animated: false)
         }
     }
+    
 }
 
 struct ErrorBannerView: View {

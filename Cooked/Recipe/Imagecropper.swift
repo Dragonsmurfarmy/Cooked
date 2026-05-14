@@ -105,7 +105,6 @@ struct ImageCropper: View {
                                 Button("button.done") {
                                     saveCroppedImage()
                                     isShown = false // Turn off navigation
-                                    dismiss()
                                 }
                             }
             }

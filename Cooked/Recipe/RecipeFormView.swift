@@ -59,7 +59,8 @@ struct RecipeFormView: View {
             store.categories.first { $0.id == categoryID }
         }
         
-        // If recipe exists, prefill the form for editing. Otherwise use defaults for creation.
+        // If recipe exists, prefill the form for editing
+        // Otherwise use defaults for creation
         _name = State(initialValue: recipeToEdit?.name ?? draft.name)
         _recipeDescription = State(initialValue: recipeToEdit?.recipeDescription ?? draft.recipeDescription)
         _category = State(initialValue: recipeToEdit?.category ?? draftCategory ?? store.categories.first ?? RecipeCategory(name: "category.lunch"))
@@ -79,8 +80,24 @@ struct RecipeFormView: View {
     }
 
     private var isFormValid: Bool {
-        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !ingredients.isEmpty
+        // Check if recipe has name
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    
+    private var isChanged: Bool {
+        // original will never be null since button appears only in editing mode
+        let original = recipeToEdit
+        let currentInstructions = instructionsLines
+            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .joined(separator: "\n")
+
+        return  name != original?.name ||
+                category.id != original?.category.id ||
+                recipeDescription != original?.recipeDescription ||
+                isFavorite != original?.isFavorite ||
+                selectedImageData != original?.imageData ||
+                ingredients != original?.ingredients ||
+                currentInstructions != original?.instructions
     }
 
     var body: some View {
@@ -189,6 +206,14 @@ struct RecipeFormView: View {
             .task(id: selectedPhoto) { await loadSelectedPhoto() }
             .toolbar {
                 // ---- Cancel button is in rootView  for better UX ----
+                if isEditing {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("button.reset") {
+                            resetFormToOriginalRecipe()
+                        }
+                        .disabled(!isChanged)
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("button.save") {
                         saveAction()
@@ -228,7 +253,7 @@ struct RecipeFormView: View {
         // Filter out empty ingredients
         let finalIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
         
-        // Convert instruction lines back into the newline-separated string stored in Recipe.
+        // Convert instruction lines back into the newline-separated string stored in Recipe
         let finalInstructions = instructionsLines
             .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
@@ -265,6 +290,24 @@ struct RecipeFormView: View {
             .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
             .joined(separator: "\n")
+    }
+
+    private func resetFormToOriginalRecipe() {
+        guard let recipeToEdit else { return }
+
+        name = recipeToEdit.name
+        category = recipeToEdit.category
+        recipeDescription = recipeToEdit.recipeDescription
+        ingredients = recipeToEdit.ingredients
+        instructionsLines = recipeToEdit.instructions
+            .components(separatedBy: "\n")
+            .map { InstructionLine(text: $0) }
+        isFavorite = recipeToEdit.isFavorite
+        selectedImageData = recipeToEdit.imageData
+        rawSelectedImage = nil
+        selectedPhoto = nil
+        navigateToCropper = false
+        focusedField = nil
     }
 
     private func loadSelectedPhoto() async {

@@ -10,11 +10,14 @@ import UIKit
 import PhotosUI
 
 struct RecipeDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @State var recipe: Recipe
-    @State private var isShowingEditSheet = false
+    @State private var recipeToEdit: Recipe?
+    @State private var isShowingEditPage = false
     @State private var selectedPortions: Int
     @State private var didLongPressDecrement = false
     @State private var didLongPressIncrement = false
+    @State private var showDeleteConfirmation = false
     @Bindable var store: RecipeStore
     private let minPortions = 1
     private let maxPortions = 50
@@ -179,28 +182,49 @@ struct RecipeDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button("button.edit") {
-                    isShowingEditSheet = true
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button() {
+                    showDeleteConfirmation = true
+                } label: {
+                    Label("button.delete", systemImage: "trash")
+                    .foregroundStyle(.red)
                 }
+                .buttonStyle(.bordered)
+                .tint(.red.opacity(0.1))
+                .labelStyle(.titleAndIcon)
+                
+                Button() {
+                    isShowingEditPage = true
+                } label: {
+                    Label("button.edit", systemImage: "pencil")
+                    .foregroundStyle(.blue)
+                }
+                .buttonStyle(.bordered)
+                .labelStyle(.titleAndIcon)
+                .fixedSize()
             }
         }
-        .sheet(isPresented: $isShowingEditSheet) {
-            NavigationStack {
-                RecipeFormView(store: store, recipeToEdit: recipe) { updatedRecipe in
-                    self.recipe = updatedRecipe
-                    isShowingEditSheet = false // Close sheet
+        .alert("delete.question", isPresented: $showDeleteConfirmation) {
+            Button("button.delete", role: .destructive) {
+                if let index = store.recipes.firstIndex(where: { $0.id == recipe.id }) {
+                    store.deleteRecipe(at: IndexSet(integer: index))
+                    dismiss()
                 }
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("button.cancel") {
-                            isShowingEditSheet = false // Close sheet
-                        }
-                    }
-                }
+            }
+            Button("button.cancel", role: .cancel) {
+            }
+        } message: {
+            Text("delete.question")
+        }
+        .navigationDestination(isPresented: $isShowingEditPage) {
+            RecipeFormView(store: store, recipeToEdit: recipe) { updatedRecipe in
+                self.recipe = updatedRecipe
+                isShowingEditPage = false
             }
         }
     }
+    
+    // MARK: - Helper Functions
     
     private func handleDecrementTap() {
         if didLongPressDecrement {
@@ -252,7 +276,6 @@ struct RecipeDetailView: View {
                 return formatter.string(from: NSNumber(value: finalAmount)) ?? "\(finalAmount)"
         }
 }
-
 
 
 
