@@ -20,7 +20,12 @@ final class TimerViewModel {
     private(set) var status: TimerStatus = .ready
 
     private var countdownTask: Task<Void, Never>?
-    private let notificationIdentifier = "timer-finished"
+    
+    private let firstNotificationIdentifier = "timer-finished-first"
+    private let secondNotificationIdentifier = "timer-finished-second" // second notification in case user didnt hear the first one
+    private let secondNotificationDelay: TimeInterval = 60
+    private let liveActivityDisplayOffset: TimeInterval = 1
+    private var liveActivityEndTask: Task<Void, Never>?
     
     var errorMessage: String? = nil
     var selectedSoundUrl: URL?
@@ -74,12 +79,14 @@ final class TimerViewModel {
         guard status == .ready || status == .paused else { return }
 
         status = .running
+        let secondsToRun = wholeSeconds(from: remainingTime)
+        remainingTime = secondsToRun
         // Keep one absolute end date so countdown, Live Activity, and notifications all derive from the same place
-        endDate = Date().addingTimeInterval(remainingTime)
+        endDate = Date().addingTimeInterval(secondsToRun)
 
         if let endDate {
             startLiveActivity(endDate: endDate)
-            scheduleNotification(for: endDate)
+            scheduleNotifications(for: endDate)
         }
 
         startCountdown()
@@ -90,10 +97,14 @@ final class TimerViewModel {
         countdownTask?.cancel()
         countdownTask = nil
         
-        cancelScheduledNotification()
+        cancelScheduledNotifications()
+        
+        Task {
+            await stopLiveActivity()
+        }
 
         if let endDate {
-            remainingTime = max(endDate.timeIntervalSinceNow, 0)
+            remainingTime = wholeSeconds(from: endDate.timeIntervalSinceNow)
         }
 
         status = .paused
@@ -103,7 +114,11 @@ final class TimerViewModel {
         countdownTask?.cancel()
         countdownTask = nil
         
-        cancelScheduledNotification()
+        cancelScheduledNotifications()
+        
+        Task {
+            await stopLiveActivity()
+        }
         
         remainingTime = totalDuration
         endDate = nil
@@ -113,6 +128,12 @@ final class TimerViewModel {
     private func stop() {
         countdownTask?.cancel()
         countdownTask = nil
+        
+        
+    }
+
+    private func wholeSeconds(from duration: TimeInterval) -> TimeInterval {
+        TimeInterval(max(Int(ceil(duration)), 0))
     }
 
 
@@ -120,8 +141,7 @@ final class TimerViewModel {
         countdownTask?.cancel()
 
         countdownTask = Task {
-            // Recompute against the end date instead of subtracting fixed ticks so
-            // the timer stays accurate even if this task is delayed.
+            // Recompute against end date so timer stays accurate even if this task is delayed
             while !Task.isCancelled, let endDate{
                 let remaining = max(endDate.timeIntervalSinceNow, 0)
                 let seconds = max(Int(ceil(remaining)), 0)
@@ -153,9 +173,10 @@ final class TimerViewModel {
 
     private func startLiveActivity(endDate: Date) {
         let attributes = TimerActivityAttributes(title: "Cooking Timer")
-        let state = TimerActivityAttributes.ContentState(endDate: endDate)
+        let displayEndDate = endDate.addingTimeInterval(liveActivityDisplayOffset) // Make sure timer doesnt end at 00:00
+        let state = TimerActivityAttributes.ContentState(endDate: displayEndDate)
         
-        let staleDate = endDate.addingTimeInterval(1)
+        let staleDate = displayEndDate.addingTimeInterval(1)
 
         do {
             activity = try Activity.request(
@@ -164,11 +185,13 @@ final class TimerViewModel {
                         pushType: nil
                     )
             
-            Task {
-                // End the Live Activity explicitly once the timer expires.
-                let duration = max(endDate.timeIntervalSinceNow, 0)
+            liveActivityEndTask?.cancel()
+            liveActivityEndTask = Task {
+                // End Live Activity explicitly when timer expires
+                let duration = max(displayEndDate.timeIntervalSinceNow, 0)
                 try? await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
-                await stopLiveActivity() // Hide widget
+                guard !Task.isCancelled else { return }
+                await stopLiveActivity()
             }
             
         } catch {
@@ -177,15 +200,34 @@ final class TimerViewModel {
     }
 
     private func stopLiveActivity() async {
+        liveActivityEndTask?.cancel()
+        liveActivityEndTask = nil
+        
         await activity?.end(nil, dismissalPolicy: .immediate)
         activity = nil
     }
 
 
-    private func scheduleNotification(for endDate: Date) {
+    private func scheduleNotifications(for endDate: Date) {
+        cancelScheduledNotifications()
+
+        scheduleNotification(
+            identifier: firstNotificationIdentifier,
+            timeInterval: max(endDate.timeIntervalSinceNow, 1)
+        )
+
+        scheduleNotification(
+            identifier: secondNotificationIdentifier,
+            timeInterval: max(endDate.timeIntervalSinceNow + secondNotificationDelay, 1)
+        )
+    }
+
+    private func scheduleNotification(identifier: String, timeInterval: TimeInterval) {
         let content = UNMutableNotificationContent()
         content.title = String(localized: "notification.title")
         content.body = String(localized: "notification.body")
+        content.threadIdentifier = "timer-finished"
+
         if let url = selectedSoundUrl {
             let name = url.lastPathComponent
             content.sound = UNNotificationSound(named: UNNotificationSoundName(name))
@@ -193,25 +235,37 @@ final class TimerViewModel {
             content.sound = .default
         }
 
-        // Notification trigger expects a duration from now, not an absolute date.
         let trigger = UNTimeIntervalNotificationTrigger(
-                timeInterval: max(endDate.timeIntervalSinceNow, 1),
+                timeInterval: timeInterval,
                 repeats: false
             )
 
         let request = UNNotificationRequest(
-            identifier: notificationIdentifier,
+            identifier: identifier,
             content: content,
             trigger: trigger
         )
         
-        UNUserNotificationCenter.current().add(request)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error {
+                print("Notification scheduling failed:", error.localizedDescription)
+            }
+        }
         
     }
     
-    private func cancelScheduledNotification() {
+    private func cancelScheduledNotifications() {
         UNUserNotificationCenter.current().removePendingNotificationRequests(
-            withIdentifiers: [notificationIdentifier]
+            withIdentifiers: [
+                firstNotificationIdentifier,
+                secondNotificationIdentifier
+            ]
+        )
+        UNUserNotificationCenter.current().removeDeliveredNotifications(
+            withIdentifiers: [
+                firstNotificationIdentifier,
+                secondNotificationIdentifier
+            ]
         )
     }
     
@@ -248,29 +302,30 @@ final class TimerViewModel {
         let bundleExtensions = ["mp3", "wav", "m4a"]
         var allUrls: [URL] = []
         
-        // Load built-in sounds from the app bundle.
+        // Load built-in sounds from the app bundle
         for ext in bundleExtensions {
             if let urls = Bundle.main.urls(forResourcesWithExtension: ext, subdirectory: nil) {
                 allUrls.append(contentsOf: urls)
             }
         }
         
-        // Load any custom sounds the user imported into Documents.
+        // Load custom sounds from the folder iOS also searches for notification sounds
         let fileManager = FileManager.default
-        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let customFiles = (try? fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)) ?? []
+        if let libraryURL = fileManager.urls(for: .libraryDirectory, in: .userDomainMask).first {
+            let soundsURL = libraryURL.appendingPathComponent("Sounds", isDirectory: true)
+            let customFiles = (try? fileManager.contentsOfDirectory(at: soundsURL, includingPropertiesForKeys: nil)) ?? []
             let customSounds = customFiles.filter { url in
                 bundleExtensions.contains(url.pathExtension.lowercased())
             }
             allUrls.append(contentsOf: customSounds)
         }
         
-        // Convert collected file URLs into the picker model type.
+        // Convert collected file URLs into picker model type
         let soundFiles = allUrls.map { url in
             TimerSoundFile(url: url)
         }
         
-        // Keep sound order stable in the picker.
+        // Keep sound order stable in the picker
         self.availableSounds = soundFiles.sorted { $0.url.lastPathComponent < $1.url.lastPathComponent }
         
         // If none sound was selected, select 1st on the list
@@ -284,7 +339,7 @@ final class TimerViewModel {
             let sound = availableSounds[index]
             let url = sound.url
 
-            if url.path.contains("/Documents/") {
+            if url.path.contains("/Library/Sounds/") {
                 try? FileManager.default.removeItem(at: url)
                 
                 if selectedSoundUrl == url {
@@ -299,6 +354,7 @@ final class TimerViewModel {
         refreshAvailableSounds()
     }
     
+    // Warns user he cannot delete built-in timer sounds
     private func showTemporaryError(_ message: String) {
             errorMessage = message
             // Automatically hide after 3 seconds

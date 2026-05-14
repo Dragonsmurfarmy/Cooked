@@ -23,7 +23,7 @@ struct RecipeDetailView: View {
             // Keep local copy so the detail screen can reflect edits after saving
             self._recipe = State(initialValue: recipe)
             self.store = store
-            self._selectedPortions = State(initialValue: recipe.defaultPortions)
+        self._selectedPortions = State(initialValue: store.settings.defaultPortions)
     }
 
     var body: some View {
@@ -172,6 +172,9 @@ struct RecipeDetailView: View {
                 }
             }
             .padding(20)
+        }
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 120)
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarTitleDisplayMode(.inline)

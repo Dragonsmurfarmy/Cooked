@@ -28,7 +28,7 @@ struct CookedApp: App {
 
     
     final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
-        // Function called when notification arrives while app in foreground.
+        // Function called when notification arrives while app in foreground
         func userNotificationCenter(
             _ center: UNUserNotificationCenter,
             willPresent notification: UNNotification
@@ -37,7 +37,6 @@ struct CookedApp: App {
             if UIApplication.shared.applicationState != .active {
                 return [.banner, .sound]
             }
-            // We already bother user in another code part, when he is looking at the app
            return []
         }
     }

@@ -23,14 +23,20 @@ import SwiftUI
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
     
+    var draftRecipe = RecipeDraft() {
+        didSet {
+            saveDraft()
+        }
+    }
+    
     init() {
         loadSettings()
         copyBundleRecipes()
         loadRecipesFromDisk()
+        loadDraft()
     }
     
-    // On first launch, copy bundled recipes into Documents so the app can manage
-    // sample and user-created recipes through the same storage flow.
+    // On first launch, copy bundled recipes into Documents so app can manage sample and user-created recipes through same storage flow
     private func copyBundleRecipes() {
         let launchKey = "hasLaunchedBefore"
         if UserDefaults.standard.bool(forKey: launchKey) { return }
@@ -52,7 +58,7 @@ import SwiftUI
         UserDefaults.standard.set(true, forKey: launchKey)
     }
     
-    // Load every recipe JSON file currently stored in Documents.
+    // Load every recipe JSON file currently stored in Documents
     func loadRecipesFromDisk() {
         guard let fileURLs = try? FileManager.default.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil) else { return }
         
@@ -62,6 +68,7 @@ import SwiftUI
         for url in fileURLs where url.pathExtension == "json" {
             // Ignore settings file
             if url.lastPathComponent == "user_settings_data" { continue }
+            if url.lastPathComponent == "RecipeDraft.json" { continue }
             
             do {
                 let data = try Data(contentsOf: url)
@@ -72,7 +79,7 @@ import SwiftUI
             }
         }
         
-        // Replace in-memory recipes with the on-disk version.
+        // Replace in-memory recipes with the on-disk version
         self.recipes = loadedRecipes
         
     }
@@ -80,7 +87,7 @@ import SwiftUI
     func saveRecipe(_ recipe: Recipe, newImageData: Data?) -> Recipe {
         var recipeToSave = recipe
         
-        // Save the selected image separately and keep only its filename in the recipe JSON.
+        // Save the selected image separately and keep only its filename in the recipe JSON
         if let data = newImageData {
             let imageName = "\(recipeToSave.id.uuidString).jpg"
             let destURL = documentsDirectory.appendingPathComponent(imageName)
@@ -88,13 +95,13 @@ import SwiftUI
             recipeToSave.imageFileName = imageName
         }
         
-        // Save the recipe metadata as JSON.
+        // Save the recipe metadata as JSON
         if let data = try? JSONEncoder().encode(recipeToSave) {
             let fileURL = documentsDirectory.appendingPathComponent("\(recipeToSave.id.uuidString).json")
             try? data.write(to: fileURL)
         }
         
-        // Keep in-memory state synchronized with what was written to disk.
+        // Keep in-memory state synchronized with what was written to disk
         if let index = recipes.firstIndex(where: { $0.id == recipeToSave.id }) {
             recipes[index] = recipeToSave
         } else {
@@ -116,18 +123,18 @@ import SwiftUI
                     try? FileManager.default.removeItem(at: imgURL)
                 }
             }
-        // Remove recipe from array of recipes
+            // Remove recipe from array of recipes
             recipes.remove(atOffsets: offsets)
         }
     
-    // Persist user settings in UserDefaults.
+    // Persist user settings in UserDefaults
     func saveSettings() {
         if let encoded = try? JSONEncoder().encode(settings) {
             UserDefaults.standard.set(encoded, forKey: "user_settings_data")
         }
     }
         
-    // Restore previously saved settings if they exist.
+    // Restore previously saved settings if they exist
     private func loadSettings() {
         if let data = UserDefaults.standard.data(forKey: "user_settings_data"),
             let decoded = try? JSONDecoder().decode(UserSettings.self, from: data) {
@@ -135,7 +142,7 @@ import SwiftUI
         }
     }
 
-    // Create a new custom category and immediately persist the updated settings.
+    // Create a new custom category and immediately persist the updated settings
     func addCategory(_ name: String) -> RecipeCategory {
             let new = RecipeCategory(name: name)
             settings.categories.append(new)
@@ -143,5 +150,52 @@ import SwiftUI
             return new
         }
     
+    
+    // ------ Draft operations ----------
+    
+    private var draftURL: URL {
+        documentsDirectory.appendingPathComponent("RecipeDraft.json")
+    }
+
+    func saveDraft() {
+        guard let data = try? JSONEncoder().encode(draftRecipe) else { return }
+        try? data.write(to: draftURL)
+    }
+
+    func loadDraft() {
+        guard let data = try? Data(contentsOf: draftURL),
+              let draft = try? JSONDecoder().decode(RecipeDraft.self, from: data) else {
+            return
+        }
+
+        draftRecipe = draft
+    }
+
+    func saveDraftImageData(_ data: Data?) {
+        guard let data else {
+            if let imageFileName = draftRecipe.imageFileName {
+                let imageURL = documentsDirectory.appendingPathComponent(imageFileName)
+                try? FileManager.default.removeItem(at: imageURL)
+            }
+            draftRecipe.imageFileName = nil
+            return
+        }
+
+        let imageFileName = "RecipeDraftImage.jpg"
+        let imageURL = documentsDirectory.appendingPathComponent(imageFileName)
+        try? data.write(to: imageURL)
+        draftRecipe.imageFileName = imageFileName
+    }
+
+    func loadDraftImageData() -> Data? {
+        guard let imageFileName = draftRecipe.imageFileName else { return nil }
+        let imageURL = documentsDirectory.appendingPathComponent(imageFileName)
+        return try? Data(contentsOf: imageURL)
+    }
+
+    func clearDraft() {
+        saveDraftImageData(nil)
+        draftRecipe = RecipeDraft()
+    }
     
 }

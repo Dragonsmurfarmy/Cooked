@@ -236,8 +236,21 @@ struct SettingsView: View {
         case .success(let urls):
             guard let url = urls.first else { return }
             
-            // Path to Documents
-            let destURL = store.documentsDirectory.appendingPathComponent(url.lastPathComponent)
+            // Build app-container path
+            let soundsDirectory = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent("Sounds", isDirectory: true)
+            // Create folder if it doesnt exist yet
+            do {
+                try FileManager.default.createDirectory(
+                    at: soundsDirectory,
+                    withIntermediateDirectories: true
+                )
+            } catch {
+                print("Failed creating sound folder: \(error.localizedDescription)")
+            }
+            
+            // Create final destination part
+            let destURL = soundsDirectory.appendingPathComponent(url.lastPathComponent)
             
             // Ask for permission to use selected file
             if url.startAccessingSecurityScopedResource() {

@@ -37,7 +37,7 @@ struct SoundPickerView: View {
                             }
                         }
                         // Disable deletion of bundle sounds
-                        .deleteDisabled(!sound.url.path.contains("/Documents/"))
+                        .deleteDisabled(!sound.url.path.contains("/Library/Sounds/"))
                     }
                     .onDelete { offsets in
                         viewModel.deleteSound(at: offsets)

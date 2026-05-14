@@ -34,7 +34,7 @@ struct TimerView: View {
         VStack(spacing: 0) {
             ScrollView {
                 VStack(spacing: 24) {
-                    // show either Picker(Selection) or Progress(timer) part
+                    // Show either Picker(Selection) or Progress(timer) part
                     if shouldShowPicker {
                         pickerSection
                             .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -48,8 +48,6 @@ struct TimerView: View {
                 .padding(20)
             }
         }
-        .navigationTitle("timer.navigation.title")
-        .navigationBarTitleDisplayMode(.inline)
         .background(Color(.systemGroupedBackground))
         .animation(.easeInOut(duration: 0.25), value: shouldShowPicker)
         .onChange(of: selectedDuration) { _, newValue in
@@ -98,7 +96,8 @@ struct TimerView: View {
             timerActionButton(
                 titleKey: "timer.action.reset",
                 systemImage: "arrow.counterclockwise",
-                tint: Color(.secondarySystemBackground)
+                tint: Color(.secondarySystemBackground),
+                hasOutline: true
             ) {
                 viewModel.reset()
                 syncPickerSelection(with: viewModel.totalDuration)
@@ -121,7 +120,7 @@ struct TimerView: View {
             ) {
                 if viewModel.isAlarmActive { // When alarm is ringing, make button stop it
                     viewModel.stopAlarm()
-                } else if viewModel.isRunning { // If timer is running, stop it
+                } else if viewModel.isRunning { // If timer is running, pause it
                     viewModel.pause()
                 } else { // Start timer logic
                     if viewModel.remainingTime == viewModel.totalDuration {
@@ -136,7 +135,8 @@ struct TimerView: View {
             timerActionButton(
                 titleKey: "timer.action.sound",
                 systemImage: "bell.fill",
-                tint: .blue
+                tint: Color(.secondarySystemBackground),
+                hasOutline: true
             ) {
                 // Show sound selection menu
                 showSoundPicker = true
@@ -152,6 +152,7 @@ struct TimerView: View {
         titleKey: LocalizedStringKey,
         systemImage: String,
         tint: Color,
+        hasOutline: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -169,6 +170,12 @@ struct TimerView: View {
             .background(tint)
             .foregroundStyle(tint == Color(.secondarySystemBackground) ? Color.primary : Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .overlay {
+                if hasOutline {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(Color.black, lineWidth: 1)
+                }
+            }
         }
         .buttonStyle(.plain)
     }
@@ -221,14 +228,14 @@ struct TimerView: View {
                 Label("timer.tip.resume", systemImage: "play.circle")
             } else {
                 Label("timer.tip.select_duration", systemImage: "timer")
-                Label("timer.tip.start", systemImage: "play")
+                Label("timer.tip.start", systemImage: "play") 
             }
             Label("timer.tip.reset", systemImage: "gobackward")
             Label("timer.tip.sound", systemImage: "bell.fill")
+            Label("timer.tip.notification", systemImage: "bell.slash")
         }
         .font(.subheadline)
         .foregroundStyle(.secondary)
-        .frame(maxWidth: 240)
         .padding(18)
         .background(Color(.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))

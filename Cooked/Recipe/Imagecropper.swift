@@ -20,7 +20,7 @@ struct ImageCropper: View {
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
     
-    // Geometry tracking to capture the position for cropping
+    // Geometry tracking to capture position for cropping
     @State private var viewSize: CGSize = .zero
 
     private let cropFrameSize: CGFloat = 300
@@ -29,9 +29,8 @@ struct ImageCropper: View {
         ZStack {
                     Color.black.ignoresSafeArea()
 
-                    // THE IMAGE LAYER
-                    // We put the image in a fixed frame so 'offset'
-                    // is relative to the crop square, not the whole screen.
+                    // ----- IMAGE LAYER ------
+                    // Put image in fixed frame so offset is relative to crop square, not whole screen
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
@@ -56,21 +55,21 @@ struct ImageCropper: View {
                                 )
                         )
 
-                    // THE OVERLAY LAYER
-                    // Dim everything ELSE but the 300x300 center
+                    // ----- OVERLAY LAYER -----
+                    // Dim everything but center
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
                         .mask(
                             ZStack {
                                 Rectangle() // Full screen dim
-                                Rectangle() // The "Hole"
+                                Rectangle() // Center
                                     .frame(width: cropFrameSize, height: cropFrameSize)
                                     .blendMode(.destinationOut)
                             }
                         )
                         .allowsHitTesting(false)
 
-                    // THE BORDER
+                    // ----- BORDER -----
                     RoundedRectangle(cornerRadius: 2)
                         .stroke(.white, lineWidth: 2)
                         .frame(width: cropFrameSize, height: cropFrameSize)
@@ -80,11 +79,11 @@ struct ImageCropper: View {
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
             .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)   // Makes text white
+            .toolbarColorScheme(.dark, for: .navigationBar)   // Make text white
             .toolbar {
                         ToolbarItem(placement: .cancellationAction) {
                             Button("button.cancel") {
-                                isShown = false // Manually turn off navigation
+                                isShown = false // Turn off navigation
                                 dismiss()
                             }
                         }
@@ -105,7 +104,7 @@ struct ImageCropper: View {
                 ToolbarItem(placement: .confirmationAction) {
                                 Button("button.done") {
                                     saveCroppedImage()
-                                    isShown = false // Manually turn off navigation
+                                    isShown = false // Turn off navigation
                                     dismiss()
                                 }
                             }
@@ -116,29 +115,36 @@ struct ImageCropper: View {
     }
 
     private func saveCroppedImage() {
-        let outputSize = CGSize(width: cropFrameSize, height: cropFrameSize)
-        let renderer = UIGraphicsImageRenderer(size: outputSize)
         
-        // Important: Handle image orientation correctly
-        let uiImage = image.fixedOrientation()
+        let outputSize = CGSize(width: cropFrameSize, height: cropFrameSize)
+        let renderer = UIGraphicsImageRenderer(size: outputSize) // Create blank canvas
+        
+        
+        let uiImage = image.fixedOrientation() // Make sure picture is oriented correctly
 
+        // Drawing process
         let croppedImage = renderer.image { context in
+            // Calculate image center
             let canvasCenter = cropFrameSize / 2
+            // Move to center
             context.cgContext.translateBy(x: canvasCenter, y: canvasCenter)
-            
+            // Scale coordinate system to current zoom
             context.cgContext.scaleBy(x: scale, y: scale)
-            
-            // We use the raw offset from the UI
+            // Move image to where user dragged it
             context.cgContext.translateBy(x: offset.width / scale, y: offset.height / scale)
             
+            // Determine if img is landscape or portrait
             let aspectRatio = uiImage.size.width / uiImage.size.height
             let drawSize: CGSize
-            if aspectRatio > 1 {
+            if aspectRatio > 1 { // Landscape
+                // Match height, scale width
                 drawSize = CGSize(width: cropFrameSize * aspectRatio, height: cropFrameSize)
-            } else {
+            } else { //Portrait
+                // Match width, scale height
                 drawSize = CGSize(width: cropFrameSize, height: cropFrameSize / aspectRatio)
             }
             
+            // Draw Image
             uiImage.draw(in: CGRect(
                 x: -drawSize.width / 2,
                 y: -drawSize.height / 2,
@@ -147,7 +153,8 @@ struct ImageCropper: View {
             ))
         }
         
-        visibleImageData = croppedImage.jpegData(compressionQuality: 0.8)
+        // Convert image to jpeg
+        visibleImageData = croppedImage.jpegData(compressionQuality: 0.8) // 80% quality
     }
 }
 

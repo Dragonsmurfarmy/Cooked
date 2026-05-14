@@ -261,14 +261,13 @@ private struct CardRecipeRow: View {
             // Set spacing to 0 to prevent internal offsets
             VStack(alignment: .leading, spacing: 0) {
                 
-                // 1. Image Area (Top 75%)
+                // ----- Image Area ----
                 RecipeImage(imageData: recipe.imageData, cornerRadius: 12)
-                    .frame(height: geometry.size.height * 0.75)
+                    .frame(height: geometry.size.height * 0.75) // Upper 75%
                     .frame(maxWidth: .infinity)
                     .clipped() // Prevents the image from "peeking" into the info area
                 
-                // 2. Info Area (Bottom 25%)
-                // Using a VStack with Spacers ensures the content is vertically centered
+                // ----- Info Area -----
                 VStack(spacing: 0) {
                     Spacer(minLength: 0)
                     
@@ -291,7 +290,7 @@ private struct CardRecipeRow: View {
                     
                     Spacer(minLength: 0)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity) // Fills the remaining 25%
+                .frame(maxWidth: .infinity, maxHeight: .infinity) // Fills remaining space (25%)
             }
         }
         .aspectRatio(1.0, contentMode: .fit)
@@ -310,7 +309,7 @@ struct RecipeImage: View {
                 if let imageData, let uiImage = UIImage(data: imageData) {
                     Image(uiImage: uiImage)
                         .resizable()
-                        .aspectRatio(1, contentMode: .fill) // Forces 1:1 ratio
+                        .aspectRatio(1, contentMode: .fill) // Force 1:1 ratio
                 } else {
                     Rectangle()
                         .fill(Color(.tertiarySystemFill))

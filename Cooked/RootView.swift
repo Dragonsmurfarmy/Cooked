@@ -8,6 +8,8 @@ struct RootView: View {
     @State private var selectedTab: Tab = .home
     @State private var slideDirection: Edge = .trailing
     @State private var isVoiceRegimeActive = false
+    @State private var hasShownVoiceRegimeInfo = false
+    @State private var isShowingVoiceRegimeInfo = false
     @State private var isKeyboardVisible = false
     private let bottomBarReservedHeight: CGFloat = 200
 
@@ -82,12 +84,22 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             withAnimation(.easeIn(duration: 0.2)) { isKeyboardVisible = false }
         }
+        .alert("voice_regime.info.title", isPresented: $isShowingVoiceRegimeInfo) {
+            Button("button.ok", role: .cancel) { }
+        } message: {
+            Text("voice_regime.info.message")
+        }
     }
 
     private var customBottomBar: some View {
         HStack {
             // Voice toggle
             Button {
+                if !hasShownVoiceRegimeInfo {
+                    hasShownVoiceRegimeInfo = true
+                    isShowingVoiceRegimeInfo = true
+                }
+
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     isVoiceRegimeActive.toggle()
                 }

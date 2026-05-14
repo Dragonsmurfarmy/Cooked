@@ -53,19 +53,29 @@ struct RecipeFormView: View {
         self.store = store
         self.recipeToEdit = recipeToEdit
         self.onSave = onSave
+
+        let draft = store.draftRecipe
+        let draftCategory = draft.categoryID.flatMap { categoryID in
+            store.categories.first { $0.id == categoryID }
+        }
         
         // If recipe exists, prefill the form for editing. Otherwise use defaults for creation.
-        _name = State(initialValue: recipeToEdit?.name ?? "")
-        _recipeDescription = State(initialValue: recipeToEdit?.recipeDescription ?? "")
-        _category = State(initialValue: recipeToEdit?.category ?? store.categories.first ?? RecipeCategory(name: "category.lunch"))
+        _name = State(initialValue: recipeToEdit?.name ?? draft.name)
+        _recipeDescription = State(initialValue: recipeToEdit?.recipeDescription ?? draft.recipeDescription)
+        _category = State(initialValue: recipeToEdit?.category ?? draftCategory ?? store.categories.first ?? RecipeCategory(name: "category.lunch"))
         _isFavorite = State(initialValue: recipeToEdit?.isFavorite ?? false)
-        _selectedImageData = State(initialValue: recipeToEdit?.imageData)
+        _selectedImageData = State(initialValue: recipeToEdit?.imageData ?? store.loadDraftImageData())
         
         // Load ingredients
-        _ingredients = State(initialValue: recipeToEdit?.ingredients ?? [Ingredient(name: "", amount: 1, unit: "")])
+        _ingredients = State(initialValue: recipeToEdit?.ingredients ?? (draft.ingredients.isEmpty ? [Ingredient(name: "", amount: 1, unit: "")] : draft.ingredients))
         
-        let ins = recipeToEdit?.instructions.components(separatedBy: "\n") ?? [""]
+        let draftInstructions = draft.instructions.isEmpty ? [""] : draft.instructions.components(separatedBy: "\n")
+        let ins = recipeToEdit?.instructions.components(separatedBy: "\n") ?? draftInstructions
         _instructionsLines = State(initialValue: ins.map { InstructionLine(text: $0) })
+    }
+
+    private var isEditing: Bool {
+        recipeToEdit != nil
     }
 
     private var isFormValid: Bool {
@@ -203,6 +213,15 @@ struct RecipeFormView: View {
                                  isShown: $navigateToCropper)
                 }
             }
+            .onChange(of: name) { saveDraftIfNeeded() }
+            .onChange(of: recipeDescription) { saveDraftIfNeeded() }
+            .onChange(of: category) { saveDraftIfNeeded() }
+            .onChange(of: ingredients) { saveDraftIfNeeded() }
+            .onChange(of: instructionsLines) { saveDraftIfNeeded() }
+            .onChange(of: selectedImageData) {
+                guard !isEditing else { return }
+                store.saveDraftImageData(selectedImageData)
+            }
     }
     
     private func saveAction() {
@@ -215,20 +234,37 @@ struct RecipeFormView: View {
             .filter { !$0.isEmpty }
             .joined(separator: "\n")
         
-        // Reuse the existing id while editing so the stored recipe file is updated, not duplicated.
         let recipeToSave = Recipe(
             id: recipeToEdit?.id ?? UUID(),
             name: name,
             category: category,
             recipeDescription: recipeDescription,
             ingredients: finalIngredients,
-            instructions: finalInstructions, // Saved as string
+            defaultPortions: recipeToEdit?.defaultPortions ?? store.settings.defaultPortions,
+            instructions: finalInstructions,
             isFavorite: isFavorite
         )
         
         let savedRecipe = store.saveRecipe(recipeToSave, newImageData: selectedImageData)
+        if !isEditing {
+            store.clearDraft()
+        }
         onSave(savedRecipe)
         dismiss()
+    }
+
+    private func saveDraftIfNeeded() {
+        guard !isEditing else { return }
+
+        store.draftRecipe.name = name
+        store.draftRecipe.recipeDescription = recipeDescription
+        store.draftRecipe.categoryID = category.id
+        store.draftRecipe.ingredients = ingredients
+        store.draftRecipe.defaultPortions = store.settings.defaultPortions
+        store.draftRecipe.instructions = instructionsLines
+            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: "\n")
     }
 
     private func loadSelectedPhoto() async {

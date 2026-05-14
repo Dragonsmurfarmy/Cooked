@@ -4,6 +4,7 @@
 //
 //  Created by Tomáš Kříž on 20.04.2026.
 //
+
 import Foundation
 
 struct RecipeCategory: Identifiable, Equatable, Codable {
@@ -33,7 +34,7 @@ struct Ingredient: Identifiable, Equatable, Codable {
     init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             
-            // Try loading id as string
+            // Try loading ID as string
             let idString = try? container.decode(String.self, forKey: .id)
             
             // If ID is invalid, generate new
@@ -60,7 +61,7 @@ struct Recipe: Identifiable, Codable {
     var isFavorite: Bool
     var imageFileName: String?
 
-    // Computed property to load the image from the disk only when needed
+    // Computed property to load image from disk only when needed
     var imageData: Data? {
         guard let filename = imageFileName else { return nil }
         let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]

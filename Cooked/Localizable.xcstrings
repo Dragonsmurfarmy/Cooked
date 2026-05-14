@@ -124,21 +124,37 @@
         }
       }
     },
-    "button.reset" : {
-        "localizations" : {
-          "cs" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Resetovat"
-            }
-          },
-          "en" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Reset"
-            }
+    "button.ok" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
           }
         }
+      }
+    },
+    "button.reset" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resetovat"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset"
+          }
+        }
+      }
     },
     "button.save" : {
       "localizations" : {
@@ -1276,6 +1292,7 @@
       }
     },
     "timer.navigation.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -1319,6 +1336,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Timer is ringing"
+          }
+        }
+      }
+    },
+    "timer.tip.notification" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokud je zaplý tichý režim, časovač nebude zvonit."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If silent mode is on, the timer will not make ringing sounds."
           }
         }
       }
@@ -1463,6 +1496,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seconds"
+          }
+        }
+      }
+    },
+    "voice_regime.info.message" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato vlastnost ještě není implementována. Zatím tu je pouze tento placeholder, abys věděl, že funkcionalita chybí"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feature not implemented yet. For now here is a little placeholder telling you functionality is missing"
+          }
+        }
+      }
+    },
+    "voice_regime.info.title" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato vlastnost ještě není implementována"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Feature not implemented yet"
           }
         }
       }
