@@ -4,6 +4,7 @@
 //
 //  Created by Tomáš Kříž on 20.04.2026.
 //
+
 import SwiftUI
 import UIKit
 import PhotosUI
@@ -19,14 +20,14 @@ struct RecipeFormView: View {
     let onSave: (Recipe) -> Void
     
     @State private var name = ""
-    @State private var category: RecipeCategory
+    @State private var selectedCategories: [RecipeCategory]
+    @State private var cookingTimeMinutes: Double = 0
+    @State private var selectedDifficulty: RecipeDifficulty
+    @State private var hasManuallySelectedDifficulty = false
     @State private var recipeDescription = ""
     
-    @State private var ingredients: [Ingredient]
-    
-    @State private var instructionsLines: [InstructionLine]
-   
-    
+    // Unified array representing synchronized layout groupings
+    @State private var sections: [RecipeSection]
     
     @FocusState private var focusedField: Field?
     
@@ -35,19 +36,21 @@ struct RecipeFormView: View {
     @State private var selectedImageData: Data?
     @State private var showNewCategoryAlert = false
     @State private var newCategoryName = ""
+
+    private static let maxCookingTimeMinutes = 240 // Slider has maximum of 4 hours
+    
+    // Added fallback array to fix "Cannot find 'advancedOverrides' in scope"
+    private static let advancedOverrides: [String] = ["sous-vide", "soufflé", "flambé", "ferment", "croissant"]
     
     // --- ENUMS ---
     enum Field: Hashable {
-        case name(UUID)
-        case amount(UUID)
-        case unit(UUID)
-        case ingredientName(UUID)
-        case ingredientAmount(UUID)
-        case ingredientUnit(UUID)
-        case instruction(Int)
+        case name
+        case recipeDescription
+        case sectionName(Int)
+        case ingredientName(section: Int, row: Int)
+        case ingredientAmount(section: Int, row: Int)
+        case instruction(section: Int, row: Int)
     }
-    
-    
 
     init(store: RecipeStore, recipeToEdit: Recipe? = nil, onSave: @escaping (Recipe) -> Void) {
         self.store = store
@@ -59,20 +62,23 @@ struct RecipeFormView: View {
             store.categories.first { $0.id == categoryID }
         }
         
-        // If recipe exists, prefill the form for editing
-        // Otherwise use defaults for creation
         _name = State(initialValue: recipeToEdit?.name ?? draft.name)
         _recipeDescription = State(initialValue: recipeToEdit?.recipeDescription ?? draft.recipeDescription)
-        _category = State(initialValue: recipeToEdit?.category ?? draftCategory ?? store.categories.first ?? RecipeCategory(name: "category.lunch"))
+        _selectedCategories = State(initialValue: recipeToEdit?.categories ?? [draftCategory ?? store.categories.first ?? RecipeCategory(name: "category.lunch")])
+        let initialCookingTime = max(0, recipeToEdit?.cookingTimeMinutes ?? draft.cookingTimeMinutes)
+        _cookingTimeMinutes = State(initialValue: Double(initialCookingTime))
+        _selectedDifficulty = State(initialValue: recipeToEdit?.difficulty ?? draft.difficulty)
         _isFavorite = State(initialValue: recipeToEdit?.isFavorite ?? false)
         _selectedImageData = State(initialValue: recipeToEdit?.imageData ?? store.loadDraftImageData())
         
-        // Load ingredients
-        _ingredients = State(initialValue: recipeToEdit?.ingredients ?? (draft.ingredients.isEmpty ? [Ingredient(name: "", amount: 1, unit: "")] : draft.ingredients))
-        
-        let draftInstructions = draft.instructions.isEmpty ? [""] : draft.instructions.components(separatedBy: "\n")
-        let ins = recipeToEdit?.instructions.components(separatedBy: "\n") ?? draftInstructions
-        _instructionsLines = State(initialValue: ins.map { InstructionLine(text: $0) })
+        // Load data from structural backend entities safely
+        if let editingSections = recipeToEdit?.sections, !editingSections.isEmpty {
+            _sections = State(initialValue: editingSections)
+        } else if !draft.sections.isEmpty {
+            _sections = State(initialValue: draft.sections)
+        } else {
+            _sections = State(initialValue: [RecipeSection()])
+        }
     }
 
     private var isEditing: Bool {
@@ -80,228 +86,411 @@ struct RecipeFormView: View {
     }
 
     private var isFormValid: Bool {
-        // Check if recipe has name
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
     private var isChanged: Bool {
-        // original will never be null since button appears only in editing mode
         let original = recipeToEdit
-        let currentInstructions = instructionsLines
-            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .joined(separator: "\n")
-
         return  name != original?.name ||
-                category.id != original?.category.id ||
+                selectedCategories != original?.categories ||
+                Int(cookingTimeMinutes) != original?.cookingTimeMinutes ||
+                selectedDifficulty != original?.difficulty ||
                 recipeDescription != original?.recipeDescription ||
                 isFavorite != original?.isFavorite ||
                 selectedImageData != original?.imageData ||
-                ingredients != original?.ingredients ||
-                currentInstructions != original?.instructions
+                sections != original?.sections
+    }
+
+    @ViewBuilder
+    private var categorySummary: some View {
+        if selectedCategories.isEmpty {
+            Text("category.none")
+        } else if selectedCategories.count == 1, let category = selectedCategories.first {
+            Text(LocalizedStringKey(category.name))
+        } else {
+            Text("\(selectedCategories.count) categories")
+        }
+    }
+
+    private func categoryBinding(for category: RecipeCategory) -> Binding<Bool> {
+        Binding(
+            get: { selectedCategories.contains { $0.id == category.id } },
+            set: { isSelected in
+                if isSelected {
+                    if !selectedCategories.contains(where: { $0.id == category.id }) {
+                        selectedCategories.append(category)
+                    }
+                } else {
+                    selectedCategories.removeAll { $0.id == category.id }
+                }
+            }
+        )
+    }
+
+    private var cookingHoursBinding: Binding<Int> {
+        Binding(
+            get: { Int(cookingTimeMinutes) / 60 },
+            set: { setCookingTime(hours: $0, minutes: Int(cookingTimeMinutes) % 60) }
+        )
+    }
+
+    private var cookingMinutesBinding: Binding<Int> {
+        Binding(
+            get: { Int(cookingTimeMinutes) % 60 },
+            set: { setCookingTime(hours: Int(cookingTimeMinutes) / 60, minutes: $0) }
+        )
+    }
+
+    private var cookingTimeSliderBinding: Binding<Double> {
+        Binding(
+            get: { cookingTimeMinutes },
+            set: { cookingTimeMinutes = $0 }
+        )
+    }
+
+    private var shouldShowCookingTimeSlider: Bool {
+        cookingTimeMinutes <= Double(Self.maxCookingTimeMinutes)
+    }
+
+    private var difficultyBinding: Binding<RecipeDifficulty> {
+        Binding(
+            get: { selectedDifficulty },
+            set: { newDifficulty in
+                hasManuallySelectedDifficulty = true
+                selectedDifficulty = newDifficulty
+            }
+        )
+    }
+
+    private func setCookingTime(hours: Int, minutes: Int) {
+        let clampedHours = max(0, hours)
+        let clampedMinutes = max(0, min(59, minutes))
+        let totalMinutes = (clampedHours * 60) + clampedMinutes
+        cookingTimeMinutes = Double(totalMinutes)
+    }
+
+    private func autoCalculatedDifficulty() -> RecipeDifficulty {
+        let textSteps = sections.flatMap { $0.instructions.map(\.text) }
+        let flatIngredients = sections.flatMap { $0.ingredients }
+        return Self.calculateDifficulty(
+            name: name,
+            ingredients: flatIngredients,
+            instructions: textSteps,
+            cookingTimeMinutes: Int(cookingTimeMinutes)
+        )
+    }
+
+    private func updateDifficultyIfNeeded() {
+        guard !isEditing, !hasManuallySelectedDifficulty else { return }
+        selectedDifficulty = autoCalculatedDifficulty()
+    }
+
+    private static func calculateDifficulty(
+        name: String,
+        ingredients: [Ingredient],
+        instructions: [String],
+        cookingTimeMinutes: Int
+    ) -> RecipeDifficulty {
+        let joinedText = ([name] + instructions).joined(separator: " ").lowercased()
+
+        if advancedOverrides.contains(where: { joinedText.contains($0) }) {
+            return .advanced
+        }
+
+        var score = Double(instructions.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count)
+
+        let filledIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        score += Double(filledIngredients.count) * 0.5
+
+        let sectionCount = filledIngredients.filter { ingredient in
+            let name = ingredient.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            return name.hasPrefix("for ") || name.hasSuffix(":")
+        }
+        .count
+        
+        if sectionCount >= 3 {
+            score += 6
+        } else if sectionCount == 2 {
+            score += 3
+        }
+
+        score += Double(max(0, cookingTimeMinutes)) / 15
+
+        if score <= 12 {
+            return .easy
+        } else if score <= 28 {
+            return .intermediate
+        } else {
+            return .advanced
+        }
     }
 
     var body: some View {
-            Form {
-                // --- BASIC INFO SECTION ---
-                Section("info.basic") {
-                    
-                    // --- IMAGE ---
-                    PhotosPicker(selection: $selectedPhoto, matching: .images) {
-                        HStack(spacing: 12) {
-                            RecipeSelectedImagePreview(imageData: selectedImageData)
-                                .id(selectedImageData)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("image.select").foregroundStyle(.primary)
-                                Text(selectedImageData == nil ? "image.choose" : "image.change")
-                                    .font(.caption).foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    
-                    // --- NAME ---
-                    TextField("recipe.name", text: $name)
-                    
-                    // --- CATEGORIES ---
-                    Menu {
-                        ForEach(store.categories) { cat in
-                            Button { category = cat } label: {
-                                Label(LocalizedStringKey(cat.name), systemImage: category == cat ? "checkmark" : "circle")
-                            }
-                        }
-                        
-                        Divider()
-                        // --- ADD NEW CATEGORY ---
-                        Button { showNewCategoryAlert = true } label: {
-                            Label("category.new", systemImage: "plus")
-                        }
-                        
-                    } label: {
-                        HStack {
-                            Text(LocalizedStringKey(category.name))
-                            Spacer()
-                            Image(systemName: "chevron.down").font(.caption).foregroundStyle(.secondary)
-                        }
-                    }
-                    // --- DESCRIPTION ---
-                    TextField("recipe.description", text: $recipeDescription)
-                }
-                
-                Section {
-                    // --- INGREDIENT SECTION ---
-                    ForEach($ingredients) { $ingredient in
-                        HStack {
-                            TextField("ingredient.name", text: $ingredient.name)
-                                .focused($focusedField, equals: .name(ingredient.id))
-                                
-                            
-                            TextField("ingredient.quantity", value: $ingredient.amount, format: .number)
-                                .keyboardType(.numbersAndPunctuation)
-                                .frame(width: 50)
-                                .multilineTextAlignment(.center)
-                                .focused($focusedField, equals: .amount(ingredient.id))
-                                
-                            
-                            TextField("ingredient.unit", text: $ingredient.unit)
-                                .frame(width: 60)
-                                .focused($focusedField, equals: .unit(ingredient.id))
-                                .textInputAutocapitalization(.never)
-                        }
-                    }
-                    .onDelete { ingredients.remove(atOffsets: $0) }
-
-                    Button(action: {
-                        let newIng = Ingredient(name: "", amount: 1, unit: "")
-                        ingredients.append(newIng)
-                        focusedField = .name(newIng.id)
-                    }) {
-                        Label("ingredient.add", systemImage: "plus.circle")
-                    }
-                } header: {
-                    Label("ingredients", systemImage: "list.bullet")
-                }
-
-                Section {
-                        // --- INSTRUCTIONS LIST ---
-                        SmartListEditor(
-                            focusBinding: $focusedField,
-                            lines: $instructionsLines,
-                            style: .numbered
-                        )
-                        Button(action: {
-                            let newLine = InstructionLine(text: "")
-                            instructionsLines.append(newLine)
-                            let lastIndex = instructionsLines.count - 1
-                            focusedField = .instruction(lastIndex)
-                        }) {
-                            Label("instruction.add", systemImage: "plus.circle")
-                        }
-                    
-                } header: {
-                    Label("instructions", systemImage: "frying.pan")
-                }
+        Form {
+            basicInfoSection
+            ingredientsPartSection
+            instructionsPartSection
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isEditing {
+                Color.clear.frame(height: 200)
             }
-            .navigationTitle(recipeToEdit == nil ? "recipe.new" : "recipe.edit")
-            .navigationBarTitleDisplayMode(.inline)
-            .task(id: selectedPhoto) { await loadSelectedPhoto() }
-            .toolbar {
-                // ---- Cancel button is in rootView  for better UX ----
-                if isEditing {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("button.reset") {
-                            resetFormToOriginalRecipe()
-                        }
+        }
+        .navigationTitle(recipeToEdit == nil ? "recipe.new" : "recipe.edit")
+        .navigationBarTitleDisplayMode(.inline)
+        .task(id: selectedPhoto) { await loadSelectedPhoto() }
+        .toolbar {
+            if isEditing {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("button.reset") { resetFormToOriginalRecipe() }
                         .disabled(!isChanged)
-                    }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("button.save") {
-                        saveAction()
-                    }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("button.save") { saveAction() }
                     .disabled(!isFormValid)
-                }
             }
-            .alert("category.new", isPresented: $showNewCategoryAlert) {
-                TextField("category.name", text: $newCategoryName)
-                Button("button.add") {
-                    let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
-                    guard !trimmed.isEmpty else { return }
-                    category = store.addCategory(trimmed)
-                    newCategoryName = ""
-                }
-                Button("button.cancel", role: .cancel) { newCategoryName = "" }
+        }
+        .alert("category.new", isPresented: $showNewCategoryAlert) {
+            TextField("category.name", text: $newCategoryName)
+            Button("button.add") {
+                let trimmed = newCategoryName.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return }
+                selectedCategories.append(store.addCategory(trimmed))
+                newCategoryName = ""
             }
-            .navigationDestination(isPresented: $navigateToCropper) {
-                if let rawImage = rawSelectedImage {
-                    ImageCropper(image: rawImage,
-                                 visibleImageData: $selectedImageData,
-                                 isShown: $navigateToCropper)
-                }
+            Button("button.cancel", role: .cancel) { newCategoryName = "" }
+        }
+        .navigationDestination(isPresented: $navigateToCropper) {
+            if let rawImage = rawSelectedImage {
+                ImageCropper(image: rawImage, visibleImageData: $selectedImageData, isShown: $navigateToCropper)
             }
-            .onChange(of: name) { saveDraftIfNeeded() }
-            .onChange(of: recipeDescription) { saveDraftIfNeeded() }
-            .onChange(of: category) { saveDraftIfNeeded() }
-            .onChange(of: ingredients) { saveDraftIfNeeded() }
-            .onChange(of: instructionsLines) { saveDraftIfNeeded() }
-            .onChange(of: selectedImageData) {
-                guard !isEditing else { return }
-                store.saveDraftImageData(selectedImageData)
-            }
+        }
+        .onChange(of: name) { _, _ in
+            updateDifficultyIfNeeded()
+            saveDraftIfNeeded()
+        }
+        .onChange(of: recipeDescription) { _, _ in saveDraftIfNeeded() }
+        .onChange(of: selectedCategories) { _, _ in saveDraftIfNeeded() }
+        .onChange(of: cookingTimeMinutes) { _, _ in
+            updateDifficultyIfNeeded()
+            saveDraftIfNeeded()
+        }
+        .onChange(of: selectedDifficulty) { _, _ in saveDraftIfNeeded() }
+        .onChange(of: sections) { _, _ in
+            updateDifficultyIfNeeded()
+            saveDraftIfNeeded()
+        }
+        .onChange(of: selectedImageData) { _, _ in
+            guard !isEditing else { return }
+            store.saveDraftImageData(selectedImageData)
+        }
     }
     
+    // --- EXTRACTED COMPILER-FRIENDLY VIEWS ---
+    
+    private var basicInfoSection: some View {
+        Section("info.basic") {
+            PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                HStack(spacing: 12) {
+                    RecipeSelectedImagePreview(imageData: selectedImageData)
+                        .id(selectedImageData)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("image.select").foregroundStyle(.primary)
+                        Text(selectedImageData == nil ? "image.choose" : "image.change")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .buttonStyle(.plain)
+            
+            TextField("recipe.name", text: $name)
+                .focused($focusedField, equals: .name)
+            
+            DisclosureGroup {
+                ForEach(store.categories) { cat in
+                    Toggle(isOn: categoryBinding(for: cat)) {
+                        Text(LocalizedStringKey(cat.name))
+                    }
+                    .toggleStyle(CheckboxToggleStyle())
+                }
+                Button { showNewCategoryAlert = true } label: {
+                    Label("category.new", systemImage: "plus")
+                }
+            } label: {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("categories").foregroundStyle(.primary)
+                    categorySummary.font(.caption).foregroundStyle(.secondary)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Label("difficulty", systemImage: "chart.bar.fill")
+                Picker("difficulty", selection: difficultyBinding) {
+                    ForEach(RecipeDifficulty.allCases) { difficulty in
+                        Text(difficulty.title).tag(difficulty)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Label("recipe.time", systemImage: "clock")
+                HStack(spacing: 8) {
+                    TextField("0", value: cookingHoursBinding, format: .number)
+                        .keyboardType(.numberPad).multilineTextAlignment(.trailing).frame(width: 44)
+                    Text("h").foregroundStyle(.secondary)
+                    TextField("0", value: cookingMinutesBinding, format: .number)
+                        .keyboardType(.numberPad).multilineTextAlignment(.trailing).frame(width: 44)
+                    Text("min").foregroundStyle(.secondary)
+                }
+                
+                Slider(value: cookingTimeSliderBinding, in: 0...Double(Self.maxCookingTimeMinutes), step: 5)
+                    .frame(height: shouldShowCookingTimeSlider ? nil : 0)
+                    .opacity(shouldShowCookingTimeSlider ? 1 : 0)
+                    .clipped()
+                    .allowsHitTesting(shouldShowCookingTimeSlider)
+            }
+            .animation(.easeInOut(duration: 0.25), value: shouldShowCookingTimeSlider)
+
+            TextField("recipe.description", text: $recipeDescription)
+                .focused($focusedField, equals: .recipeDescription)
+        }
+    }
+    
+    // ---  INGREDIENTS SECTION ---
+    @ViewBuilder
+    private var ingredientsPartSection: some View {
+        // Using indices smoothly with safe bounds
+        ForEach(sections.indices, id: \.self) { sIdx in
+            IngredientSectionRowView(
+                sections: $sections,
+                sIdx: sIdx,
+                availableUnits: store.availableUnits,
+                focusedField: $focusedField,
+                onRemove: { removeSection(at: sIdx) }
+            )
+        }
+        
+        Section {
+            Button(action: addNewSection) {
+                Label("Add Recipe Section", systemImage: "folder.badge.plus")
+            }
+        }
+        
+    }
+
+    // ---  INSTRUCTIONS SECTION ---
+    @ViewBuilder
+    private var instructionsPartSection: some View {
+        
+        ForEach(0..<sections.count, id: \.self) { sIdx in
+            InstructionSectionRowView(
+                sections: $sections,
+                sIdx: sIdx,
+                focusedField: $focusedField
+            )
+        }
+        
+        Section {
+            Button(action: addNewSection) {
+                Label("Add Instructions Section", systemImage: "folder.badge.plus")
+            }
+        }
+        
+    }
+    
+    // --- HELPER LOGIC FUNCTIONS ---
+    private func addNewSection() {
+        let standard = String(localized: "section.default")
+        withAnimation {
+            if sections.count == 1 && sections[0].name == nil {
+                sections[0].name = "section.default"
+            }
+            
+            let newIndex = sections.count
+            let defaultSectionName = standard + " \(newIndex + 1)"
+            
+            let newGroup = RecipeSection(
+                name: defaultSectionName,
+                ingredients: [Ingredient(name: "", amount: 1, unit: "")],
+                instructions: [InstructionLine(text: "")]
+            )
+            
+            sections.append(newGroup)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.focusedField = .sectionName(newIndex)
+            }
+        }
+    }
+
+    private func removeSection(at index: Int) {
+        withAnimation {
+            guard sections.count > 1 else { return }
+            sections.remove(at: index)
+            
+            if sections.count == 1 {
+                sections[0].name = nil
+            }
+        }
+    }
+
     private func saveAction() {
-        // Filter out empty ingredients
-        let finalIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
+        let finalRecipeSections = sections.map { currentSection -> RecipeSection in
+            var sanitized = currentSection
+            sanitized.ingredients = currentSection.ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
+            sanitized.instructions = currentSection.instructions.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            return sanitized
+        }.filter { !$0.ingredients.isEmpty || !$0.instructions.isEmpty }
         
-        // Convert instruction lines back into the newline-separated string stored in Recipe
-        let finalInstructions = instructionsLines
-            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        let flatIngredients = finalRecipeSections.flatMap { $0.ingredients }
+        let serializedInstructionsText = finalRecipeSections
+            .flatMap { section -> [String] in
+                let header = section.name.map { ["[\($0)]"] } ?? []
+                return header + section.instructions.map(\.text)
+            }
             .joined(separator: "\n")
-        
+
         let recipeToSave = Recipe(
             id: recipeToEdit?.id ?? UUID(),
             name: name,
-            category: category,
+            categories: selectedCategories,
             recipeDescription: recipeDescription,
-            ingredients: finalIngredients,
+            ingredients: flatIngredients,
             defaultPortions: recipeToEdit?.defaultPortions ?? store.settings.defaultPortions,
-            instructions: finalInstructions,
-            isFavorite: isFavorite
+            cookingTimeMinutes: max(0, Int(cookingTimeMinutes)),
+            difficulty: selectedDifficulty,
+            instructions: serializedInstructionsText,
+            isFavorite: isFavorite,
+            imageFileName: recipeToEdit?.imageFileName,
+            sections: finalRecipeSections
         )
         
         let savedRecipe = store.saveRecipe(recipeToSave, newImageData: selectedImageData)
-        if !isEditing {
-            store.clearDraft()
-        }
+        if !isEditing { store.clearDraft() }
         onSave(savedRecipe)
-        dismiss()
+        if !isEditing { dismiss() }
     }
 
     private func saveDraftIfNeeded() {
         guard !isEditing else { return }
-
         store.draftRecipe.name = name
         store.draftRecipe.recipeDescription = recipeDescription
-        store.draftRecipe.categoryID = category.id
-        store.draftRecipe.ingredients = ingredients
-        store.draftRecipe.defaultPortions = store.settings.defaultPortions
-        store.draftRecipe.instructions = instructionsLines
-            .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-            .joined(separator: "\n")
+        store.draftRecipe.categoryID = selectedCategories.first?.id
+        store.draftRecipe.cookingTimeMinutes = max(0, Int(cookingTimeMinutes))
+        store.draftRecipe.difficulty = selectedDifficulty
+        store.draftRecipe.sections = sections
     }
 
     private func resetFormToOriginalRecipe() {
         guard let recipeToEdit else { return }
-
         name = recipeToEdit.name
-        category = recipeToEdit.category
+        selectedCategories = recipeToEdit.categories
+        cookingTimeMinutes = Double(max(0, recipeToEdit.cookingTimeMinutes))
+        selectedDifficulty = recipeToEdit.difficulty
         recipeDescription = recipeToEdit.recipeDescription
-        ingredients = recipeToEdit.ingredients
-        instructionsLines = recipeToEdit.instructions
-            .components(separatedBy: "\n")
-            .map { InstructionLine(text: $0) }
+        sections = recipeToEdit.sections.isEmpty ? [RecipeSection()] : recipeToEdit.sections
         isFavorite = recipeToEdit.isFavorite
         selectedImageData = recipeToEdit.imageData
         rawSelectedImage = nil
@@ -312,16 +501,166 @@ struct RecipeFormView: View {
 
     private func loadSelectedPhoto() async {
         guard let selectedPhoto else { return }
-        
         if let data = try? await selectedPhoto.loadTransferable(type: Data.self),
            let uiImage = UIImage(data: data) {
-            
             await MainActor.run {
                 self.rawSelectedImage = uiImage
                 self.selectedPhoto = nil
                 self.navigateToCropper = true
             }
         }
+    }
+}
+
+// --- SUB-VIEWS ---
+
+private struct IngredientSectionRowView: View {
+    @Binding var sections: [RecipeSection]
+    let sIdx: Int
+    let availableUnits: [String]
+    let focusedField: FocusState<RecipeFormView.Field?>.Binding
+    var onRemove: () -> Void
+    
+    var body: some View {
+        if sIdx < sections.count {
+            // Create a safe custom binding for the optional section name
+            let sectionNameBinding = Binding<String>(
+                get: { sections[sIdx].name ?? "" },
+                set: { sections[sIdx].name = $0.isEmpty ? nil : $0 }
+            )
+            
+            // Pass a TextField into the header slot instead of plain Text
+            Section(header: TextField(String(localized: "section.default"), text: sectionNameBinding)
+                .font(.headline)
+                .textCase(nil)
+                .focused(focusedField, equals: .sectionName(sIdx))
+            ) {
+                ForEach(0..<sections[sIdx].ingredients.count, id: \.self) { rIdx in
+                    HStack(spacing: 8) {
+                        TextField("ingredient.name", text: $sections[sIdx].ingredients[rIdx].name)
+                            .focused(focusedField, equals: .ingredientName(section: sIdx, row: rIdx))
+                        
+                        TextField("0", value: $sections[sIdx].ingredients[rIdx].amount, format: .number)
+                            .keyboardType(.numberPad)
+                            .frame(width: 50)
+                            .multilineTextAlignment(.center)
+                        
+                        Menu {
+                            ForEach(availableUnits, id: \.self) { unit in
+                                Button {
+                                    sections[sIdx].ingredients[rIdx].unit = unit
+                                } label: {
+                                    Text(LocalizedStringKey(unit))
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                let currentUnit = sections[sIdx].ingredients[rIdx].unit
+                                
+                                
+                                if currentUnit.isEmpty {
+                                    Text("unit") // Placeholder
+                                } else {
+                                    Text(LocalizedStringKey(currentUnit))
+                                        .foregroundStyle(.primary)
+                                }
+                                
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .frame(minWidth: 65, alignment: .trailing)
+                        }
+                    }
+                }
+                .onDelete { offsets in
+                    sections[sIdx].ingredients.remove(atOffsets: offsets)
+                }
+
+                HStack {
+                    Button(action: {
+                        sections[sIdx].ingredients.append(Ingredient(name: "", amount: 1, unit: ""))
+                    }) {
+                        Label("ingredient.add", systemImage: "plus.circle")
+                    }
+                    
+                    Spacer()
+                    
+                    if sections.count > 1 {
+                        Button(role: .destructive, action: onRemove) {
+                            Image(systemName: "trash")
+                                .foregroundStyle(.red)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct InstructionSectionRowView: View {
+    @Binding var sections: [RecipeSection]
+    let sIdx: Int
+    let focusedField: FocusState<RecipeFormView.Field?>.Binding
+    
+    var body: some View {
+        if sIdx < sections.count {
+            // Mirror the safe binding setup
+            let sectionNameBinding = Binding<String>(
+                get: { sections[sIdx].name ?? "" },
+                set: { sections[sIdx].name = $0.isEmpty ? nil : $0 }
+            )
+            
+            // Put a mirroring TextField here
+            Section(header: TextField(String(localized: "section.default"), text: sectionNameBinding)
+                .font(.headline)
+                .textCase(nil)
+                .focused(focusedField, equals: .sectionName(sIdx))
+            ) {
+                ForEach(0..<sections[sIdx].instructions.count, id: \.self) { rIdx in
+                    HStack(alignment: .top, spacing: 8) {
+                        Text("\(rIdx + 1).")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .frame(width: 22, alignment: .leading)
+                            .padding(.top, 8)
+                        
+                        TextField("Step description...", text: $sections[sIdx].instructions[rIdx].text, axis: .vertical)
+                            .lineLimit(1...5)
+                            .focused(focusedField, equals: .instruction(section: sIdx, row: rIdx))
+                    }
+                }
+                .onDelete { offsets in
+                    sections[sIdx].instructions.remove(atOffsets: offsets)
+                }
+                
+                Button(action: {
+                    sections[sIdx].instructions.append(InstructionLine(text: ""))
+                }) {
+                    Label("instruction.add", systemImage: "plus.circle")
+                }
+            }
+        }
+    }
+}
+
+// --- STANDARD PRIVATELY SCOPED COMPONENT VIEWS ---
+
+private struct CheckboxToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            configuration.isOn.toggle()
+        } label: {
+            HStack {
+                configuration.label.foregroundStyle(.primary)
+                Spacer()
+                Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
+                    .font(.title3)
+                    .foregroundStyle(configuration.isOn ? Color.accentColor : Color.secondary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -341,5 +680,4 @@ private struct RecipeSelectedImagePreview: View {
         .frame(width: 56, height: 56)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
-   
 }

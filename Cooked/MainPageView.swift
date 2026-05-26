@@ -28,7 +28,7 @@ struct MainPageView: View {
         let filtered = store.recipes.filter { recipe in
             if let selected = selectedCategory {
                 
-                return recipe.category.id == selected.id
+                return recipe.categories.contains { $0.id == selected.id }
             } else {
                 
                 return true
@@ -246,6 +246,8 @@ private struct CompactRecipeRow: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(recipe.name)
                     .font(.headline)
+
+                RecipeMetadata(recipe: recipe)
             }
 
             Spacer()
@@ -267,6 +269,24 @@ private struct CompactRecipeRow: View {
 }
 
 
+private struct RecipeMetadata: View {
+    let recipe: Recipe
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(LocalizedStringKey(recipe.categories.first?.name ?? "category.lunch"))
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+
+            Label(recipe.difficulty.title, systemImage: "chart.bar.fill")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+    }
+}
+
 private struct CardRecipeRow: View {
     let recipe: Recipe
     let onToggleFavorite: () -> Void
@@ -278,7 +298,7 @@ private struct CardRecipeRow: View {
                 
                 // ----- Image Area ----
                 RecipeImage(imageData: recipe.imageData, cornerRadius: 12)
-                    .frame(height: geometry.size.height * 0.75) // Upper 75%
+                    .frame(height: geometry.size.height * 0.65) // Upper 65%
                     .frame(maxWidth: .infinity)
                     .clipped() // Prevents the image from "peeking" into the info area
                 
@@ -286,26 +306,30 @@ private struct CardRecipeRow: View {
                 VStack(spacing: 0) {
                     Spacer(minLength: 0)
                     
-                    HStack(alignment: .center, spacing: 4) {
-                        Text(recipe.name)
-                            .font(.subheadline.bold())
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8) // Shrinks slightly if name is long
-                        
-                        Spacer()
-                        
-                        Button(action: onToggleFavorite) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(alignment: .center, spacing: 4) {
+                            Text(recipe.name)
+                                .font(.subheadline.bold())
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8) // Shrinks slightly if name is long
+                            
+                            Spacer()
+                            
+                            Button(action: onToggleFavorite) {
                             Image(systemName: recipe.isFavorite ? "star.fill" : "star")
                                 .font(.system(size: 18, weight: .semibold)) // Explicit size for better visibility
                                 .foregroundStyle(recipe.isFavorite ? .yellow : .secondary)
+                            }
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
+
+                        RecipeMetadata(recipe: recipe)
                     }
                     .padding(.horizontal, 10)
                     
                     Spacer(minLength: 0)
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity) // Fills remaining space (25%)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .aspectRatio(1.0, contentMode: .fit)

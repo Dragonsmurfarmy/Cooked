@@ -39,18 +39,28 @@ struct RecipeDetailView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(LocalizedStringKey(recipe.category.name))
-                        .font(.caption)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
-                        .background(Color.accentColor.opacity(0.1))
-                        .clipShape(Capsule())
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(LocalizedStringKey(recipe.categories.first?.name ?? "category.lunch"))
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.accentColor.opacity(0.1))
+                            .clipShape(Capsule())
+
+                        Label(recipe.difficulty.title, systemImage: "chart.bar.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
 
                     Text(recipe.name)
                         .font(.system(.largeTitle, design: .rounded))
                         .fontWeight(.bold)
+
+                    Label(formatCookingTime(recipe.cookingTimeMinutes), systemImage: "clock")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
 
                 if !recipe.recipeDescription.isEmpty {
@@ -139,7 +149,7 @@ struct RecipeDetailView: View {
                                         .fontWeight(.semibold)
                                         .foregroundStyle(.primary)
                                                 
-                                    Text(ingredient.unit)
+                                    Text(LocalizedStringKey(ingredient.unit))
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
                                 }
@@ -226,6 +236,25 @@ struct RecipeDetailView: View {
     
     // MARK: - Helper Functions
     
+    private func formatCookingTime(_ minutes: Int) -> String {
+        if minutes < 5 {
+            return "<5 min"
+        }
+
+        let hours = minutes / 60
+        let remainingMinutes = minutes % 60
+
+        if hours == 0 {
+            return "\(minutes) min"
+        }
+
+        if remainingMinutes == 0 {
+            return "\(hours) h"
+        }
+
+        return "\(hours) h \(remainingMinutes) min"
+    }
+
     private func handleDecrementTap() {
         if didLongPressDecrement {
             didLongPressDecrement = false

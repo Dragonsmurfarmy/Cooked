@@ -7,14 +7,16 @@
 
 import SwiftUI
 
-struct RecipeDraft: Codable {
+struct RecipeDraft: Codable, Equatable {
     var name = ""
     var recipeDescription = ""
     var categoryID: UUID?
+    var sections: [RecipeSection] = []
     var ingredients: [Ingredient] = []
     var defaultPortions = 1
+    var cookingTimeMinutes = 0
+    var difficulty: RecipeDifficulty = .easy
     var instructions = ""
     var imageFileName: String?
 }
-
 

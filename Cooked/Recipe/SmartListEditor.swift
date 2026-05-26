@@ -1,22 +1,26 @@
 //
-//  SmartListEditor.swift
-//  Cooked
+//  SmartListEditor.swift
+//  Cooked
 //
-//  Created by Tomáš Kříž on 22.04.2026.
+//  Created by Tomáš Kříž on 22.04.2026.
 //
-
-import SwiftUI
 
 import SwiftUI
 
 struct SmartListEditor: View {
-    var focusBinding: FocusState<RecipeFormView.Field?>.Binding
+    // Bind the continuous lines array from the section
     @Binding var lines: [InstructionLine]
+    
+    // Track which section this editor represents for exact FocusState matching
+    let sectionIndex: Int
+    
+    var focusBinding: FocusState<RecipeFormView.Field?>.Binding
     let style: ListStyle
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(lines.enumerated()), id: \.element.id) { index, line in
+            // Loop cleanly via dynamic bindings indices to prevent SwiftUI timeout crashes
+            ForEach($lines.indices, id: \.self) { index in
                 HStack(spacing: 8) {
 
                     // --- PREFIX ---
@@ -27,7 +31,7 @@ struct SmartListEditor: View {
 
                     // --- TEXT FIELD ---
                     TextField("recipe.step_placeholder", text: $lines[index].text, axis: .vertical)
-                        .focused(focusBinding, equals: .instruction(index))
+                        .focused(focusBinding, equals: .instruction(section: sectionIndex, row: index))
                 }
             }
         }

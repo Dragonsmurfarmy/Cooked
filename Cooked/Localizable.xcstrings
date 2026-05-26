@@ -7,7 +7,19 @@
     "%lld" : {
 
     },
+    "%lld categories" : {
+
+    },
     "%lld." : {
+
+    },
+    "0" : {
+
+    },
+    "Add Instructions Section" : {
+
+    },
+    "Add Recipe Section" : {
 
     },
     "button.add" : {
@@ -64,7 +76,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Smazat"
+            "value" : "Odstranit"
           }
         },
         "en" : {
@@ -102,7 +114,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Upravit"
+            "value" : "Edit"
           }
         }
       }
@@ -168,6 +180,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Save"
+          }
+        }
+      }
+    },
+    "categories" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kategorie"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categories"
           }
         }
       }
@@ -304,6 +332,9 @@
         }
       }
     },
+    "category.none" : {
+
+    },
     "Configuration" : {
 
     },
@@ -323,6 +354,70 @@
         }
       }
     },
+    "difficulty" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obtížnost"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difficulty"
+          }
+        }
+      }
+    },
+    "difficulty.advanced" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokročilé"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advanced"
+          }
+        }
+      }
+    },
+    "difficulty.easy" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jednoduché"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Easy"
+          }
+        }
+      }
+    },
+    "difficulty.intermediate" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Střední"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intermediate"
+          }
+        }
+      }
+    },
     "Display" : {
 
     },
@@ -330,6 +425,9 @@
 
     },
     "Favorite Emoji" : {
+
+    },
+    "h" : {
 
     },
     "image.change" : {
@@ -432,6 +530,7 @@
       }
     },
     "ingredient.quantity" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -448,6 +547,7 @@
       }
     },
     "ingredient.unit" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -725,6 +825,9 @@
         }
       }
     },
+    "min" : {
+
+    },
     "navigation.add" : {
       "localizations" : {
         "cs" : {
@@ -984,6 +1087,38 @@
         }
       }
     },
+    "recipe.time" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doba přípravy:"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duration:"
+          }
+        }
+      }
+    },
+    "section.default" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekce"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Section"
+          }
+        }
+      }
+    },
     "settings" : {
       "localizations" : {
         "cs" : {
@@ -1207,6 +1342,9 @@
           }
         }
       }
+    },
+    "Step description..." : {
+
     },
     "This is an example widget." : {
 
@@ -1496,6 +1634,27 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seconds"
+          }
+        }
+      }
+    },
+    "unit" : {
+
+    },
+    "unit.pcs" : {
+      "comment" : "Pieces abbreviation",
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ks"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pcs"
           }
         }
       }

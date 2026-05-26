@@ -10,6 +10,13 @@ import SwiftUI
 
 @Observable class RecipeStore {
     var recipes: [Recipe] = []
+    var availableUnits: [String] = [
+        "g",
+        "kg",
+        "ml",
+        "l",
+        "unit.pcs"
+    ]
     var settings: UserSettings = UserSettings()
     var categories: [RecipeCategory] {
             get { settings.categories }
