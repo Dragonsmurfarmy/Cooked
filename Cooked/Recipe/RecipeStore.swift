@@ -17,6 +17,7 @@ import SwiftUI
         "l",
         "unit.pcs"
     ]
+    
     var settings: UserSettings = UserSettings()
     var categories: [RecipeCategory] {
             get { settings.categories }
@@ -37,28 +38,59 @@ import SwiftUI
     }
     
     init() {
-        loadSettings()
         copyBundleRecipes()
+        
+        loadSettings()
+        loadUnits()
+        
         loadRecipesFromDisk()
         loadDraft()
     }
     
     // On first launch, copy bundled recipes into Documents so app can manage sample and user-created recipes through same storage flow
     private func copyBundleRecipes() {
+        
         let launchKey = "hasLaunchedBefore"
-        if UserDefaults.standard.bool(forKey: launchKey) { return }
+        // Commented out to ensure it processes every launch until we fix it
+        // if UserDefaults.standard.bool(forKey: launchKey) { return }
         
         let decoder = JSONDecoder()
         let bundleJSONs = Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? []
         
         for fileURL in bundleJSONs {
-            // Load the data to get the ID
-            if let data = try? Data(contentsOf: fileURL),
-               let recipe = try? decoder.decode(Recipe.self, from: data) {
+            
+            guard let data = try? Data(contentsOf: fileURL) else {
+                continue
+            }
+            
+            var decodedRecipe: Recipe? = nil
+            
+            
+            do {
+                decodedRecipe = try decoder.decode(Recipe.self, from: data)
+            } catch let singleError {
                 
-                // Save it using the UUID name
+                do {
+                    let recipeArray = try decoder.decode([Recipe].self, from: data)
+                    decodedRecipe = recipeArray.first
+                } catch let arrayError {
+                    
+                }
+            }
+            
+            
+            if let recipe = decodedRecipe {
                 let destURL = documentsDirectory.appendingPathComponent("\(recipe.id.uuidString).json")
-                try? data.write(to: destURL)
+                
+                
+                if let cleanData = try? JSONEncoder().encode(recipe) {
+                    do {
+                        try cleanData.write(to: destURL)
+                        
+                    } catch {
+                        
+                    }
+                }
             }
         }
         
@@ -73,6 +105,7 @@ import SwiftUI
         var loadedRecipes: [Recipe] = []
         
         for url in fileURLs where url.pathExtension == "json" {
+            
             // Ignore settings and draft files
             if url.lastPathComponent == "user_settings_data" { continue }
             if url.lastPathComponent == "RecipeDraft.json" { continue }
@@ -151,11 +184,43 @@ import SwiftUI
 
     // Create a new custom category and immediately persist the updated settings
     func addCategory(_ name: String) -> RecipeCategory {
-            let new = RecipeCategory(name: name)
-            settings.categories.append(new)
-            saveSettings()
-            return new
+        let new = RecipeCategory(name: name)
+        settings.categories.append(new)
+        saveSettings()
+        return new
+    }
+    
+    // loads Built-in and user-defined units
+    func loadUnits() {
+        
+        if let savedUnits = UserDefaults.standard.stringArray(forKey: "saved_recipe_units") {
+            self.availableUnits = savedUnits
         }
+    }
+    
+    func addUnit(_ name: String) {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else { return }
+        
+        // Prevent duplicate units from entering the array
+        guard !availableUnits.contains(where: { $0.localizedCaseInsensitiveCompare(trimmedName) == .orderedSame }) else {
+            return
+        }
+            
+        // Append to the active array tracking the state
+        availableUnits.append(trimmedName)
+            
+        // Persist the updated array to UserDefaults
+        UserDefaults.standard.set(availableUnits, forKey: "saved_recipe_units")
+    }
+    
+    func removeUnit(_ unit: String) {
+        // Remove all strings that match given unit
+        availableUnits.removeAll { $0 == unit }
+        
+        // Synchronize
+        UserDefaults.standard.set(availableUnits, forKey: "saved_recipe_units")
+    }
     
     
     // ------ Draft operations ----------

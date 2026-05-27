@@ -41,9 +41,9 @@ enum RecipeDifficulty: String, CaseIterable, Identifiable, Codable {
 
     var title: LocalizedStringKey {
         switch self {
-        case .easy: return "difficulty.easy"
-        case .intermediate: return "difficulty.intermediate"
-        case .advanced: return "difficulty.advanced"
+            case .easy: return "difficulty.easy"
+            case .intermediate: return "difficulty.intermediate"
+            case .advanced: return "difficulty.advanced"
         }
     }
 }
@@ -111,7 +111,7 @@ struct Recipe: Identifiable, Codable, Equatable {
         instructions: String,
         isFavorite: Bool,
         imageFileName: String? = nil,
-        sections: [RecipeSection] = [] // Added default fallback parameter
+        sections: [RecipeSection] = []
     ) {
         self.id = id
         self.name = name

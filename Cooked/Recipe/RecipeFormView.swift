@@ -25,6 +25,8 @@ struct RecipeFormView: View {
     @State private var selectedDifficulty: RecipeDifficulty
     @State private var hasManuallySelectedDifficulty = false
     @State private var recipeDescription = ""
+    @State private var showNewUnitAlert = false
+    @State private var newUnitName = ""
     
     // Unified array representing synchronized layout groupings
     @State private var sections: [RecipeSection]
@@ -38,9 +40,6 @@ struct RecipeFormView: View {
     @State private var newCategoryName = ""
 
     private static let maxCookingTimeMinutes = 240 // Slider has maximum of 4 hours
-    
-    // Added fallback array to fix "Cannot find 'advancedOverrides' in scope"
-    private static let advancedOverrides: [String] = ["sous-vide", "soufflé", "flambé", "ferment", "croissant"]
     
     // --- ENUMS ---
     enum Field: Hashable {
@@ -193,10 +192,6 @@ struct RecipeFormView: View {
     ) -> RecipeDifficulty {
         let joinedText = ([name] + instructions).joined(separator: " ").lowercased()
 
-        if advancedOverrides.contains(where: { joinedText.contains($0) }) {
-            return .advanced
-        }
-
         var score = Double(instructions.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count)
 
         let filledIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -261,6 +256,16 @@ struct RecipeFormView: View {
             }
             Button("button.cancel", role: .cancel) { newCategoryName = "" }
         }
+        .alert("unit.new.name", isPresented: $showNewUnitAlert) {
+            TextField("unit.new.name", text: $newUnitName)
+            Button("button.add") {
+                let trimmed = newUnitName.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return }
+                store.addUnit(trimmed)
+                newUnitName = ""
+            }
+            Button("button.cancel", role: .cancel) { newUnitName = "" }
+        }
         .navigationDestination(isPresented: $navigateToCropper) {
             if let rawImage = rawSelectedImage {
                 ImageCropper(image: rawImage, visibleImageData: $selectedImageData, isShown: $navigateToCropper)
@@ -287,7 +292,7 @@ struct RecipeFormView: View {
         }
     }
     
-    // --- EXTRACTED COMPILER-FRIENDLY VIEWS ---
+    // --- EXTRACTED VIEWS ---
     
     private var basicInfoSection: some View {
         Section("info.basic") {
@@ -371,7 +376,8 @@ struct RecipeFormView: View {
                     if let idx = sections.firstIndex(where: { $0.id == section.id }) {
                         removeSection(at: idx)
                     }
-                }
+                },
+                showNewUnitAlert: $showNewUnitAlert
             )
         }
         
@@ -510,6 +516,7 @@ private struct IngredientSectionRowView: View {
     let availableUnits: [String]
     let focusedField: FocusState<RecipeFormView.Field?>.Binding
     var onRemove: () -> Void
+    @Binding var showNewUnitAlert: Bool
     
     // Pure functional lookup to always get the live section instance
     private var currentSectionIndex: Int? {
@@ -551,12 +558,18 @@ private struct IngredientSectionRowView: View {
                             .multilineTextAlignment(.center)
                         
                         Menu {
+                            // Show available units
                             ForEach(availableUnits, id: \.self) { unit in
                                 Button {
                                     ingredient.unit = unit
                                 } label: {
                                     Text(LocalizedStringKey(unit))
                                 }
+                            }
+                            Button { // Add new unit button
+                                showNewUnitAlert = true
+                            } label: {
+                                Label("settings.add.unit", systemImage: "plus")
                             }
                         } label: {
                             HStack(spacing: 4) {

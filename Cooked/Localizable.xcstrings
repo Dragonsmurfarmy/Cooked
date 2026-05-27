@@ -902,6 +902,12 @@
         }
       }
     },
+    "No categories yet" : {
+
+    },
+    "No Units yet" : {
+
+    },
     "notification.body" : {
       "localizations" : {
         "cs" : {
@@ -1161,6 +1167,22 @@
         }
       }
     },
+    "settings.add.unit" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat novou jednotku"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add new unit"
+          }
+        }
+      }
+    },
     "settings.alarm.sound" : {
       "localizations" : {
         "cs" : {
@@ -1285,6 +1307,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Manage recipe categories"
+          }
+        }
+      }
+    },
+    "settings.manage.units" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upravit jednotky"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage units"
           }
         }
       }
@@ -1649,6 +1687,9 @@
       }
     },
     "unit" : {
+
+    },
+    "unit.new.name" : {
 
     },
     "unit.pcs" : {

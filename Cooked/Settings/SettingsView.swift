@@ -15,10 +15,18 @@ struct SettingsView: View {
     @State private var didLongPressDecrement = false
     @State private var didLongPressIncrement = false
     
+    // Categories
     @State private var showNewCategoryAlert = false
+    @State private var newCategoryName = ""
+    @State private var isEditingCategories = false
+    // Units
+    @State private var showNewUnitAlert = false
+    @State private var newUnitName = ""
+    @State private var isEditingUnits = false
+    //Sound Import
     @State private var showingSoundImporter = false
     @State private var showingImporter = false
-    @State private var newCategoryName = ""
+
     private let minPortions = 1
     private let maxPortions = 50
   
@@ -105,16 +113,148 @@ struct SettingsView: View {
                 }
                 
                 // --- CATEGORIES ---
-                Section("settings.manage.categories") {
-                    ForEach(store.categories) { category in
-                        Text(LocalizedStringKey(category.name))
+                Section {
+                    VStack(alignment: .leading, spacing: 0) {
+                        if store.categories.isEmpty {
+                            Text("No categories yet")
+                                .foregroundStyle(.secondary)
+                                .font(.subheadline)
+                                .padding(.vertical, 8)
+                        } else {
+                            ScrollView {
+                                LazyVStack(spacing: 0) {
+                                    ForEach(Array(store.categories.enumerated()), id: \.element.id) { index, category in
+                                        HStack {
+                                            Text(LocalizedStringKey(category.name))
+                                                .foregroundStyle(.primary)
+                                            
+                                            Spacer()
+                                            
+                                            // Only show and allow deletion if Edit mode is active
+                                            if isEditingCategories {
+                                                Button(role: .destructive) {
+                                                    withAnimation {
+                                                        deleteCategory(at: IndexSet(integer: index))
+                                                    }
+                                                } label: {
+                                                    Image(systemName: "trash")
+                                                        .font(.subheadline)
+                                                        .foregroundStyle(.red)
+                                                        .frame(width: 32, height: 32)
+                                                }
+                                                .buttonStyle(.plain)
+                                                .transition(.move(edge: .trailing).combined(with: .opacity))
+                                            }
+                                        }
+                                        .frame(height: 44)
+                                        
+                                        if index < store.categories.count - 1 {
+                                            Divider()
+                                        }
+                                    }
+                                }
+                            }
+                            .frame(maxHeight: 220)
+                        }
+                        
+                        Divider()
+                            .padding(.vertical, 8)
+                        
+                        Button {
+                            showNewCategoryAlert = true
+                        } label: {
+                            Label("settings.add.category", systemImage: "plus")
+                        }
+                        .frame(minHeight: 34)
                     }
-                    .onDelete(perform: deleteCategory)
-                    
-                    Button {
-                        showNewCategoryAlert = true
-                    } label: {
-                        Label("settings.add.category", systemImage: "plus")
+                } header: {
+                    HStack {
+                        Text("settings.manage.categories")
+                        Spacer()
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                isEditingCategories.toggle()
+                            }
+                        } label: {
+                            Image(systemName: isEditingCategories ? "checkmark.circle.fill" : "pencil")
+                                .font(.body)
+                                .foregroundStyle(isEditingCategories ? .green : .accentColor)
+                                .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                
+                // --- UNITS ---
+                Section {
+                    VStack(alignment: .leading, spacing: 0) {
+                        if store.categories.isEmpty {
+                            Text("No Units yet")
+                                .foregroundStyle(.secondary)
+                                .font(.subheadline)
+                                .padding(.vertical, 8)
+                        } else {
+                            ScrollView {
+                                LazyVStack(spacing: 0) {
+                                    ForEach(Array(store.availableUnits.enumerated()), id: \.offset) { index, unit in
+                                        HStack {
+                                            Text(LocalizedStringKey(unit))
+                                                .foregroundStyle(.primary)
+                                            
+                                            Spacer()
+                                            
+                                            // Only show and allow deletion if Edit mode is active
+                                            if isEditingUnits {
+                                                Button(role: .destructive) {
+                                                    withAnimation {
+                                                        store.removeUnit(unit)
+                                                    }
+                                                } label: {
+                                                    Image(systemName: "trash")
+                                                        .font(.subheadline)
+                                                        .foregroundStyle(.red)
+                                                        .frame(width: 32, height: 32)
+                                                }
+                                                .buttonStyle(.plain)
+                                                .transition(.move(edge: .trailing).combined(with: .opacity))
+                                            }
+                                        }
+                                        .frame(height: 44)
+                                        
+                                        if index < store.categories.count - 1 {
+                                            Divider()
+                                        }
+                                    }
+                                }
+                            }
+                            .frame(maxHeight: 220)
+                        }
+                        
+                        Divider()
+                            .padding(.vertical, 8)
+                        
+                        Button {
+                            showNewUnitAlert = true
+                        } label: {
+                            Label("settings.add.unit", systemImage: "plus")
+                        }
+                        .frame(minHeight: 34)
+                    }
+                } header: {
+                    HStack {
+                        Text("settings.manage.units")
+                        Spacer()
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                isEditingUnits.toggle()
+                            }
+                        } label: {
+                            Image(systemName: isEditingUnits ? "checkmark.circle.fill" : "pencil")
+                                .font(.body)
+                                .foregroundStyle(isEditingUnits ? .green : .accentColor)
+                                .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 
@@ -141,6 +281,16 @@ struct SettingsView: View {
                     newCategoryName = ""
                 }
                 Button("button.cancel", role: .cancel) { newCategoryName = "" }
+            }
+            .alert("unit.new.name", isPresented: $showNewUnitAlert) {
+                TextField("unit.new.name", text: $newUnitName)
+                Button("button.add") {
+                    let trimmed = newUnitName.trimmingCharacters(in: .whitespacesAndNewlines)
+                    guard !trimmed.isEmpty else { return }
+                    store.addUnit(trimmed)
+                    newUnitName = ""
+                }
+                Button("button.cancel", role: .cancel) { newUnitName = "" }
             }
             .sheet(isPresented: $showingSoundPicker) {
                 SoundPickerView(viewModel: timerViewModel)
