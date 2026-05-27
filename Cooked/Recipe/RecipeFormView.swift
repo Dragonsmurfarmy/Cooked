@@ -361,55 +361,45 @@ struct RecipeFormView: View {
     // ---  INGREDIENTS SECTION ---
     @ViewBuilder
     private var ingredientsPartSection: some View {
-        // Using indices smoothly with safe bounds
-        ForEach(sections.indices, id: \.self) { sIdx in
+        ForEach(sections) { section in
             IngredientSectionRowView(
                 sections: $sections,
-                sIdx: sIdx,
+                sectionID: section.id,
                 availableUnits: store.availableUnits,
                 focusedField: $focusedField,
-                onRemove: { removeSection(at: sIdx) }
+                onRemove: {
+                    if let idx = sections.firstIndex(where: { $0.id == section.id }) {
+                        removeSection(at: idx)
+                    }
+                }
             )
         }
         
         Section {
             Button(action: addNewSection) {
-                Label("Add Recipe Section", systemImage: "folder.badge.plus")
+                Label("section.add", systemImage: "folder.badge.plus")
             }
         }
-        
     }
 
     // ---  INSTRUCTIONS SECTION ---
     @ViewBuilder
     private var instructionsPartSection: some View {
-        
-        ForEach(0..<sections.count, id: \.self) { sIdx in
+        ForEach(sections) { section in
             InstructionSectionRowView(
                 sections: $sections,
-                sIdx: sIdx,
+                sectionID: section.id,
                 focusedField: $focusedField
             )
-        }
-        
-        Section {
-            Button(action: addNewSection) {
-                Label("Add Instructions Section", systemImage: "folder.badge.plus")
-            }
         }
         
     }
     
     // --- HELPER LOGIC FUNCTIONS ---
     private func addNewSection() {
-        let standard = String(localized: "section.default")
         withAnimation {
-            if sections.count == 1 && sections[0].name == nil {
-                sections[0].name = "section.default"
-            }
-            
             let newIndex = sections.count
-            let defaultSectionName = standard + " \(newIndex + 1)"
+            let defaultSectionName = String(localized: "section.default \(newIndex + 1)")
             
             let newGroup = RecipeSection(
                 name: defaultSectionName,
@@ -516,31 +506,46 @@ struct RecipeFormView: View {
 
 private struct IngredientSectionRowView: View {
     @Binding var sections: [RecipeSection]
-    let sIdx: Int
+    let sectionID: UUID // Track cleanly via stable UUID
     let availableUnits: [String]
     let focusedField: FocusState<RecipeFormView.Field?>.Binding
     var onRemove: () -> Void
     
+    // Pure functional lookup to always get the live section instance
+    private var currentSectionIndex: Int? {
+        sections.firstIndex(where: { $0.id == sectionID })
+    }
+    
     var body: some View {
-        if sIdx < sections.count {
-            // Create a safe custom binding for the optional section name
+        if let sIdx = currentSectionIndex {
             let sectionNameBinding = Binding<String>(
-                get: { sections[sIdx].name ?? "" },
-                set: { sections[sIdx].name = $0.isEmpty ? nil : $0 }
+                get: {
+                    
+                    guard let sIdx = currentSectionIndex, sIdx < sections.count else { return "" }
+                    return sections[sIdx].name ?? ""
+                },
+                set: { newValue in
+                    
+                    guard let sIdx = currentSectionIndex, sIdx < sections.count else { return }
+                    sections[sIdx].name = newValue.isEmpty ? nil : newValue
+                }
             )
             
-            // Pass a TextField into the header slot instead of plain Text
-            Section(header: TextField(String(localized: "section.default"), text: sectionNameBinding)
-                .font(.headline)
-                .textCase(nil)
-                .focused(focusedField, equals: .sectionName(sIdx))
+            Section(header:
+                TextField(LocalizedStringKey("section.default \(sIdx + 1)"), text: sectionNameBinding)
+                    .font(.headline)
+                    .textCase(nil)
+                    .focused(focusedField, equals: .sectionName(sIdx))
             ) {
-                ForEach(0..<sections[sIdx].ingredients.count, id: \.self) { rIdx in
+                // Loop over ingredients elements directly using their stable identities
+                ForEach($sections[sIdx].ingredients) { $ingredient in
+                    let rIdx = sections[sIdx].ingredients.firstIndex(where: { $0.id == ingredient.id }) ?? 0
+                    
                     HStack(spacing: 8) {
-                        TextField("ingredient.name", text: $sections[sIdx].ingredients[rIdx].name)
+                        TextField("ingredient.name", text: $ingredient.name)
                             .focused(focusedField, equals: .ingredientName(section: sIdx, row: rIdx))
                         
-                        TextField("0", value: $sections[sIdx].ingredients[rIdx].amount, format: .number)
+                        TextField("0", value: $ingredient.amount, format: .number)
                             .keyboardType(.numberPad)
                             .frame(width: 50)
                             .multilineTextAlignment(.center)
@@ -548,18 +553,17 @@ private struct IngredientSectionRowView: View {
                         Menu {
                             ForEach(availableUnits, id: \.self) { unit in
                                 Button {
-                                    sections[sIdx].ingredients[rIdx].unit = unit
+                                    ingredient.unit = unit
                                 } label: {
                                     Text(LocalizedStringKey(unit))
                                 }
                             }
                         } label: {
                             HStack(spacing: 4) {
-                                let currentUnit = sections[sIdx].ingredients[rIdx].unit
-                                
+                                let currentUnit = ingredient.unit
                                 
                                 if currentUnit.isEmpty {
-                                    Text("unit") // Placeholder
+                                    Text("unit")
                                 } else {
                                     Text(LocalizedStringKey(currentUnit))
                                         .foregroundStyle(.primary)
@@ -600,32 +604,49 @@ private struct IngredientSectionRowView: View {
 
 private struct InstructionSectionRowView: View {
     @Binding var sections: [RecipeSection]
-    let sIdx: Int
+    let sectionID: UUID // Track cleanly via stable UUID
     let focusedField: FocusState<RecipeFormView.Field?>.Binding
     
+    private var currentSectionIndex: Int? {
+        sections.firstIndex(where: { $0.id == sectionID })
+    }
+    
     var body: some View {
-        if sIdx < sections.count {
-            // Mirror the safe binding setup
+        if let sIdx = currentSectionIndex {
             let sectionNameBinding = Binding<String>(
-                get: { sections[sIdx].name ?? "" },
-                set: { sections[sIdx].name = $0.isEmpty ? nil : $0 }
+                get: {
+                    guard let sIdx = currentSectionIndex, sIdx < sections.count else {
+                        return ""
+                    }
+                    return sections[sIdx].name ?? ""
+                },
+                set: { newValue in
+                    guard let sIdx = currentSectionIndex, sIdx < sections.count else {
+                        return
+                    }
+                    sections[sIdx].name = newValue.isEmpty ? nil : newValue
+                }
             )
+
             
-            // Put a mirroring TextField here
-            Section(header: TextField(String(localized: "section.default"), text: sectionNameBinding)
-                .font(.headline)
-                .textCase(nil)
-                .focused(focusedField, equals: .sectionName(sIdx))
+            Section(header:
+                TextField(LocalizedStringKey("section.default \(sIdx + 1)"), text: sectionNameBinding)
+                    .font(.headline)
+                    .textCase(nil)
+                    .focused(focusedField, equals: .sectionName(sIdx))
             ) {
-                ForEach(0..<sections[sIdx].instructions.count, id: \.self) { rIdx in
-                    HStack(alignment: .top, spacing: 8) {
+                // Loop over instructions elements directly using their stable identities
+                ForEach($sections[sIdx].instructions) { $instruction in
+                    let rIdx = sections[sIdx].instructions.firstIndex(where: { $0.id == instruction.id }) ?? 0
+                    
+                    HStack(alignment: .bottom, spacing: 8) {
                         Text("\(rIdx + 1).")
                             .font(.body)
                             .foregroundStyle(.secondary)
                             .frame(width: 22, alignment: .leading)
                             .padding(.top, 8)
                         
-                        TextField("Step description...", text: $sections[sIdx].instructions[rIdx].text, axis: .vertical)
+                        TextField("Step description...", text: $instruction.text, axis: .vertical)
                             .lineLimit(1...5)
                             .focused(focusedField, equals: .instruction(section: sIdx, row: rIdx))
                     }

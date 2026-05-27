@@ -73,7 +73,7 @@ import SwiftUI
         var loadedRecipes: [Recipe] = []
         
         for url in fileURLs where url.pathExtension == "json" {
-            // Ignore settings file
+            // Ignore settings and draft files
             if url.lastPathComponent == "user_settings_data" { continue }
             if url.lastPathComponent == "RecipeDraft.json" { continue }
             

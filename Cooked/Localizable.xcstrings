@@ -16,12 +16,6 @@
     "0" : {
 
     },
-    "Add Instructions Section" : {
-
-    },
-    "Add Recipe Section" : {
-
-    },
     "button.add" : {
       "localizations" : {
         "cs" : {
@@ -1103,18 +1097,34 @@
         }
       }
     },
-    "section.default" : {
+    "section.add" : {
       "localizations" : {
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sekce"
+            "value" : "Přidat Komponentu"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Section"
+            "value" : "Add Component"
+          }
+        }
+      }
+    },
+    "section.default %lld" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sekce %lld"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Section %lld"
           }
         }
       }
