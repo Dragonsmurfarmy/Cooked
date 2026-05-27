@@ -38,6 +38,7 @@ struct RecipeFormView: View {
     @State private var selectedImageData: Data?
     @State private var showNewCategoryAlert = false
     @State private var newCategoryName = ""
+    @State private var tips = ""
 
     private static let maxCookingTimeMinutes = 240 // Slider has maximum of 4 hours
     
@@ -72,6 +73,7 @@ struct RecipeFormView: View {
         
         
         _sections = State(initialValue: recipeToEdit?.sections ?? (draft.sections.isEmpty ? [RecipeSection()] : draft.sections))
+        _tips = State(initialValue: recipeToEdit?.tips ?? draft.tips ?? "")
     }
 
     private var isEditing: Bool {
@@ -91,7 +93,8 @@ struct RecipeFormView: View {
                 recipeDescription != original?.recipeDescription ||
                 isFavorite != original?.isFavorite ||
                 selectedImageData != original?.imageData ||
-                sections != original?.sections
+                sections != original?.sections ||
+                tips != (original?.tips ?? "")
     }
 
     @ViewBuilder
@@ -219,6 +222,7 @@ struct RecipeFormView: View {
             basicInfoSection
             ingredientsPartSection
             instructionsPartSection
+            tipsFormSection
         }
         .safeAreaInset(edge: .bottom) {
             if isEditing {
@@ -280,6 +284,7 @@ struct RecipeFormView: View {
             updateDifficultyIfNeeded()
             saveDraftIfNeeded()
         }
+        .onChange(of: tips) { _, _ in saveDraftIfNeeded() }
         .onChange(of: selectedImageData) { _, _ in
             guard !isEditing else { return }
             store.saveDraftImageData(selectedImageData)
@@ -382,6 +387,21 @@ struct RecipeFormView: View {
         }
     }
 
+    // ---  TIPS SECTION ---
+    private var tipsFormSection: some View {
+        Section {
+            TextField(String(localized:"tips.placeholder"), text: $tips, axis: .vertical)
+                .lineLimit(3...8)
+        } header: {
+            Label("tips.title", systemImage: "lightbulb.fill")
+                .foregroundStyle(.orange)
+        } footer: {
+            Text("tips.footer")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
     // ---  INSTRUCTIONS SECTION ---
     @ViewBuilder
     private var instructionsPartSection: some View {
@@ -463,6 +483,7 @@ struct RecipeFormView: View {
             difficulty: selectedDifficulty,
             isFavorite: isFavorite,
             imageFileName: existingImageName,
+            tips: tips.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : tips,
             sections: finalRecipeSections
         )
         
@@ -481,6 +502,7 @@ struct RecipeFormView: View {
         store.draftRecipe.cookingTimeMinutes = max(0, Int(cookingTimeMinutes))
         store.draftRecipe.difficulty = selectedDifficulty
         store.draftRecipe.sections = sections
+        store.draftRecipe.tips = tips.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : tips
     }
 
     private func resetFormToOriginalRecipe() {
@@ -493,6 +515,7 @@ struct RecipeFormView: View {
         sections = recipeToEdit.sections.isEmpty ? [RecipeSection()] : recipeToEdit.sections
         isFavorite = recipeToEdit.isFavorite
         selectedImageData = recipeToEdit.imageData
+        tips = recipeToEdit.tips ?? ""
         rawSelectedImage = nil
         selectedPhoto = nil
         navigateToCropper = false

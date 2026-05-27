@@ -16,5 +16,6 @@ struct RecipeDraft: Codable, Equatable {
     var cookingTimeMinutes = 0
     var difficulty: RecipeDifficulty = .easy
     var imageFileName: String?
+    var tips: String?
 }
 

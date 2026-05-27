@@ -1,5 +1,5 @@
 //
-//  Settings.swift
+//  RecipeDetailView.swift
 //  Cooked
 //
 //  Created by Tomáš Kříž on 20.04.2026.
@@ -148,16 +148,16 @@ struct RecipeDetailView: View {
                                             .font(.system(size: 6))
                                             .foregroundStyle(.tint)
                                             .padding(.bottom, 4)
-                                                    
+                                                                    
                                         Text(ingredient.name)
                                             .font(.body)
-                                                    
+                                                                    
                                         Spacer()
-                                                    
+                                                                    
                                         Text(calculateAmount(for: ingredient))
                                             .fontWeight(.semibold)
                                             .foregroundStyle(.primary)
-                                                    
+                                                                    
                                         Text(LocalizedStringKey(ingredient.unit))
                                             .font(.subheadline)
                                             .foregroundStyle(.secondary)
@@ -214,13 +214,43 @@ struct RecipeDetailView: View {
                         }
                     }
                 }
+                
+                // --- TIPS SECTION ---
+                if let tips = recipe.tips, !tips.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Divider()
+
+                    VStack(spacing: 16) {
+                        VStack(spacing: 6) {
+                            Image(systemName: "lightbulb.fill")
+                                .font(.title2)
+                                .foregroundStyle(.orange)
+                            Text("tips.title")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                        }
+                        .frame(maxWidth: .infinity)
+
+                        Text(tips)
+                            .font(.body)
+                            .italic()
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.primary)
+                            .padding(16)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.orange.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14)
+                                    .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                            )
+                    }
+                }
             }
             .padding(20)
         }
         .safeAreaInset(edge: .bottom) {
             Color.clear.frame(height: 120)
         }
-        .navigationBarTitleDisplayMode(.inline)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .navigationBarTrailing) {
@@ -321,21 +351,18 @@ struct RecipeDetailView: View {
     }
 
     // Helper function to scale ingredient amounts from recipe default portions to the selected amount.
-        private func calculateAmount(for ingredient: Ingredient) -> String {
-            // Base amount for one portion.
-            let baseAmount = Double(ingredient.amount) / Double(recipe.defaultPortions)
-            // Final amount for the currently selected portion count.
-            let finalAmount = baseAmount * Double(selectedPortions)
+    private func calculateAmount(for ingredient: Ingredient) -> String {
+        // Base amount for one portion.
+        let baseAmount = Double(ingredient.amount) / Double(recipe.defaultPortions)
+        // Final amount for the currently selected portion count.
+        let finalAmount = baseAmount * Double(selectedPortions)
+        
+        
+        let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = 3 // Up to 3 decimals for doubles
+            formatter.minimumFractionDigits = 0 // 0 digits for ints
             
-            
-            let formatter = NumberFormatter()
-                formatter.numberStyle = .decimal
-                formatter.maximumFractionDigits = 3 // Up to 3 decimals for doubles
-                formatter.minimumFractionDigits = 0 // 0 digits for ints
-                
-                return formatter.string(from: NSNumber(value: finalAmount)) ?? "\(finalAmount)"
-        }
+            return formatter.string(from: NSNumber(value: finalAmount)) ?? "\(finalAmount)"
+    }
 }
-
-
-

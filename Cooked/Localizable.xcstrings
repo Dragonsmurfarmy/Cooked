@@ -1686,6 +1686,54 @@
         }
       }
     },
+    "tips.footer" : {
+        "localizations" : {
+          "cs" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Tip"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Tip"
+            }
+          }
+        }
+    },
+    "tips.placeholder" : {
+        "localizations" : {
+            "cs" : {
+                "stringUnit" : {
+                    "state" : "translated",
+                    "value" : "Servírujte studené bez konzervantů a umělých barviv"
+                }
+            },
+            "en" : {
+                "stringUnit" : {
+                    "state" : "translated",
+                    "value" : "Serve hot with boiling lobsters"
+                }
+            }
+        }
+    },
+    "tips.title" : {
+        "localizations" : {
+          "cs" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Tip!"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Tip!"
+            }
+          }
+        }
+    },
     "unit" : {
 
     },

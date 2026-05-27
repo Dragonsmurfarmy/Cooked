@@ -87,6 +87,7 @@ struct Recipe: Identifiable, Equatable, Codable {
     var difficulty: RecipeDifficulty
     var isFavorite: Bool
     var imageFileName: String?
+    var tips: String?
     
     // This is now the ONLY source of truth for ingredients and instructions
     var sections: [RecipeSection]
@@ -98,7 +99,7 @@ struct Recipe: Identifiable, Equatable, Codable {
         return try? Data(contentsOf: url)
     }
 
-    init(id: UUID = UUID(), name: String, categories: [RecipeCategory], recipeDescription: String, defaultPortions: Int, cookingTimeMinutes: Int, difficulty: RecipeDifficulty, isFavorite: Bool, imageFileName: String? = nil, sections: [RecipeSection]) {
+    init(id: UUID = UUID(), name: String, categories: [RecipeCategory], recipeDescription: String, defaultPortions: Int, cookingTimeMinutes: Int, difficulty: RecipeDifficulty, isFavorite: Bool, imageFileName: String? = nil, tips: String? = nil, sections: [RecipeSection]) {
         self.id = id
         self.name = name
         self.categories = categories
@@ -108,10 +109,10 @@ struct Recipe: Identifiable, Equatable, Codable {
         self.difficulty = difficulty
         self.isFavorite = isFavorite
         self.imageFileName = imageFileName
+        self.tips = tips // <-- Assigned tips parameter
         self.sections = sections
     }
 
-    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -125,5 +126,8 @@ struct Recipe: Identifiable, Equatable, Codable {
         isFavorite = try container.decode(Bool.self, forKey: .isFavorite)
         imageFileName = try container.decodeIfPresent(String.self, forKey: .imageFileName)
         sections = try container.decode([RecipeSection].self, forKey: .sections)
+        
+        // Decodes the optional field. If it doesn't exist in older app saves, it falls back gracefully to nil.
+        tips = try container.decodeIfPresent(String.self, forKey: .tips)
     }
 }
