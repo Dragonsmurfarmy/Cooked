@@ -125,61 +125,92 @@ struct RecipeDetailView: View {
                     .background(Color.secondary.opacity(0.05))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    // --- INGREDIENT SECTION ---
-                    VStack(alignment: .leading, spacing: 16) {
-                        Label("ingredients", systemImage: "list.bullet")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                                    
+                // --- INGREDIENT SECTION ---
+                VStack(alignment: .leading, spacing: 20) {
+                    Label("ingredients", systemImage: "list.bullet")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                    
+                    ForEach(recipe.sections) { section in
                         VStack(alignment: .leading, spacing: 10) {
-                            ForEach(recipe.ingredients) { ingredient in
-                                HStack(alignment: .firstTextBaseline) {
-                                    Image(systemName: "circle.fill")
-                                        .font(.system(size: 6))
-                                        .foregroundStyle(.tint)
-                                        .padding(.bottom, 4)
-                                                
-                                    Text(ingredient.name)
-                                        .font(.body)
-                                                
-                                    Spacer()
-                                                
-                                    // Show ingredient amount scaled to currently selected portion count
-                                    Text(calculateAmount(for: ingredient))
-                                        .fontWeight(.semibold)
-                                        .foregroundStyle(.primary)
-                                                
-                                    Text(LocalizedStringKey(ingredient.unit))
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
-                                            
-                                if ingredient != recipe.ingredients.last {
-                                    Divider().opacity(0.5)
+                            // Display section header if a custom name is provided
+                            if let sectionName = section.name, !sectionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text(sectionName)
+                                    .font(.headline)
+                                    .foregroundStyle(.primary)
+                                    .padding(.top, 4)
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 10) {
+                                ForEach(section.ingredients) { ingredient in
+                                    HStack(alignment: .firstTextBaseline) {
+                                        Image(systemName: "circle.fill")
+                                            .font(.system(size: 6))
+                                            .foregroundStyle(.tint)
+                                            .padding(.bottom, 4)
+                                                    
+                                        Text(ingredient.name)
+                                            .font(.body)
+                                                    
+                                        Spacer()
+                                                    
+                                        Text(calculateAmount(for: ingredient))
+                                            .fontWeight(.semibold)
+                                            .foregroundStyle(.primary)
+                                                    
+                                        Text(LocalizedStringKey(ingredient.unit))
+                                            .font(.subheadline)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    
+                                    if ingredient != section.ingredients.last {
+                                        Divider().opacity(0.5)
+                                    }
                                 }
                             }
+                            .padding(.leading, 4)
                         }
                     }
+                }
 
                 Divider()
 
                 // --- INSTRUCTION SECTION ---
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 20) {
                     Label("instructions", systemImage: "frying.pan")
                         .font(.title3)
                         .fontWeight(.bold)
 
-                    let steps = recipe.instructions.components(separatedBy: "\n").filter { !$0.isEmpty }
+                    ForEach(recipe.sections) { section in
+                        // Filter out empty instructions for this specific section
+                        let sectionInstructions = section.instructions.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
                         
-                    ForEach(steps.indices, id: \.self) { index in
-                        HStack(alignment: .top, spacing: 10) {
-                            Text("\(index + 1).")
-                                .fontWeight(.bold)
-                                .foregroundStyle(.tint)
+                        if !sectionInstructions.isEmpty {
+                            VStack(alignment: .leading, spacing: 12) {
+                                // Display section header if a custom name is provided
+                                if let sectionName = section.name, !sectionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                    Text(sectionName)
+                                        .font(.headline)
+                                        .foregroundStyle(.primary)
+                                        .padding(.top, 4)
+                                }
                                 
-                            Text(steps[index])
-                                .font(.body)
-                                .lineSpacing(4)
+                                ForEach(sectionInstructions) { instructionLine in
+                                    // Find the index local to this section's instructions array
+                                    if let localIndex = sectionInstructions.firstIndex(where: { $0.id == instructionLine.id }) {
+                                        HStack(alignment: .top, spacing: 10) {
+                                            // localIndex resets to 0 for every new section, so +1 always starts at 1
+                                            Text("\(localIndex + 1).")
+                                                .fontWeight(.bold)
+                                                .foregroundStyle(.tint)
+                                                
+                                            Text(instructionLine.text)
+                                                .font(.body)
+                                                .lineSpacing(4)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

@@ -70,14 +70,8 @@ struct RecipeFormView: View {
         _isFavorite = State(initialValue: recipeToEdit?.isFavorite ?? false)
         _selectedImageData = State(initialValue: recipeToEdit?.imageData ?? store.loadDraftImageData())
         
-        // Load data from structural backend entities safely
-        if let editingSections = recipeToEdit?.sections, !editingSections.isEmpty {
-            _sections = State(initialValue: editingSections)
-        } else if !draft.sections.isEmpty {
-            _sections = State(initialValue: draft.sections)
-        } else {
-            _sections = State(initialValue: [RecipeSection()])
-        }
+        
+        _sections = State(initialValue: recipeToEdit?.sections ?? (draft.sections.isEmpty ? [RecipeSection()] : draft.sections))
     }
 
     private var isEditing: Bool {
@@ -433,36 +427,46 @@ struct RecipeFormView: View {
     }
 
     private func saveAction() {
-        let finalRecipeSections = sections.map { currentSection -> RecipeSection in
+        // Explicitly type-cast and break down the section sanitization logic
+        let finalRecipeSections: [RecipeSection] = sections.map { currentSection in
             var sanitized = currentSection
             sanitized.ingredients = currentSection.ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
             sanitized.instructions = currentSection.instructions.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             return sanitized
         }.filter { !$0.ingredients.isEmpty || !$0.instructions.isEmpty }
         
-        let flatIngredients = finalRecipeSections.flatMap { $0.ingredients }
-        let serializedInstructionsText = finalRecipeSections
-            .flatMap { section -> [String] in
-                let header = section.name.map { ["[\($0)]"] } ?? []
-                return header + section.instructions.map(\.text)
-            }
-            .joined(separator: "\n")
+        // Separate out the flattened ingredients sequence
+        let flatIngredients: [Ingredient] = finalRecipeSections.flatMap { $0.ingredients }
+        
+        // Separate out the string serialization sequence
+        let mappedLines: [[String]] = finalRecipeSections.map { section in
+            let header = section.name.map { ["[\($0)]"] } ?? []
+            let steps = section.instructions.map(\.text)
+            return header + steps
+        }
+        let serializedInstructionsText: String = mappedLines.flatMap { $0 }.joined(separator: "\n")
+        
+        // Resolve IDs and configuration parameters cleanly upfront
+        let recipeId: UUID = recipeToEdit?.id ?? UUID()
+        let defaultPortions: Int = recipeToEdit?.defaultPortions ?? store.settings.defaultPortions
+        let computedCookingTime: Int = max(0, Int(cookingTimeMinutes))
+        let existingImageName: String? = recipeToEdit?.imageFileName
 
+        // Construct the Recipe struct using pre-checked values
         let recipeToSave = Recipe(
-            id: recipeToEdit?.id ?? UUID(),
+            id: recipeId,
             name: name,
             categories: selectedCategories,
             recipeDescription: recipeDescription,
-            ingredients: flatIngredients,
-            defaultPortions: recipeToEdit?.defaultPortions ?? store.settings.defaultPortions,
-            cookingTimeMinutes: max(0, Int(cookingTimeMinutes)),
+            defaultPortions: defaultPortions,
+            cookingTimeMinutes: computedCookingTime,
             difficulty: selectedDifficulty,
-            instructions: serializedInstructionsText,
             isFavorite: isFavorite,
-            imageFileName: recipeToEdit?.imageFileName,
+            imageFileName: existingImageName,
             sections: finalRecipeSections
         )
         
+        // Complete storage actions
         let savedRecipe = store.saveRecipe(recipeToSave, newImageData: selectedImageData)
         if !isEditing { store.clearDraft() }
         onSave(savedRecipe)
@@ -628,29 +632,30 @@ private struct InstructionSectionRowView: View {
         if let sIdx = currentSectionIndex {
             let sectionNameBinding = Binding<String>(
                 get: {
-                    guard let sIdx = currentSectionIndex, sIdx < sections.count else {
-                        return ""
-                    }
+                    guard let sIdx = currentSectionIndex, sIdx < sections.count else { return "" }
                     return sections[sIdx].name ?? ""
                 },
                 set: { newValue in
-                    guard let sIdx = currentSectionIndex, sIdx < sections.count else {
-                        return
-                    }
+                    guard let sIdx = currentSectionIndex, sIdx < sections.count else { return }
                     sections[sIdx].name = newValue.isEmpty ? nil : newValue
                 }
             )
 
-            
             Section(header:
                 TextField(LocalizedStringKey("section.default \(sIdx + 1)"), text: sectionNameBinding)
                     .font(.headline)
                     .textCase(nil)
                     .focused(focusedField, equals: .sectionName(sIdx))
             ) {
-                // Loop over instructions elements directly using their stable identities
-                ForEach($sections[sIdx].instructions) { $instruction in
-                    let rIdx = sections[sIdx].instructions.firstIndex(where: { $0.id == instruction.id }) ?? 0
+                // FIX: Loop cleanly over indices to prevent the SwiftUI compiler from timing out
+                ForEach(sections[sIdx].instructions.indices, id: \.self) { rIdx in
+                    let instructionTextBinding = Binding<String>(
+                        get: {
+                            guard sIdx < sections.count, rIdx < sections[sIdx].instructions.count else { return "" }
+                            return sections[sIdx].instructions[rIdx].text
+                        },
+                        set: { sections[sIdx].instructions[rIdx].text = $0 }
+                    )
                     
                     HStack(alignment: .bottom, spacing: 8) {
                         Text("\(rIdx + 1).")
@@ -659,7 +664,7 @@ private struct InstructionSectionRowView: View {
                             .frame(width: 22, alignment: .leading)
                             .padding(.top, 8)
                         
-                        TextField("Step description...", text: $instruction.text, axis: .vertical)
+                        TextField("Step description...", text: instructionTextBinding, axis: .vertical)
                             .lineLimit(1...5)
                             .focused(focusedField, equals: .instruction(section: sIdx, row: rIdx))
                     }

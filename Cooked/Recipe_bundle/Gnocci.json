@@ -9,112 +9,27 @@
   ],
   "defaultPortions": 1,
   "recipeDescription": "Rychlá a jemná italská klasika. Osvědčená kombinace smetanové omáčky, listového špenátu a parmazánu.",
-  "ingredients": [
-    {
-      "id": "A1EB2345-1234-4567-8901-A1B2C3D4E5F1",
-      "name": "bramborových gnocchi",
-      "amount": 750,
-      "unit": "g"
-    },
-    {
-      "id": "B2EB2345-1234-4567-8901-A1B2C3D4E5F2",
-      "name": "másla",
-      "amount": 3,
-      "unit": "lžíce"
-    },
-    {
-      "id": "C3EB2345-1234-4567-8901-A1B2C3D4E5F3",
-      "name": "česneku (na plátky)",
-      "amount": 5,
-      "unit": "stroužků"
-    },
-    {
-      "id": "D4EB2345-1234-4567-8901-A1B2C3D4E5F4",
-      "name": "mraženého nebo čerstvého listového špenátu",
-      "amount": 300,
-      "unit": "g"
-    },
-    {
-      "id": "E5EB2345-1234-4567-8901-A1B2C3D4E5F5",
-      "name": "smetany na vaření",
-      "amount": 150,
-      "unit": "ml"
-    },
-    {
-      "id": "F6EB2345-1234-4567-8901-A1B2C3D4E5F6",
-      "name": "nastrouhaného parmazánu",
-      "amount": 50,
-      "unit": "g"
-    }
-  ],
-  "defaultPortions": 1,
   "cookingTimeMinutes": 20,
   "difficulty": "easy",
-  "instructions": "Uvařte gnocchi v osolené vodě podle návodu, dokud nevyplavou.\nNa pánvi rozpusťte máslo a krátce orestujte plátky česneku.\nPřidejte špenát a nechte ho zredukovat.\nVlijte smetanu, přisypte parmazán a omáčku nechte mírně zhoustnout.\nDo hotové omáčky vmíchejte uvařené gnocchi a prohřejte.",
   "isFavorite": false,
   "sections": [
     {
-      "id": "B1000000-2222-3333-4444-555555555555",
+      "id": "2B8D31F4-7492-49A1-B3C5-9A8B7C6D5E4F",
       "name": null,
       "ingredients": [
-        {
-          "id": "A1EB2345-1234-4567-8901-A1B2C3D4E5F1",
-          "name": "bramborových gnocchi",
-          "amount": 750,
-          "unit": "g"
-        },
-        {
-          "id": "B2EB2345-1234-4567-8901-A1B2C3D4E5F2",
-          "name": "másla",
-          "amount": 3,
-          "unit": "lžíce"
-        },
-        {
-          "id": "C3EB2345-1234-4567-8901-A1B2C3D4E5F3",
-          "name": "česneku (na plátky)",
-          "amount": 5,
-          "unit": "stroužků"
-        },
-        {
-          "id": "D4EB2345-1234-4567-8901-A1B2C3D4E5F4",
-          "name": "mraženého nebo čerstvého listového špenátu",
-          "amount": 300,
-          "unit": "g"
-        },
-        {
-          "id": "E5EB2345-1234-4567-8901-A1B2C3D4E5F5",
-          "name": "smetany na vaření",
-          "amount": 150,
-          "unit": "ml"
-        },
-        {
-          "id": "F6EB2345-1234-4567-8901-A1B2C3D4E5F6",
-          "name": "nastrouhaného parmazánu",
-          "amount": 50,
-          "unit": "g"
-        }
+        { "id": "A1EB2345-1234-4567-8901-A1B2C3D4E5F1", "name": "bramborových gnocchi", "amount": 750, "unit": "g" },
+        { "id": "B2EB2345-1234-4567-8901-A1B2C3D4E5F2", "name": "másla", "amount": 3, "unit": "lžíce" },
+        { "id": "C3EB2345-1234-4567-8901-A1B2C3D4E5F3", "name": "česneku (na plátky)", "amount": 5, "unit": "stroužků" },
+        { "id": "D4EB2345-1234-4567-8901-A1B2C3D4E5F4", "name": "mraženého nebo čerstvého listového špenátu", "amount": 300, "unit": "g" },
+        { "id": "E5EB2345-1234-4567-8901-A1B2C3D4E5F5", "name": "smetany na vaření", "amount": 150, "unit": "ml" },
+        { "id": "F6EB2345-1234-4567-8901-A1B2C3D4E5F6", "name": "nastrouhaného parmazánu", "amount": 50, "unit": "g" }
       ],
       "instructions": [
-        {
-          "id": "I2000000-0000-0000-0000-000000000001",
-          "text": "Uvařte gnocchi v osolené vodě podle návodu, dokud nevyplavou."
-        },
-        {
-          "id": "I2000000-0000-0000-0000-000000000002",
-          "text": "Na pánvi rozpusťte máslo a krátce orestujte plátky česneku."
-        },
-        {
-          "id": "I2000000-0000-0000-0000-000000000003",
-          "text": "Přidejte špenát a nechte ho zredukovat."
-        },
-        {
-          "id": "I2000000-0000-0000-0000-000000000004",
-          "text": "Vlijte smetanu, přisypte parmazán a omáčku nechte mírně zhoustnout."
-        },
-        {
-          "id": "I2000000-0000-0000-0000-000000000005",
-          "text": "Do hotové omáčky vmíchejte uvařené gnocchi a prohřejte."
-        }
+        { "id": "110F2B4C-6789-4D2A-9876-1234567890AB", "text": "Uvařte gnocchi v osolené vodě podle návodu, dokud nevyplavou." },
+        { "id": "120F2B4C-6789-4D2A-9876-1234567890AB", "text": "Na pánvi rozpusťte máslo a krátce orestujte plátky česneku." },
+        { "id": "130F2B4C-6789-4D2A-9876-1234567890AB", "text": "Přidejte špenát a nechte ho zredukovat." },
+        { "id": "140F2B4C-6789-4D2A-9876-1234567890AB", "text": "Vlijte smetanu, přisypte parmazán a omáčku nechte mírně zhoustnout." },
+        { "id": "150F2B4C-6789-4D2A-9876-1234567890AB", "text": "Do hotové omáčky vmíchejte uvařené gnocchi a prohřejte." }
       ]
     }
   ]

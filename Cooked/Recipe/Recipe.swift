@@ -77,56 +77,41 @@ struct Ingredient: Identifiable, Equatable, Codable {
     }
 }
 
-struct Recipe: Identifiable, Codable, Equatable {
-    let id: UUID
+struct Recipe: Identifiable, Equatable, Codable {
+    var id = UUID()
     var name: String
     var categories: [RecipeCategory]
     var recipeDescription: String
-    var ingredients: [Ingredient]
     var defaultPortions: Int
     var cookingTimeMinutes: Int
     var difficulty: RecipeDifficulty
-    var instructions: String
     var isFavorite: Bool
     var imageFileName: String?
     
+    // This is now the ONLY source of truth for ingredients and instructions
     var sections: [RecipeSection]
 
     var imageData: Data? {
-        guard let filename = imageFileName else { return nil }
+        guard let imageFileName else { return nil }
         let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent(filename)
+            .appendingPathComponent(imageFileName)
         return try? Data(contentsOf: url)
     }
 
-    init(
-        id: UUID = UUID(),
-        name: String,
-        categories: [RecipeCategory],
-        recipeDescription: String,
-        ingredients: [Ingredient] = [],
-        defaultPortions: Int = 1,
-        cookingTimeMinutes: Int = 0,
-        difficulty: RecipeDifficulty = .easy,
-        instructions: String,
-        isFavorite: Bool,
-        imageFileName: String? = nil,
-        sections: [RecipeSection] = []
-    ) {
+    init(id: UUID = UUID(), name: String, categories: [RecipeCategory], recipeDescription: String, defaultPortions: Int, cookingTimeMinutes: Int, difficulty: RecipeDifficulty, isFavorite: Bool, imageFileName: String? = nil, sections: [RecipeSection]) {
         self.id = id
         self.name = name
         self.categories = categories
         self.recipeDescription = recipeDescription
-        self.ingredients = ingredients
         self.defaultPortions = defaultPortions
         self.cookingTimeMinutes = cookingTimeMinutes
         self.difficulty = difficulty
-        self.instructions = instructions
         self.isFavorite = isFavorite
         self.imageFileName = imageFileName
         self.sections = sections
     }
 
+    
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
@@ -134,15 +119,11 @@ struct Recipe: Identifiable, Codable, Equatable {
         name = try container.decode(String.self, forKey: .name)
         categories = try container.decode([RecipeCategory].self, forKey: .categories)
         recipeDescription = try container.decode(String.self, forKey: .recipeDescription)
-        ingredients = try container.decode([Ingredient].self, forKey: .ingredients)
         defaultPortions = try container.decode(Int.self, forKey: .defaultPortions)
         cookingTimeMinutes = try container.decodeIfPresent(Int.self, forKey: .cookingTimeMinutes) ?? 0
         difficulty = try container.decodeIfPresent(RecipeDifficulty.self, forKey: .difficulty) ?? .easy
-        instructions = try container.decode(String.self, forKey: .instructions)
         isFavorite = try container.decode(Bool.self, forKey: .isFavorite)
         imageFileName = try container.decodeIfPresent(String.self, forKey: .imageFileName)
-        
-        // Decodes saved sections cleanly, loops back safely to single layout if old file was saved without them
-        sections = try container.decodeIfPresent([RecipeSection].self, forKey: .sections) ?? []
+        sections = try container.decode([RecipeSection].self, forKey: .sections)
     }
 }

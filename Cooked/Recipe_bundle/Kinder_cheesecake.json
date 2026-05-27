@@ -9,132 +9,47 @@
   ],
   "defaultPortions": 1,
   "recipeDescription": "Božský, krémový cheesecake s nezaměnitelnou chutí Kinder čokolády a ganáží navrchu.",
-  "ingredients": [
-    {
-      "id": "E1AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F1",
-      "name": "máslových sušenek",
-      "amount": 250,
-      "unit": "g"
-    },
-    {
-      "id": "E2AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F2",
-      "name": "másla",
-      "amount": 100,
-      "unit": "g"
-    },
-    {
-      "id": "E3AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F3",
-      "name": "odtučněného tvarohu",
-      "amount": 500,
-      "unit": "g"
-    },
-    {
-      "id": "E4AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F4",
-      "name": "cream cheese (nebo mascarpone)",
-      "amount": 200,
-      "unit": "g"
-    },
-    {
-      "id": "E5AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F5",
-      "name": "řeckého jogurtu",
-      "amount": 140,
-      "unit": "g"
-    },
-    {
-      "id": "E6AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F6",
-      "name": "moučkového cukru",
-      "amount": 100,
-      "unit": "g"
-    },
-    {
-      "id": "E7AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F7",
-      "name": "vajec",
-      "amount": 2,
-      "unit": "ks"
-    },
-    {
-      "id": "E8AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F8",
-      "name": "Kinder čokolády (rozpuštěné)",
-      "amount": 100,
-      "unit": "g"
-    }
-  ],
-  "defaultPortions": 1,
-  "cookingTimeMinutes": 75,
+  "cookingTimeMinutes": 60,
   "difficulty": "intermediate",
-  "instructions": "Rozdrťte sušenky a smíchejte je s rozpuštěným máslem. Směs vtlačte do dortové formy a dejte chladit.\nV míse prošlehejte tvaroh, cream cheese, řecký jogurt a moučkový cukr.\nPo jednom zašlehejte vejce a nakonec pomalu přilijte rozpuštěnou vlahou Kinder čokoládu.\nKrém nalijte na sušenkový základ a pečte v troubě na 160 °C s vodní lázní přibližně 50-60 minut.",
   "isFavorite": false,
   "sections": [
     {
-      "id": "C1000000-2222-3333-4444-555555555555",
-      "name": null,
+      "id": "3F9E42A1-8592-41D1-A4B6-7C8D9E0F1A2B",
+      "name": "Korpus",
       "ingredients": [
-        {
-          "id": "E1AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F1",
-          "name": "máslových sušenek",
-          "amount": 250,
-          "unit": "g"
-        },
-        {
-          "id": "E2AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F2",
-          "name": "másla",
-          "amount": 100,
-          "unit": "g"
-        },
-        {
-          "id": "E3AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F3",
-          "name": "odtučněného tvarohu",
-          "amount": 500,
-          "unit": "g"
-        },
-        {
-          "id": "E4AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F4",
-          "name": "cream cheese (nebo mascarpone)",
-          "amount": 200,
-          "unit": "g"
-        },
-        {
-          "id": "E5AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F5",
-          "name": "řeckého jogurtu",
-          "amount": 140,
-          "unit": "g"
-        },
-        {
-          "id": "E6AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F6",
-          "name": "moučkového cukru",
-          "amount": 100,
-          "unit": "g"
-        },
-        {
-          "id": "E7AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F7",
-          "name": "vajec",
-          "amount": 2,
-          "unit": "ks"
-        },
-        {
-          "id": "E8AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F8",
-          "name": "Kinder čokolády (rozpuštěné)",
-          "amount": 100,
-          "unit": "g"
-        }
+        { "id": "E1AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F1", "name": "máslových sušenek", "amount": 250, "unit": "g" },
+        { "id": "E2AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F2", "name": "másla", "amount": 100, "unit": "g" }
       ],
       "instructions": [
-        {
-          "id": "I3000000-0000-0000-0000-000000000001",
-          "text": "Rozdrťte sušenky a smíchejte je s rozpuštěným máslem. Směs vtlačte do dortové formy a dejte chladit."
-        },
-        {
-          "id": "I3000000-0000-0000-0000-000000000002",
-          "text": "V míse prošlehejte tvaroh, cream cheese, řecký jogurt a moučkový cukr."
-        },
-        {
-          "id": "I3000000-0000-0000-0000-000000000003",
-          "text": "Po jednom zašlehejte vejce a nakonec pomalu přilijte rozpuštěnou vlahou Kinder čokoládu."
-        },
-        {
-          "id": "I3000000-0000-0000-0000-000000000004",
-          "text": "Krém nalijte na sušenkový základ a pečte v troubě na 160 °C s vodní lázní přibližně 50-60 minut."
-        }
+        { "id": "210F2B4C-6789-4D2A-9876-1234567890AB", "text": "Všechno spolu pomixujte, natlačte do formy a dejte péct na 10 minut při 180 °C." }
+      ]
+    },
+    {
+      "id": "4A9E42A1-8592-41D1-A4B6-7C8D9E0F1A2C",
+      "name": "Cheesecake vrstva",
+      "ingredients": [
+        { "id": "E3AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F3", "name": "odtučněného tvarohu", "amount": 500, "unit": "g" },
+        { "id": "E4AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F4", "name": "mascarpone (cream cheese)", "amount": 200, "unit": "g" },
+        { "id": "E5AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F5", "name": "řeckého jogurtu", "amount": 140, "unit": "g" },
+        { "id": "E6AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F6", "name": "moučkového cukru", "amount": 100, "unit": "g" },
+        { "id": "E7AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F7", "name": "vajec", "amount": 2, "unit": "ks" },
+        { "id": "E8AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F8", "name": "Kinder čokolády", "amount": 100, "unit": "g" }
+      ],
+      "instructions": [
+        { "id": "220F2B4C-6789-4D2A-9876-1234567890AC", "text": "Všechno postupně smíchejte a jako poslední zamíchejte rozpuštěnou Kinder čokoládu. Všechno míchejte na nízkých otáčkách, aby se směs nepřešlehala." },
+        { "id": "230F2B4C-6789-4D2A-9876-1234567890AD", "text": "Směs nalijte na korpus a dejte péct na 160 °C na 50 minut s vodní lázní." }
+        { "id": "230F2B4C-6789-4D2A-9876-1234567890AD", "text": "Cheesecake nechte úplně vychladnout v pootevřené troubě." }
+      ]
+    },
+    {
+      "id": "5B9E42A1-8592-41D1-A4B6-7C8D9E0F1A2D",
+      "name": "Kinder ganáž",
+      "ingredients": [
+        { "id": "E9AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F9", "name": "mléka", "amount": 80, "unit": "ml" },
+        { "id": "F0AA1234-A1B2-4C3D-8E9F-A1B2C3D4E5F0", "name": "Kinder čokolády", "amount": 150, "unit": "g" }
+      ],
+      "instructions": [
+        { "id": "240F2B4C-6789-4D2A-9876-1234567890AE", "text": "Zatímco cheesecake chladne, připravte si ganáž zahřátím mléka a rozpuštěním Kinder čokolády." }
       ]
     }
   ]

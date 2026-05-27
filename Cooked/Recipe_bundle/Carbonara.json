@@ -9,75 +9,25 @@
   ],
   "defaultPortions": 1,
   "recipeDescription": "Pravá italská klasika bez smetany. Základem jsou kvalitní žloutky, sýr Pecorino nebo Parmazán a italská slanina.",
-  "ingredients": [
-    {
-      "id": "C1000000-0000-0000-0000-000000000001",
-      "name": "špaget",
-      "amount": 400,
-      "unit": "g"
-    },
-    {
-      "id": "C1000000-0000-0000-0000-000000000002",
-      "name": "pancetty (nebo guanciale)",
-      "amount": 400,
-      "unit": "g"
-    },
-    {
-      "id": "C1000000-0000-0000-0000-000000000003",
-      "name": "žloutků",
-      "amount": 6,
-      "unit": "ks"
-    },
-    {
-      "id": "C1000000-0000-0000-0000-000000000004",
-      "name": "parmazánu (nebo pecorina)",
-      "amount": 120,
-      "unit": "g"
-    }
-  ],
-  "defaultPortions": 1,
   "cookingTimeMinutes": 25,
   "difficulty": "easy",
-  "instructions": "Dejte vařit špagety do osolené vody.\nNa pánvi nasucho vyškvařte pancettu dokřupava.\nV misce vidličkou prošlehejte žloutky s nastrouhaným sýrem a čerstvě mletým pepřem.\nTěstoviny sceďte (trochu vody uchovejte), smíchejte na pánvi se slaninou, stáhněte z ohně a vmíchejte žloutkovou směs.",
   "isFavorite": false,
   "sections": [
     {
-      "id": "A1000000-2222-3333-4444-555555555555",
+      "id": "1A7C20E5-2983-42D5-A1A2-8F9E0D2C3B4A",
       "name": null,
       "ingredients": [
-        {
-          "id": "C1000000-0000-0000-0000-000000000001",
-          "name": "špaget",
-          "amount": 400,
-          "unit": "g"
-        },
-        {
-          "id": "C1000000-0000-0000-0000-000000000002",
-          "name": "pancetty (nebo guanciale)",
-          "amount": 400,
-          "unit": "g"
-        },
-        {
-          "id": "C1000000-0000-0000-0000-000000000003",
-          "name": "žloutků",
-          "amount": 6,
-          "unit": "ks"
-        },
-        {
-          "id": "C1000000-0000-0000-0000-000000000004",
-          "name": "parmazánu (nebo pecorina)",
-          "amount": 120,
-          "unit": "g"
-        }
+        { "id": "C1000000-0000-0000-0000-000000000001", "name": "špaget", "amount": 400, "unit": "g" },
+        { "id": "C1000000-0000-0000-0000-000000000002", "name": "pancetty (nebo guanciale)", "amount": 400, "unit": "g" },
+        { "id": "C1000000-0000-0000-0000-000000000003", "name": "žloutků", "amount": 6, "unit": "ks" },
+        { "id": "C1000000-0000-0000-0000-000000000004", "name": "parmazánu (nebo pecorina)", "amount": 120, "unit": "g" }
       ],
       "instructions": [
-        {
-          "id": "I1000000-0000-0000-0000-000000000001",
-          "text": "Dejte vařit špagety do osolené vody."
-        },
-        {
-          "id": "I1000000-0000-0000-0000-000000000002",
-          "text": "Na pánvi nasucho vyškvařte pancettu dokřupava."
-        },
-        {
-          "id": "I1000000-0000-0000-0000
+        { "id": "010F2B4C-6789-4D2A-9876-1234567890AB", "text": "Dejte vařit špagety do osolené vody." },
+        { "id": "020F2B4C-6789-4D2A-9876-1234567890AB", "text": "Na pánvi nasucho vyškvařte pancettu dokřupava." },
+        { "id": "030F2B4C-6789-4D2A-9876-1234567890AB", "text": "V misce vidličkou prošlehejte žloutky s nastrouhaným sýrem a čerstvě mletým pepřem." },
+        { "id": "040F2B4C-6789-4D2A-9876-1234567890AB", "text": "Těstoviny sceďte (trochu vody uchovejte), smíchejte na pánvi se slaninou, stáhněte z ohně a vmíchejte žloutkovou směs." }
+      ]
+    }
+  ]
+}
