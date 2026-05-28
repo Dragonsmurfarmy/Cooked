@@ -127,9 +127,6 @@
         }
       }
     },
-    "button.next" : {
-
-    },
     "button.ok" : {
       "localizations" : {
         "cs" : {
@@ -1119,6 +1116,22 @@
         }
       }
     },
+    "recipe.select" : {
+        "localizations" : {
+          "cs" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Vybrat recept"
+            }
+          },
+          "en" : {
+            "stringUnit" : {
+              "state" : "translated",
+              "value" : "Select recipe"
+            }
+          }
+        }
+    },
     "recipe.step_placeholder" : {
       "localizations" : {
         "cs" : {
@@ -1751,19 +1764,84 @@
       }
     },
     "tips.link.add" : {
-
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Přidat odkaz na jiný recept"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add link to another recipe"
+          }
+        }
+      }
     },
     "tips.link.pick" : {
-
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zvolte recept na který chcete odkazovat"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select recipe to link"
+          }
+        }
+      }
     },
     "tips.link.search" : {
-
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hledat recept"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search for recipe"
+          }
+        }
+      }
     },
     "tips.link.word.placeholder" : {
-
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Slovo zastupující odkaz"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link placeholder"
+          }
+        }
+      }
     },
     "tips.link.word.prompt" : {
-
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Napište pod jakým slovem chcete skrýt odkaz a vyberte recept, na který chcete odkazovat"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write a word placeholder for link, then select recipe to which the link should lead"
+          }
+        }
+      }
     },
     "tips.placeholder" : {
       "localizations" : {

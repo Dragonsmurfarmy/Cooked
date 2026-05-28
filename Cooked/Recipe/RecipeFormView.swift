@@ -269,7 +269,7 @@ struct RecipeFormView: View {
         }
         .alert("tips.link.word.prompt", isPresented: $showLinkWordAlert) {
             TextField("tips.link.word.placeholder", text: $pendingLinkWord)
-            Button("button.next") {
+            Button("recipe.select") {
                 let trimmed = pendingLinkWord.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !trimmed.isEmpty else { return }
                 pendingLinkWord = trimmed
