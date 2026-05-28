@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct CheckboxToggleStyle: ToggleStyle {
+    // Replace standard toggle switch with checkbox/like appearance
     func makeBody(configuration: Configuration) -> some View {
         Button {
             configuration.isOn.toggle()
@@ -14,7 +15,7 @@ struct CheckboxToggleStyle: ToggleStyle {
             HStack {
                 configuration.label.foregroundStyle(.primary)
                 Spacer()
-                Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
+                Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square") // Show checkmard when on, empty square when off
                     .font(.title3)
                     .foregroundStyle(configuration.isOn ? Color.accentColor : Color.secondary)
             }

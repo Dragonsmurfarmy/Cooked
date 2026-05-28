@@ -8,17 +8,20 @@
 import Foundation
 import SwiftUI
 
+
 struct RecipeCategory: Identifiable, Equatable, Codable {
-    var id = UUID()
-    var name: String
+    var id = UUID() // unique ID
+    var name: String 
 }
 
+
 struct RecipeSection: Identifiable, Codable, Equatable {
-    var id = UUID()
-    var name: String?
-    var ingredients: [Ingredient] = [Ingredient(name: "", amount: 1, unit: "")]
-    var instructions: [InstructionLine] = [InstructionLine(text: "")]
+    var id = UUID()  // unique ID
+    var name: String? // Optional name, if not provided, we generate one
+    var ingredients: [Ingredient] = [Ingredient(name: "", amount: 1, unit: "")] // List of ingredients
+    var instructions: [InstructionLine] = [InstructionLine(text: "")] // List of Instructions
     
+    // 2 sections are equal if these all are true (needed for Reset button)
     static func == (lhs: RecipeSection, rhs: RecipeSection) -> Bool {
         lhs.id == rhs.id &&
         lhs.name == rhs.name &&
@@ -27,9 +30,10 @@ struct RecipeSection: Identifiable, Codable, Equatable {
     }
 }
 
+
 struct InstructionLine: Identifiable, Hashable, Codable {
-    var id = UUID()
-    var text: String
+    var id = UUID() // unique ID
+    var text: String // Instructions text
 }
 
 enum RecipeDifficulty: String, CaseIterable, Identifiable, Codable {
@@ -37,7 +41,7 @@ enum RecipeDifficulty: String, CaseIterable, Identifiable, Codable {
     case intermediate
     case advanced
 
-    var id: String { rawValue }
+    var id: String { rawValue }  // ID is string value of case
 
     var title: LocalizedStringKey {
         switch self {
@@ -49,10 +53,10 @@ enum RecipeDifficulty: String, CaseIterable, Identifiable, Codable {
 }
 
 struct Ingredient: Identifiable, Equatable, Codable {
-    var id = UUID()
+    var id = UUID() // unique ID
     var name: String
-    var amount: Double
-    var unit: String
+    var amount: Double // f.e. 150
+    var unit: String // f.e. "g" or "grams"
     
     init(id: UUID = UUID(), name: String = "", amount: Double = 1, unit: String = "") {
         self.id = id
