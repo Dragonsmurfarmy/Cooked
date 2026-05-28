@@ -40,12 +40,18 @@ struct RecipeFormView: View {
     @State private var newCategoryName = ""
     @State private var tips = ""
 
+    // Recipe link state
+    @State private var isPickingLinkedRecipe = false
+    @State private var pendingLinkWord = ""
+    @State private var showLinkWordAlert = false
+
     private static let maxCookingTimeMinutes = 240 // Slider has maximum of 4 hours
     
     // --- ENUMS ---
     enum Field: Hashable {
         case name
         case recipeDescription
+        case tips
         case sectionName(Int)
         case ingredientName(section: Int, row: Int)
         case ingredientAmount(section: Int, row: Int)
@@ -70,7 +76,6 @@ struct RecipeFormView: View {
         _selectedDifficulty = State(initialValue: recipeToEdit?.difficulty ?? draft.difficulty)
         _isFavorite = State(initialValue: recipeToEdit?.isFavorite ?? false)
         _selectedImageData = State(initialValue: recipeToEdit?.imageData ?? store.loadDraftImageData())
-        
         
         _sections = State(initialValue: recipeToEdit?.sections ?? (draft.sections.isEmpty ? [RecipeSection()] : draft.sections))
         _tips = State(initialValue: recipeToEdit?.tips ?? draft.tips ?? "")
@@ -390,15 +395,52 @@ struct RecipeFormView: View {
     // ---  TIPS SECTION ---
     private var tipsFormSection: some View {
         Section {
-            TextField(String(localized:"tips.placeholder"), text: $tips, axis: .vertical)
+            TextField(String(localized: "tips.placeholder"), text: $tips, axis: .vertical)
                 .lineLimit(3...8)
+                .focused($focusedField, equals: .tips)
         } header: {
-            Label("tips.title", systemImage: "lightbulb.fill")
-                .foregroundStyle(.orange)
+            HStack {
+                Label("tips.title", systemImage: "lightbulb.fill")
+                    .foregroundStyle(.orange)
+                Spacer()
+                
+                Button {
+                    showLinkWordAlert = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "link.badge.plus")
+                        Text("tips.link.add")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(.tint)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.85, anchor: .trailing)))
+            }
+            .animation(.easeInOut(duration: 0.2), value: focusedField == .tips)
         } footer: {
             Text("tips.footer")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        }
+        // Step 1: ask for the display word
+        .alert("tips.link.word.prompt", isPresented: $showLinkWordAlert) {
+            TextField("tips.link.word.placeholder", text: $pendingLinkWord)
+            Button("button.next") {
+                let trimmed = pendingLinkWord.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return }
+                pendingLinkWord = trimmed
+                focusedField = nil
+                isPickingLinkedRecipe = true
+            }
+            Button("button.cancel", role: .cancel) { pendingLinkWord = "" }
+        }
+        // Step 2: pick the target recipe
+        .sheet(isPresented: $isPickingLinkedRecipe) {
+            RecipeLinkPickerSheet(store: store, excludedID: recipeToEdit?.id) { chosenRecipe in
+                insertLink(word: pendingLinkWord, targetID: chosenRecipe.id)
+                pendingLinkWord = ""
+                isPickingLinkedRecipe = false
+            }
         }
     }
 
@@ -412,10 +454,19 @@ struct RecipeFormView: View {
                 focusedField: $focusedField
             )
         }
-        
     }
     
     // --- HELPER LOGIC FUNCTIONS ---
+    private func insertLink(word: String, targetID: UUID) {
+        let token = "[[\(word)|\(targetID.uuidString)]]"
+        if tips.isEmpty {
+            tips = token
+        } else {
+            let needsSpace = !tips.hasSuffix(" ") && !tips.hasSuffix("\n")
+            tips += (needsSpace ? " " : "") + token
+        }
+    }
+
     private func addNewSection() {
         withAnimation {
             let newIndex = sections.count
@@ -447,7 +498,6 @@ struct RecipeFormView: View {
     }
 
     private func saveAction() {
-        // Explicitly type-cast and break down the section sanitization logic
         let finalRecipeSections: [RecipeSection] = sections.map { currentSection in
             var sanitized = currentSection
             sanitized.ingredients = currentSection.ingredients.filter { !$0.name.trimmingCharacters(in: .whitespaces).isEmpty }
@@ -455,10 +505,8 @@ struct RecipeFormView: View {
             return sanitized
         }.filter { !$0.ingredients.isEmpty || !$0.instructions.isEmpty }
         
-        // Separate out the flattened ingredients sequence
         let flatIngredients: [Ingredient] = finalRecipeSections.flatMap { $0.ingredients }
         
-        // Separate out the string serialization sequence
         let mappedLines: [[String]] = finalRecipeSections.map { section in
             let header = section.name.map { ["[\($0)]"] } ?? []
             let steps = section.instructions.map(\.text)
@@ -466,13 +514,11 @@ struct RecipeFormView: View {
         }
         let serializedInstructionsText: String = mappedLines.flatMap { $0 }.joined(separator: "\n")
         
-        // Resolve IDs and configuration parameters cleanly upfront
         let recipeId: UUID = recipeToEdit?.id ?? UUID()
         let defaultPortions: Int = recipeToEdit?.defaultPortions ?? store.settings.defaultPortions
         let computedCookingTime: Int = max(0, Int(cookingTimeMinutes))
         let existingImageName: String? = recipeToEdit?.imageFileName
 
-        // Construct the Recipe struct using pre-checked values
         let recipeToSave = Recipe(
             id: recipeId,
             name: name,
@@ -487,7 +533,6 @@ struct RecipeFormView: View {
             sections: finalRecipeSections
         )
         
-        // Complete storage actions
         let savedRecipe = store.saveRecipe(recipeToSave, newImageData: selectedImageData)
         if !isEditing { store.clearDraft() }
         onSave(savedRecipe)
@@ -535,17 +580,63 @@ struct RecipeFormView: View {
     }
 }
 
+// --- RECIPE LINK PICKER SHEET ---
+
+struct RecipeLinkPickerSheet: View {
+    let store: RecipeStore
+    let excludedID: UUID?
+    let onSelect: (Recipe) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var searchText = ""
+
+    private var filtered: [Recipe] {
+        let base = store.recipes.filter { $0.id != excludedID }
+        guard !searchText.isEmpty else { return base }
+        return base.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List(filtered) { recipe in
+                Button {
+                    onSelect(recipe)
+                } label: {
+                    HStack(spacing: 12) {
+                        RecipeImage(imageData: recipe.imageData)
+                            .frame(width: 44, height: 44)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(recipe.name)
+                                .foregroundStyle(.primary)
+                            Text(LocalizedStringKey(recipe.categories.first?.name ?? ""))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+            .searchable(text: $searchText, prompt: Text("tips.link.search"))
+            .navigationTitle("tips.link.pick")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("button.cancel") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
 // --- SUB-VIEWS ---
 
 private struct IngredientSectionRowView: View {
     @Binding var sections: [RecipeSection]
-    let sectionID: UUID // Track cleanly via stable UUID
+    let sectionID: UUID
     let availableUnits: [String]
     let focusedField: FocusState<RecipeFormView.Field?>.Binding
     var onRemove: () -> Void
     @Binding var showNewUnitAlert: Bool
     
-    // Pure functional lookup to always get the live section instance
     private var currentSectionIndex: Int? {
         sections.firstIndex(where: { $0.id == sectionID })
     }
@@ -554,12 +645,10 @@ private struct IngredientSectionRowView: View {
         if let sIdx = currentSectionIndex {
             let sectionNameBinding = Binding<String>(
                 get: {
-                    
                     guard let sIdx = currentSectionIndex, sIdx < sections.count else { return "" }
                     return sections[sIdx].name ?? ""
                 },
                 set: { newValue in
-                    
                     guard let sIdx = currentSectionIndex, sIdx < sections.count else { return }
                     sections[sIdx].name = newValue.isEmpty ? nil : newValue
                 }
@@ -571,7 +660,6 @@ private struct IngredientSectionRowView: View {
                     .textCase(nil)
                     .focused(focusedField, equals: .sectionName(sIdx))
             ) {
-                // Loop over ingredients elements directly using their stable identities
                 ForEach($sections[sIdx].ingredients) { $ingredient in
                     let rIdx = sections[sIdx].ingredients.firstIndex(where: { $0.id == ingredient.id }) ?? 0
                     
@@ -585,7 +673,6 @@ private struct IngredientSectionRowView: View {
                             .multilineTextAlignment(.center)
                         
                         Menu {
-                            // Show available units
                             ForEach(availableUnits, id: \.self) { unit in
                                 Button {
                                     ingredient.unit = unit
@@ -593,7 +680,7 @@ private struct IngredientSectionRowView: View {
                                     Text(LocalizedStringKey(unit))
                                 }
                             }
-                            Button { // Add new unit button
+                            Button {
                                 showNewUnitAlert = true
                             } label: {
                                 Label("settings.add.unit", systemImage: "plus")
@@ -644,7 +731,7 @@ private struct IngredientSectionRowView: View {
 
 private struct InstructionSectionRowView: View {
     @Binding var sections: [RecipeSection]
-    let sectionID: UUID // Track cleanly via stable UUID
+    let sectionID: UUID
     let focusedField: FocusState<RecipeFormView.Field?>.Binding
     
     private var currentSectionIndex: Int? {
@@ -670,7 +757,6 @@ private struct InstructionSectionRowView: View {
                     .textCase(nil)
                     .focused(focusedField, equals: .sectionName(sIdx))
             ) {
-                // FIX: Loop cleanly over indices to prevent the SwiftUI compiler from timing out
                 ForEach(sections[sIdx].instructions.indices, id: \.self) { rIdx in
                     let instructionTextBinding = Binding<String>(
                         get: {
@@ -707,24 +793,6 @@ private struct InstructionSectionRowView: View {
 }
 
 // --- STANDARD PRIVATELY SCOPED COMPONENT VIEWS ---
-
-private struct CheckboxToggleStyle: ToggleStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        Button {
-            configuration.isOn.toggle()
-        } label: {
-            HStack {
-                configuration.label.foregroundStyle(.primary)
-                Spacer()
-                Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
-                    .font(.title3)
-                    .foregroundStyle(configuration.isOn ? Color.accentColor : Color.secondary)
-            }
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-}
 
 private struct RecipeSelectedImagePreview: View {
     let imageData: Data?

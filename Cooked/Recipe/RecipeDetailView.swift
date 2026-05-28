@@ -23,9 +23,8 @@ struct RecipeDetailView: View {
     private let maxPortions = 50
     
     init(recipe: Recipe, store: RecipeStore) {
-            // Keep local copy so the detail screen can reflect edits after saving
-            self._recipe = State(initialValue: recipe)
-            self.store = store
+        self._recipe = State(initialValue: recipe)
+        self.store = store
         self._selectedPortions = State(initialValue: store.settings.defaultPortions)
     }
 
@@ -73,57 +72,55 @@ struct RecipeDetailView: View {
                 
                 // --- PORTIONS SECTION ---
                 HStack {
-                        Label("portions.count", systemImage: "person.2.fill")
+                    Label("portions.count", systemImage: "person.2.fill")
+                        .font(.headline)
+                    
+                    Text("\(selectedPortions)")
+                        .font(.title3.monospacedDigit())
+                        .fontWeight(.semibold)
+                        .frame(minWidth: 30)
+
+                    Spacer()
+
+                    Button {
+                        handleDecrementTap()
+                    } label: {
+                        Image(systemName: "minus")
                             .font(.headline)
-                        
-                        Text("\(selectedPortions)")
-                            .font(.title3.monospacedDigit())
-                            .fontWeight(.semibold)
-                            .frame(minWidth: 30)
-
-                        Spacer()
-
-                        Button {
-                            handleDecrementTap()
-                        } label: {
-                            Image(systemName: "minus")
-                                .font(.headline)
-                                .frame(width: 34, height: 34)
-                                .background(Color.secondary.opacity(0.12))
-                                .clipShape(Circle())
-                        }
-                        .buttonStyle(.plain)
-                        .simultaneousGesture(
-                            LongPressGesture(minimumDuration: 0.5)
-                                .onEnded { _ in
-                                    didLongPressDecrement = true
-                                    jumpDecrementPortions()
-                                }
-                        )
-
-                        
-
-                        Button {
-                            handleIncrementTap()
-                        } label: {
-                            Image(systemName: "plus")
-                                .font(.headline)
-                                .frame(width: 34, height: 34)
-                                .background(Color.secondary.opacity(0.12))
-                                .clipShape(Circle())
-                        }
-                        .buttonStyle(.plain)
-                        .simultaneousGesture(
-                            LongPressGesture(minimumDuration: 0.5)
-                                .onEnded { _ in
-                                    didLongPressIncrement = true
-                                    jumpIncrementPortions()
-                                }
-                        )
+                            .frame(width: 34, height: 34)
+                            .background(Color.secondary.opacity(0.12))
+                            .clipShape(Circle())
                     }
-                    .padding()
-                    .background(Color.secondary.opacity(0.05))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .buttonStyle(.plain)
+                    .simultaneousGesture(
+                        LongPressGesture(minimumDuration: 0.5)
+                            .onEnded { _ in
+                                didLongPressDecrement = true
+                                jumpDecrementPortions()
+                            }
+                    )
+
+                    Button {
+                        handleIncrementTap()
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.headline)
+                            .frame(width: 34, height: 34)
+                            .background(Color.secondary.opacity(0.12))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .simultaneousGesture(
+                        LongPressGesture(minimumDuration: 0.5)
+                            .onEnded { _ in
+                                didLongPressIncrement = true
+                                jumpIncrementPortions()
+                            }
+                    )
+                }
+                .padding()
+                .background(Color.secondary.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
 
                 // --- INGREDIENT SECTION ---
                 VStack(alignment: .leading, spacing: 20) {
@@ -133,7 +130,6 @@ struct RecipeDetailView: View {
                     
                     ForEach(recipe.sections) { section in
                         VStack(alignment: .leading, spacing: 10) {
-                            // Display section header if a custom name is provided
                             if let sectionName = section.name, !sectionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                 Text(sectionName)
                                     .font(.headline)
@@ -148,16 +144,16 @@ struct RecipeDetailView: View {
                                             .font(.system(size: 6))
                                             .foregroundStyle(.tint)
                                             .padding(.bottom, 4)
-                                                                    
+                                                                
                                         Text(ingredient.name)
                                             .font(.body)
-                                                                    
+                                                                
                                         Spacer()
-                                                                    
+                                                                
                                         Text(calculateAmount(for: ingredient))
                                             .fontWeight(.semibold)
                                             .foregroundStyle(.primary)
-                                                                    
+                                                                
                                         Text(LocalizedStringKey(ingredient.unit))
                                             .font(.subheadline)
                                             .foregroundStyle(.secondary)
@@ -182,12 +178,10 @@ struct RecipeDetailView: View {
                         .fontWeight(.bold)
 
                     ForEach(recipe.sections) { section in
-                        // Filter out empty instructions for this specific section
                         let sectionInstructions = section.instructions.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
                         
                         if !sectionInstructions.isEmpty {
                             VStack(alignment: .leading, spacing: 12) {
-                                // Display section header if a custom name is provided
                                 if let sectionName = section.name, !sectionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                     Text(sectionName)
                                         .font(.headline)
@@ -196,10 +190,8 @@ struct RecipeDetailView: View {
                                 }
                                 
                                 ForEach(sectionInstructions) { instructionLine in
-                                    // Find the index local to this section's instructions array
                                     if let localIndex = sectionInstructions.firstIndex(where: { $0.id == instructionLine.id }) {
                                         HStack(alignment: .top, spacing: 10) {
-                                            // localIndex resets to 0 for every new section, so +1 always starts at 1
                                             Text("\(localIndex + 1).")
                                                 .fontWeight(.bold)
                                                 .foregroundStyle(.tint)
@@ -230,11 +222,7 @@ struct RecipeDetailView: View {
                         }
                         .frame(maxWidth: .infinity)
 
-                        Text(tips)
-                            .font(.body)
-                            .italic()
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.primary)
+                        LinkedTipsText(tips: tips, store: store)
                             .padding(16)
                             .frame(maxWidth: .infinity)
                             .background(Color.orange.opacity(0.08))
@@ -321,7 +309,6 @@ struct RecipeDetailView: View {
             didLongPressDecrement = false
             return
         }
-
         selectedPortions = max(minPortions, selectedPortions - 1)
     }
 
@@ -330,7 +317,6 @@ struct RecipeDetailView: View {
             didLongPressIncrement = false
             return
         }
-
         selectedPortions = min(maxPortions, selectedPortions + 1)
     }
 
@@ -350,19 +336,86 @@ struct RecipeDetailView: View {
         }
     }
 
-    // Helper function to scale ingredient amounts from recipe default portions to the selected amount.
     private func calculateAmount(for ingredient: Ingredient) -> String {
-        // Base amount for one portion.
         let baseAmount = Double(ingredient.amount) / Double(recipe.defaultPortions)
-        // Final amount for the currently selected portion count.
         let finalAmount = baseAmount * Double(selectedPortions)
         
-        
         let formatter = NumberFormatter()
-            formatter.numberStyle = .decimal
-            formatter.maximumFractionDigits = 3 // Up to 3 decimals for doubles
-            formatter.minimumFractionDigits = 0 // 0 digits for ints
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 3
+        formatter.minimumFractionDigits = 0
             
-            return formatter.string(from: NSNumber(value: finalAmount)) ?? "\(finalAmount)"
+        return formatter.string(from: NSNumber(value: finalAmount)) ?? "\(finalAmount)"
+    }
+}
+
+// MARK: - Linked Tips Renderer
+
+/// Parses [[word|uuid]] tokens in tips text and renders linked words
+/// as tappable accent-coloured text that navigates to the target recipe.
+private struct LinkedTipsText: View {
+    let tips: String
+    let store: RecipeStore
+    @State private var linkedRecipe: Recipe?
+
+    var body: some View {
+        Text(buildAttributedString())
+            .italic()
+            .multilineTextAlignment(.center)
+            .environment(\.openURL, OpenURLAction { url in
+                guard
+                    url.scheme == "cooked",
+                    url.host == "recipe",
+                    let uuidStr = url.pathComponents.last,
+                    let uuid = UUID(uuidString: uuidStr),
+                    let target = store.recipes.first(where: { $0.id == uuid })
+                else { return .discarded }
+                linkedRecipe = target
+                return .handled
+            })
+            .navigationDestination(item: $linkedRecipe) { target in
+                RecipeDetailView(recipe: target, store: store)
+            }
+    }
+
+    private func buildAttributedString() -> AttributedString {
+        var result = AttributedString()
+        // Matches [[display word|uuid-string]]
+        let pattern = /\[\[([^\|]+)\|([^\]]+)\]\]/
+        var remaining = tips[...]
+
+        while let match = remaining.firstMatch(of: pattern) {
+            // Plain text segment before this match
+            let prefix = String(remaining[remaining.startIndex..<match.range.lowerBound])
+            if !prefix.isEmpty {
+                result += AttributedString(prefix)
+            }
+
+            let word = String(match.output.1)
+            let uuidStr = String(match.output.2)
+
+            if let uuid = UUID(uuidString: uuidStr),
+               store.recipes.contains(where: { $0.id == uuid }) {
+                // Valid link — style as tappable
+                var seg = AttributedString(word)
+                seg.link = URL(string: "cooked://recipe/\(uuidStr)")
+                // .link attribute automatically renders in accent colour + underline
+                result += seg
+            } else {
+                // Broken link (recipe was deleted) — show word as plain secondary text
+                var seg = AttributedString(word)
+                seg.foregroundColor = .secondary
+                result += seg
+            }
+
+            remaining = remaining[match.range.upperBound...]
+        }
+
+        // Any trailing plain text
+        if !remaining.isEmpty {
+            result += AttributedString(String(remaining))
+        }
+
+        return result
     }
 }

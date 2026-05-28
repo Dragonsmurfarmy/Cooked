@@ -1,0 +1,25 @@
+//
+//  CheckboxStyle.swift
+//  Cooked
+//
+//  Created by Tomáš Kříž on 27.05.2026.
+//
+import SwiftUI
+
+struct CheckboxToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Button {
+            configuration.isOn.toggle()
+        } label: {
+            HStack {
+                configuration.label.foregroundStyle(.primary)
+                Spacer()
+                Image(systemName: configuration.isOn ? "checkmark.square.fill" : "square")
+                    .font(.title3)
+                    .foregroundStyle(configuration.isOn ? Color.accentColor : Color.secondary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}

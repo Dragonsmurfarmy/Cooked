@@ -77,7 +77,7 @@ struct Ingredient: Identifiable, Equatable, Codable {
     }
 }
 
-struct Recipe: Identifiable, Equatable, Codable {
+struct Recipe: Identifiable, Equatable, Hashable, Codable {
     var id = UUID()
     var name: String
     var categories: [RecipeCategory]
@@ -130,4 +130,20 @@ struct Recipe: Identifiable, Equatable, Codable {
         // Decodes the optional field. If it doesn't exist in older app saves, it falls back gracefully to nil.
         tips = try container.decodeIfPresent(String.self, forKey: .tips)
     }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+        
+    static func == (lhs: Recipe, rhs: Recipe) -> Bool {
+        lhs.id == rhs.id
+    }
 }
+
+struct RecipeLink: Identifiable, Codable {
+    let id: UUID
+    let displayWord: String
+    let targetRecipeID: UUID
+}
+
+

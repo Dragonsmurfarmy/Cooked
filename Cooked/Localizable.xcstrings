@@ -1,9 +1,6 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "%@" : {
-
-    },
     "%lld" : {
 
     },
@@ -129,6 +126,9 @@
           }
         }
       }
+    },
+    "button.next" : {
+
     },
     "button.ok" : {
       "localizations" : {
@@ -420,6 +420,54 @@
     },
     "Favorite Emoji" : {
 
+    },
+    "filter.clear_all" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odstranit vše"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear all"
+          }
+        }
+      }
+    },
+    "filter.select_all" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrat vše"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select all"
+          }
+        }
+      }
+    },
+    "filter.title" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrané recepty"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected recipes"
+          }
+        }
+      }
     },
     "h" : {
 
@@ -1687,52 +1735,67 @@
       }
     },
     "tips.footer" : {
-        "localizations" : {
-          "cs" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Tip"
-            }
-          },
-          "en" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Tip"
-            }
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tip"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tip"
           }
         }
+      }
+    },
+    "tips.link.add" : {
+
+    },
+    "tips.link.pick" : {
+
+    },
+    "tips.link.search" : {
+
+    },
+    "tips.link.word.placeholder" : {
+
+    },
+    "tips.link.word.prompt" : {
+
     },
     "tips.placeholder" : {
-        "localizations" : {
-            "cs" : {
-                "stringUnit" : {
-                    "state" : "translated",
-                    "value" : "Servírujte studené bez konzervantů a umělých barviv"
-                }
-            },
-            "en" : {
-                "stringUnit" : {
-                    "state" : "translated",
-                    "value" : "Serve hot with boiling lobsters"
-                }
-            }
-        }
-    },
-    "tips.title" : {
-        "localizations" : {
-          "cs" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Tip!"
-            }
-          },
-          "en" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Tip!"
-            }
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Servírujte studené bez konzervantů a umělých barviv"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serve hot with boiling lobsters"
           }
         }
+      }
+    },
+    "tips.title" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tip!"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tip!"
+          }
+        }
+      }
     },
     "unit" : {
 

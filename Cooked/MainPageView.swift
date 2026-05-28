@@ -1,20 +1,27 @@
-//
 //  MainPageView.swift
 //  Cooked
 //
 //  Created by Tomáš Kříž on 20.04.2026.
 //
+
 import SwiftUI
 
 struct MainPageView: View {
     @Bindable var store: RecipeStore
     @State private var sortOption: RecipeSortOption = .name
     @State private var displayStyle: RecipeDisplayStyle = .compact
-    @State private var selectedCategory: RecipeCategory? = nil
+    
+    @State private var selectedCategoryIDs: Set<UUID>? = nil
+    @State private var isShowingFilterPopover = false
+    
     @State private var recipeToEdit: Recipe?
     @State private var recipeToDelete: Recipe?
     @State private var showDeleteConfirmation = false
     @State private var isShowingEditPage = false
+    
+    private var allCategoryIDs: Set<UUID> {
+        Set(store.categories.map { $0.id })
+    }
     
     private let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -22,218 +29,119 @@ struct MainPageView: View {
         GridItem(.flexible(), spacing: 16)
     ]
     
-    // Derive the visible list from the store by filtering by active category and selected sort order
     private var visibleRecipes: [Recipe] {
+        guard let selected = selectedCategoryIDs else { return store.recipes }
+        if selected.isEmpty { return [] }
         
-        let filtered = store.recipes.filter { recipe in
-            if let selected = selectedCategory {
-                
-                return recipe.categories.contains { $0.id == selected.id }
-            } else {
-                
-                return true
-            }
-        }
-        
-        // Options by which to sort recipes
-        switch sortOption {
-        case .name:
-            return filtered.sorted { $0.name.localizedCompare($1.name) == .orderedAscending }
-        case .favorites:
-            return filtered.sorted {
-                if $0.isFavorite == $1.isFavorite {
-                    return $0.name.localizedCompare($1.name) == .orderedAscending
-                }
-                return $0.isFavorite && !$1.isFavorite
-            }
+        return store.recipes.filter { recipe in
+            recipe.categories.contains { selected.contains($0.id) }
         }
     }
     
     var body: some View {
-            VStack(spacing: 0) {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 20) {
-                        headerSection
-                        controlsSection
-                        recipesSection
-                    }
-                    .padding(20)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    headerSection
+                    controlsSection
+                    recipesSection
                 }
+                .padding(20)
             }
-            .navigationDestination(isPresented: $isShowingEditPage) {
-                if let recipe = recipeToEdit {
-                    RecipeFormView(store: store, recipeToEdit: recipe) { updatedRecipe in
-                        isShowingEditPage = false
-                    }
-                }
+        }
+        .navigationDestination(isPresented: $isShowingEditPage) {
+            if let recipe = recipeToEdit {
+                RecipeFormView(store: store, recipeToEdit: recipe) { _ in isShowingEditPage = false }
             }
-        
+        }
     }
 
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("main.header.title")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-
-            Text("main.header.subtitle")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            Text("main.header.title").font(.largeTitle).fontWeight(.bold)
+            Text("main.header.subtitle").font(.subheadline).foregroundStyle(.secondary)
         }
     }
 
-    // recipe count, sorting, filtering, and switching between compact and card layouts
     private var controlsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                
-                // Recipes count
-                Text("\(visibleRecipes.count)")
-                    .font(.subheadline.bold())
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.accentColor.opacity(0.1))
-                    .clipShape(Capsule())
-                
-                Spacer()
-                
-                // Sorting
-                Menu {
-                    Picker("sort", selection: $sortOption) {
-                        ForEach(RecipeSortOption.allCases) { option in
-                            Label(option.title, systemImage: option == .name ? "textformat" : "star.fill")
-                                .tag(option)
-                        }
-                    }
-                } label: {
-                    Image(systemName: "arrow.up.arrow.down.circle")
-                        .font(.title3)
-                }
-                .buttonStyle(.bordered)
-                
-                // Filtering
-                Menu {
-                    Button {
-                        selectedCategory = nil
-                    } label: {
-                        Label("category.all", systemImage: selectedCategory == nil ? "checkmark.circle.fill" : "circle")
-                    }
-                    
-                    Divider()
-                    
-                    ForEach(store.categories) { category in
-                        Button {
-                            selectedCategory = category
-                        } label: {
-                            Label(
-                                LocalizedStringKey(category.name),
-                                systemImage: selectedCategory?.id == category.id ? "checkmark.circle.fill" : "circle"
-                            )
-                        }
-                    }
-                } label: {
-                    Image(systemName: "line.3.horizontal.decrease.circle")
-                        .font(.title3)
-                }
-                .buttonStyle(.bordered)
-                
-                // Card/Compact view picker
-                Picker("Display", selection: $displayStyle) {
-                    ForEach(RecipeDisplayStyle.allCases) { style in
-                        Image(systemName: style == .compact ? "list.bullet" : "square.grid.2x2")
-                            .tag(style)
+        HStack(spacing: 10) {
+            Text("\(visibleRecipes.count)")
+                .font(.subheadline.bold())
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(Color.accentColor.opacity(0.1))
+                .clipShape(Capsule())
+            
+            Spacer()
+            
+            Menu {
+                // Ensure the selection matches the Enum type
+                Picker("sort", selection: $sortOption) {
+                    ForEach(RecipeSortOption.allCases) { option in
+                        Label(option.title, systemImage: option == .name ? "textformat" : "star.fill").tag(option)
                     }
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 80)
+            } label: { Image(systemName: "arrow.up.arrow.down.circle").font(.title3) }
+            .buttonStyle(.bordered)
+            
+            Button { isShowingFilterPopover = true } label: {
+                let isAllActive = (selectedCategoryIDs == nil)
+                
+                Image(systemName: isAllActive ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                    .font(.title3)
             }
+            .buttonStyle(.bordered)
+            .popover(isPresented: $isShowingFilterPopover) {
+                FilterPopoverView(
+                    categories: store.categories,
+                    selectedCategoryIDs: $selectedCategoryIDs,
+                    allCategoryIDs: allCategoryIDs
+                )
+            }
+            
+            Picker("Display", selection: $displayStyle) {
+                ForEach(RecipeDisplayStyle.allCases) { style in
+                    Image(systemName: style == .compact ? "list.bullet" : "square.grid.2x2").tag(style)
+                }
+            }
+            .pickerStyle(.segmented)
+            .frame(width: 100)
         }
     }
 
-    // Show Card/Compact style from the filtered/sorted recipes
     private var recipesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("main.recipes.title")
-                .font(.title2)
-                .fontWeight(.semibold)
-
+            Text("main.recipes.title").font(.title2).fontWeight(.semibold)
             Group {
-                // Compact style
                 if displayStyle == .compact {
-                    VStack(spacing: 12) {
-                        ForEach(visibleRecipes) { recipe in
-                            recipeRowWrapper(recipe: recipe, isCard: false)
-                        }
-                    }
-                } else { // Card style
-                    LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(visibleRecipes) { recipe in
-                            recipeRowWrapper(recipe: recipe, isCard: true)
-                        }
-                    }
+                    VStack(spacing: 12) { ForEach(visibleRecipes) { recipe in recipeRowWrapper(recipe: recipe, isCard: false) } }
+                } else {
+                    LazyVGrid(columns: columns, spacing: 16) { ForEach(visibleRecipes) { recipe in recipeRowWrapper(recipe: recipe, isCard: true) } }
                 }
             }
-            // Delete confirmation Popup
-            .alert("\(recipeToDelete?.name ?? "")", isPresented: $showDeleteConfirmation, presenting: recipeToDelete) { recipe in
-                Button("button.delete", role: .destructive) {
-                    deleteRecipe(recipe)
-                }
-                Button("button.cancel", role: .cancel) { }
-            } message: { _ in
-                Text("delete.question")
-            }
+            .animation(.default, value: visibleRecipes)
         }
     }
-
     
     @ViewBuilder
     private func recipeRowWrapper(recipe: Recipe, isCard: Bool) -> some View {
-        // Keep actions in same place for both visual styles
-        NavigationLink {
-            RecipeDetailView(recipe: recipe, store: store)
-        } label: {
-            if isCard {
-                CardRecipeRow(recipe: recipe) { toggleFavorite(for: recipe.id) }
-            } else {
-                CompactRecipeRow(recipe: recipe, store: store) { toggleFavorite(for: recipe.id) }
-            }
+        NavigationLink { RecipeDetailView(recipe: recipe, store: store) } label: {
+            if isCard { CardRecipeRow(recipe: recipe) { toggleFavorite(for: recipe.id) } }
+            else { CompactRecipeRow(recipe: recipe, store: store) { toggleFavorite(for: recipe.id) } }
         }
         .buttonStyle(.plain)
+        .transition(.opacity.combined(with: .scale))
         .contextMenu {
-            Button {
-                recipeToEdit = recipe
-                isShowingEditPage = true
-            } label: {
-                Label("button.edit", systemImage: "pencil")
-            }
-            
-            Button(role: .destructive) {
-                recipeToDelete = recipe
-                showDeleteConfirmation = true
-            } label: {
-                Label("button.delete", systemImage: "trash")
-            }
+            Button { recipeToEdit = recipe; isShowingEditPage = true } label: { Label("button.edit", systemImage: "pencil") }
+            Button(role: .destructive) { recipeToDelete = recipe; showDeleteConfirmation = true } label: { Label("button.delete", systemImage: "trash") }
         }
     }
 
-    // Set recipe favourite/non-favourite
     private func toggleFavorite(for recipeID: UUID) {
         if let index = store.recipes.firstIndex(where: { $0.id == recipeID }) {
-            var updatedRecipe = store.recipes[index]
-            updatedRecipe.isFavorite.toggle()
-            _ = store.saveRecipe(updatedRecipe, newImageData: nil)
+            var updated = store.recipes[index]; updated.isFavorite.toggle(); _ = store.saveRecipe(updated, newImageData: nil)
         }
     }
-    
-    
-    private func deleteRecipe(_ recipe: Recipe) {
-        if let index = store.recipes.firstIndex(where: { $0.id == recipe.id }) {
-            store.deleteRecipe(at: IndexSet(integer: index))
-        }
-    }
-    
 }
-
 
 // Compact recipe showing style
 private struct CompactRecipeRow: View {
@@ -383,38 +291,27 @@ struct NavigationBarButton: View {
     }
 }
 
-private enum RecipeSortOption: String, CaseIterable, Identifiable {
-    case name
-    case favorites
-
+enum RecipeSortOption: String, CaseIterable, Identifiable {
+    case name, favorites
     var id: String { rawValue }
-
     var title: LocalizedStringKey {
         switch self {
-        case .name:
-            "main.sort_option.name"
-        case .favorites:
-            "main.sort_option.favorites"
+        case .name: "main.sort_option.name"
+        case .favorites: "main.sort_option.favorites"
         }
     }
 }
 
-private enum RecipeDisplayStyle: String, CaseIterable, Identifiable {
-    case compact
-    case card
-
+enum RecipeDisplayStyle: String, CaseIterable, Identifiable {
+    case compact, card
     var id: String { rawValue }
-
     var title: LocalizedStringKey {
         switch self {
-        case .compact:
-            "main.recipe_display.compact"
-        case .card:
-            "main.recipe_display.card"
+        case .compact: "main.recipe_display.compact"
+        case .card: "main.recipe_display.card"
         }
     }
 }
-
 
 struct AlarmOverlay: View {
     @Environment(TimerViewModel.self) private var viewModel
@@ -453,4 +350,86 @@ struct AlarmOverlay: View {
 
 #Preview {
     MainPageView(store: RecipeStore())
+}
+
+private struct FilterPopoverView: View {
+    let categories: [RecipeCategory]
+    @Binding var selectedCategoryIDs: Set<UUID>?
+    let allCategoryIDs: Set<UUID>
+
+    private var isAllSelected: Bool { selectedCategoryIDs == nil }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+
+            // ── Header ──────────────────────────────────────────
+            HStack {
+                Text("filter.title")
+                    .font(.headline)
+                Spacer()
+                Button(isAllSelected ? "filter.clear_all" : "filter.select_all") {
+                    withAnimation {
+                        selectedCategoryIDs = isAllSelected ? [] : nil
+                    }
+                }
+                .font(.subheadline)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+
+            Divider()
+
+            // ── "All" row ────────────────────────────────────────
+            Toggle(isOn: Binding(
+                get: { isAllSelected },
+                set: { on in withAnimation { selectedCategoryIDs = on ? nil : [] } }
+            )) {
+                Label("category.all", systemImage: "tray.2.fill")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .toggleStyle(CheckboxToggleStyle())
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+
+            Divider()
+                .padding(.bottom, 4)
+
+            // ── Per-category rows ────────────────────────────────
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(categories) { category in
+                        Toggle(isOn: Binding(
+                            get: { selectedCategoryIDs?.contains(category.id) ?? true },
+                            set: { on in
+                                withAnimation {
+                                    var current = selectedCategoryIDs ?? allCategoryIDs
+                                    if on {
+                                        current.insert(category.id)
+                                    } else {
+                                        current.remove(category.id)
+                                    }
+                                    // If every category manually checked, collapse back to "All"
+                                    selectedCategoryIDs = current == allCategoryIDs ? nil : current
+                                }
+                            }
+                        )) {
+                            Text(LocalizedStringKey(category.name))
+                                .font(.subheadline)
+                        }
+                        .toggleStyle(CheckboxToggleStyle())
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+
+                        Divider()
+                            .padding(.leading, 16)
+                    }
+                }
+            }
+        }
+        .frame(minWidth: 260, idealWidth: 300)
+        .background(Color(.systemBackground))
+        // Shrink-wrap to content on iPad popover, cap height on long lists
+        .frame(maxHeight: CGFloat(categories.count) * 52 + 120)
+    }
 }
