@@ -80,6 +80,44 @@ struct RecipeFormView: View {
         _sections = State(initialValue: recipeToEdit?.sections ?? (draft.sections.isEmpty ? [RecipeSection()] : draft.sections))
         _tips = State(initialValue: recipeToEdit?.tips ?? draft.tips ?? "")
     }
+    
+    
+    private var tipsBinding: Binding<String> {
+        Binding(
+            get: {
+                if focusedField == .tips {
+                    return tips // Show raw [[Word|UUID]] so users can delete it
+                } else {
+                    return formatForDisplay(tips) // Show [Word]
+                }
+            },
+            set: { tips = $0 }
+        )
+    }
+    
+    private var formattedTipsBinding: Binding<String> {
+        Binding(
+            get: {
+                // Regex to find [[Word|UUID]] and replace with [Word]
+                let pattern = "\\[\\[(.*?)\\|.*?\\]\\]"
+                let regex = try? NSRegularExpression(pattern: pattern)
+                let nsString = tips as NSString
+                return regex?.stringByReplacingMatches(
+                    in: tips,
+                    range: NSRange(location: 0, length: nsString.length),
+                    withTemplate: "[$1]"
+                ) ?? tips
+            },
+            set: { newValue in
+                // This is the tricky part: You need to ensure that when a user
+                // edits the text, they don't accidentally break the existing links.
+                // A simple approach is to only allow updating raw text here
+                // if the tokens remain intact.
+                tips = newValue
+            }
+        )
+    }
+    
 
     private var isEditing: Bool {
         recipeToEdit != nil
@@ -228,6 +266,25 @@ struct RecipeFormView: View {
             ingredientsPartSection
             instructionsPartSection
             tipsFormSection
+        }
+        .alert("tips.link.word.prompt", isPresented: $showLinkWordAlert) {
+            TextField("tips.link.word.placeholder", text: $pendingLinkWord)
+            Button("button.next") {
+                let trimmed = pendingLinkWord.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmed.isEmpty else { return }
+                pendingLinkWord = trimmed
+                focusedField = nil
+                isPickingLinkedRecipe = true
+            }
+            Button("button.cancel", role: .cancel) { pendingLinkWord = "" }
+        }
+        
+        .sheet(isPresented: $isPickingLinkedRecipe) {
+            RecipeLinkPickerSheet(store: store, excludedID: recipeToEdit?.id) { chosenRecipe in
+                insertLink(word: pendingLinkWord, targetID: chosenRecipe.id)
+                pendingLinkWord = ""
+                isPickingLinkedRecipe = false
+            }
         }
         .safeAreaInset(edge: .bottom) {
             if isEditing {
@@ -395,7 +452,7 @@ struct RecipeFormView: View {
     // ---  TIPS SECTION ---
     private var tipsFormSection: some View {
         Section {
-            TextField(String(localized: "tips.placeholder"), text: $tips, axis: .vertical)
+            TextField(String(localized: "tips.placeholder"), text: formattedTipsBinding, axis: .vertical)
                 .lineLimit(3...8)
                 .focused($focusedField, equals: .tips)
         } header: {
@@ -421,26 +478,6 @@ struct RecipeFormView: View {
             Text("tips.footer")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-        }
-        // Step 1: ask for the display word
-        .alert("tips.link.word.prompt", isPresented: $showLinkWordAlert) {
-            TextField("tips.link.word.placeholder", text: $pendingLinkWord)
-            Button("button.next") {
-                let trimmed = pendingLinkWord.trimmingCharacters(in: .whitespacesAndNewlines)
-                guard !trimmed.isEmpty else { return }
-                pendingLinkWord = trimmed
-                focusedField = nil
-                isPickingLinkedRecipe = true
-            }
-            Button("button.cancel", role: .cancel) { pendingLinkWord = "" }
-        }
-        // Step 2: pick the target recipe
-        .sheet(isPresented: $isPickingLinkedRecipe) {
-            RecipeLinkPickerSheet(store: store, excludedID: recipeToEdit?.id) { chosenRecipe in
-                insertLink(word: pendingLinkWord, targetID: chosenRecipe.id)
-                pendingLinkWord = ""
-                isPickingLinkedRecipe = false
-            }
         }
     }
 
@@ -577,6 +614,18 @@ struct RecipeFormView: View {
                 self.navigateToCropper = true
             }
         }
+    }
+    
+    private func formatForDisplay(_ text: String) -> String {
+        // Regex to find [[Word|UUID]] and replace with [Word]
+        let pattern = "\\[\\[(.*?)\\|.*?\\]\\]"
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
+        let nsString = text as NSString
+        return regex.stringByReplacingMatches(
+            in: text,
+            range: NSRange(location: 0, length: nsString.length),
+            withTemplate: "[$1]"
+        )
     }
 }
 
