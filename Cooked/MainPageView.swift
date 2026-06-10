@@ -124,13 +124,7 @@ struct MainPageView: View {
                 )
             }
             
-            /*Picker("Display", selection: $displayStyle) {
-                ForEach(RecipeDisplayStyle.allCases) { style in
-                    Image(systemName: style == .compact ? "list.bullet" : "square.grid.2x2").tag(style)
-                }
-            }
-            .pickerStyle(.segmented)
-            .frame(width: 100) */
+
         }
     }
 
@@ -200,10 +194,26 @@ private struct CompactRecipeRow: View {
 
 private struct RecipeMetadata: View {
     let recipe: Recipe
+    @Environment(\.locale) private var locale
+    
+    @ViewBuilder
+    private var categoriesView: some View {
+        if recipe.categories.isEmpty {
+            Text("category.lunch")
+        } else if recipe.categories.count > 3 {
+            Text("category.count_format \(recipe.categories.count)")
+        } else {
+            recipe.categories
+                        .map { Text(LocalizedStringKey($0.name)) }
+                        .reduce(nil as Text?) { acc, next in
+                            acc.map { $0 + Text(", ") + next } ?? next
+                        } ?? Text("")
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(LocalizedStringKey(recipe.categories.first?.name ?? "category.lunch"))
+            categoriesView
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)

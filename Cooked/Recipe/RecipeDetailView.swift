@@ -22,9 +22,11 @@ struct RecipeDetailView: View {
     private let minPortions = 1
     private let maxPortions = 50
     
+    
+    
     // MARK: Voice
     @State private var voice = VoiceController()
-    // Flat list of all non-empty instruction steps across all sections, built once.
+    // Flat list of all non-empty instruction steps across all sections, built once
     private var allSteps: [(sectionIndex: Int, stepIndex: Int, line: InstructionLine)] {
         var result: [(Int, Int, InstructionLine)] = []
         for (si, section) in recipe.sections.enumerated() {
@@ -39,7 +41,11 @@ struct RecipeDetailView: View {
     @State private var currentStepIndex: Int = 0
     // Scroll anchor IDs — each step gets "step-\(line.id)"
     private func stepAnchorID(_ line: InstructionLine) -> String { "step-\(line.id.uuidString)" }
+    // Anchor points
     private let topAnchorID = "recipe-top"
+    private let ingredientsAnchorID = "recipe-ingredients"
+    private let instructionsAnchorID = "recipe-instructions"
+    private let tipsAnchorID = "recipe-tips"
  
     init(recipe: Recipe, store: RecipeStore) {
         self._recipe = State(initialValue: recipe)
@@ -49,158 +55,112 @@ struct RecipeDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // --- IMAGE SECTION ---
-                RecipeImage(imageData: recipe.imageData)
-                    .id(recipe.imageData)
-                    .frame(height: 280)
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            ScrollViewReader { proxy in
+                Color.clear
+                .frame(height: 0)
+                .id(topAnchorID)
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(LocalizedStringKey(recipe.categories.first?.name ?? "category.lunch"))
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(Color.accentColor.opacity(0.1))
-                            .clipShape(Capsule())
-
-                        Label(recipe.difficulty.title, systemImage: "chart.bar.fill")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Text(recipe.name)
-                        .font(.system(.largeTitle, design: .rounded))
-                        .fontWeight(.bold)
-
-                    Label(formatCookingTime(recipe.cookingTimeMinutes), systemImage: "clock")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-
-                if !recipe.recipeDescription.isEmpty {
-                    Text(recipe.recipeDescription)
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                }
-
-                Divider()
-                
-                // --- PORTIONS SECTION ---
-                HStack {
-                    Label("portions.count", systemImage: "person.2.fill")
-                        .font(.headline)
+                VStack(alignment: .leading, spacing: 24) {
+                    // --- IMAGE SECTION ---
+                    RecipeImage(imageData: recipe.imageData)
+                        .id(recipe.imageData)
+                        .frame(height: 280)
+                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                     
-                    Text("\(selectedPortions)")
-                        .font(.title3.monospacedDigit())
-                        .fontWeight(.semibold)
-                        .frame(minWidth: 30)
-
-                    Spacer()
-
-                    Button {
-                        handleDecrementTap()
-                    } label: {
-                        Image(systemName: "minus")
-                            .font(.headline)
-                            .frame(width: 34, height: 34)
-                            .background(Color.secondary.opacity(0.12))
-                            .clipShape(Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .simultaneousGesture(
-                        LongPressGesture(minimumDuration: 0.5)
-                            .onEnded { _ in
-                                didLongPressDecrement = true
-                                jumpDecrementPortions()
-                            }
-                    )
-
-                    Button {
-                        handleIncrementTap()
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.headline)
-                            .frame(width: 34, height: 34)
-                            .background(Color.secondary.opacity(0.12))
-                            .clipShape(Circle())
-                    }
-                    .buttonStyle(.plain)
-                    .simultaneousGesture(
-                        LongPressGesture(minimumDuration: 0.5)
-                            .onEnded { _ in
-                                didLongPressIncrement = true
-                                jumpIncrementPortions()
-                            }
-                    )
-                }
-                .padding()
-                .background(Color.secondary.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                // --- INGREDIENT SECTION ---
-                VStack(alignment: .leading, spacing: 20) {
-                    Label("ingredients", systemImage: "list.bullet")
-                        .font(.title3)
-                        .fontWeight(.bold)
-                    
-                    ForEach(recipe.sections) { section in
-                        VStack(alignment: .leading, spacing: 10) {
-                            if let sectionName = section.name, !sectionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                Text(sectionName)
-                                    .font(.headline)
-                                    .foregroundStyle(.primary)
-                                    .padding(.top, 4)
-                            }
+                    VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(LocalizedStringKey(recipe.categories.first?.name ?? "category.lunch"))
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Color.accentColor.opacity(0.1))
+                                .clipShape(Capsule())
                             
-                            VStack(alignment: .leading, spacing: 10) {
-                                ForEach(section.ingredients) { ingredient in
-                                    HStack(alignment: .firstTextBaseline) {
-                                        Image(systemName: "circle.fill")
-                                            .font(.system(size: 6))
-                                            .foregroundStyle(.tint)
-                                            .padding(.bottom, 4)
-                                                                
-                                        Text(ingredient.name)
-                                            .font(.body)
-                                                                
-                                        Spacer()
-                                                                
-                                        Text(calculateAmount(for: ingredient))
-                                            .fontWeight(.semibold)
-                                            .foregroundStyle(.primary)
-                                                                
-                                        Text(LocalizedStringKey(ingredient.unit))
-                                            .font(.subheadline)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                    
-                                    if ingredient != section.ingredients.last {
-                                        Divider().opacity(0.5)
-                                    }
-                                }
-                            }
-                            .padding(.leading, 4)
+                            Label(recipe.difficulty.title, systemImage: "chart.bar.fill")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
-                    }
-                }
-
-                Divider()
-
-                // --- INSTRUCTION SECTION ---
-                VStack(alignment: .leading, spacing: 20) {
-                    Label("instructions", systemImage: "frying.pan")
-                        .font(.title3)
-                        .fontWeight(.bold)
-
-                    ForEach(recipe.sections) { section in
-                        let sectionInstructions = section.instructions.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
                         
-                        if !sectionInstructions.isEmpty {
-                            VStack(alignment: .leading, spacing: 12) {
+                        Text(recipe.name)
+                            .font(.system(.largeTitle, design: .rounded))
+                            .fontWeight(.bold)
+                        
+                        Label(formatCookingTime(recipe.cookingTimeMinutes), systemImage: "clock")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .id(topAnchorID)
+                    
+                    if !recipe.recipeDescription.isEmpty {
+                        Text(recipe.recipeDescription)
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    Divider()
+                    
+                    // --- PORTIONS SECTION ---
+                    HStack {
+                        Label("portions.count", systemImage: "person.2.fill")
+                            .font(.headline)
+                        
+                        Text("\(selectedPortions)")
+                            .font(.title3.monospacedDigit())
+                            .fontWeight(.semibold)
+                            .frame(minWidth: 30)
+                        
+                        Spacer()
+                        
+                        Button {
+                            handleDecrementTap()
+                        } label: {
+                            Image(systemName: "minus")
+                                .font(.headline)
+                                .frame(width: 34, height: 34)
+                                .background(Color.secondary.opacity(0.12))
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.5)
+                                .onEnded { _ in
+                                    didLongPressDecrement = true
+                                    jumpDecrementPortions()
+                                }
+                        )
+                        
+                        Button {
+                            handleIncrementTap()
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(.headline)
+                                .frame(width: 34, height: 34)
+                                .background(Color.secondary.opacity(0.12))
+                                .clipShape(Circle())
+                        }
+                        .buttonStyle(.plain)
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.5)
+                                .onEnded { _ in
+                                    didLongPressIncrement = true
+                                    jumpIncrementPortions()
+                                }
+                        )
+                    }
+                    .padding()
+                    .background(Color.secondary.opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    
+                    // --- INGREDIENT SECTION ---
+                    VStack(alignment: .leading, spacing: 20) {
+                        Label("ingredients", systemImage: "list.bullet")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                        
+                        ForEach(recipe.sections) { section in
+                            VStack(alignment: .leading, spacing: 10) {
                                 if let sectionName = section.name, !sectionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                                     Text(sectionName)
                                         .font(.headline)
@@ -208,52 +168,108 @@ struct RecipeDetailView: View {
                                         .padding(.top, 4)
                                 }
                                 
-                                ForEach(sectionInstructions) { instructionLine in
-                                    if let localIndex = sectionInstructions.firstIndex(where: { $0.id == instructionLine.id }) {
-                                        HStack(alignment: .top, spacing: 10) {
-                                            Text("\(localIndex + 1).")
-                                                .fontWeight(.bold)
+                                VStack(alignment: .leading, spacing: 10) {
+                                    ForEach(section.ingredients) { ingredient in
+                                        HStack(alignment: .firstTextBaseline) {
+                                            Image(systemName: "circle.fill")
+                                                .font(.system(size: 6))
                                                 .foregroundStyle(.tint)
-                                                
-                                            Text(instructionLine.text)
+                                                .padding(.bottom, 4)
+                                            
+                                            Text(ingredient.name)
                                                 .font(.body)
-                                                .lineSpacing(4)
+                                            
+                                            Spacer()
+                                            
+                                            Text(calculateAmount(for: ingredient))
+                                                .fontWeight(.semibold)
+                                                .foregroundStyle(.primary)
+                                            
+                                            Text(LocalizedStringKey(ingredient.unit))
+                                                .font(.subheadline)
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        
+                                        if ingredient != section.ingredients.last {
+                                            Divider().opacity(0.5)
+                                        }
+                                    }
+                                }
+                                .padding(.leading, 4)
+                            }
+                        }
+                    }
+                    .id(ingredientsAnchorID)
+                    
+                    Divider()
+                    
+                    // --- INSTRUCTION SECTION ---
+                    VStack(alignment: .leading, spacing: 20) {
+                        Label("instructions", systemImage: "frying.pan")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                        
+                        ForEach(recipe.sections) { section in
+                            let sectionInstructions = section.instructions.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+                            
+                            if !sectionInstructions.isEmpty {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    if let sectionName = section.name, !sectionName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                        Text(sectionName)
+                                            .font(.headline)
+                                            .foregroundStyle(.primary)
+                                            .padding(.top, 4)
+                                    }
+                                    
+                                    ForEach(sectionInstructions) { instructionLine in
+                                        if let localIndex = sectionInstructions.firstIndex(where: { $0.id == instructionLine.id }) {
+                                            HStack(alignment: .top, spacing: 10) {
+                                                Text("\(localIndex + 1).")
+                                                    .fontWeight(.bold)
+                                                    .foregroundStyle(.tint)
+                                                
+                                                Text(instructionLine.text)
+                                                    .font(.body)
+                                                    .lineSpacing(4)
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                
-                // --- TIPS SECTION ---
-                if let tips = recipe.tips, !tips.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Divider()
+                    .id(instructionsAnchorID)
+                    
+                    // --- TIPS SECTION ---
+                    if let tips = recipe.tips, !tips.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Divider()
 
-                    VStack(spacing: 16) {
-                        VStack(spacing: 6) {
-                            Image(systemName: "lightbulb.fill")
-                                .font(.title2)
-                                .foregroundStyle(.orange)
-                            Text("tips.title")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                        }
-                        .frame(maxWidth: .infinity)
-
-                        LinkedTipsText(tips: tips, store: store)
-                            .padding(16)
+                        VStack(spacing: 16) {
+                            VStack(spacing: 6) {
+                                Image(systemName: "lightbulb.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.orange)
+                                Text("tips.title")
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                            }
                             .frame(maxWidth: .infinity)
-                            .background(Color.orange.opacity(0.08))
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.orange.opacity(0.2), lineWidth: 1)
-                            )
+
+                            LinkedTipsText(tips: tips, store: store)
+                                .padding(16)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.orange.opacity(0.08))
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                                )
+                        }
                     }
                 }
+                .id(tipsAnchorID)
+                .padding(20)
             }
-            .padding(20)
         }
         .safeAreaInset(edge: .bottom) {
             Color.clear.frame(height: 120)
@@ -370,11 +386,6 @@ struct RecipeDetailView: View {
                 proxy.scrollTo(stepAnchorID(steps[prev].line), anchor: .top)
             }
  
-        case .repeatStep:
-            withAnimation {
-                proxy.scrollTo(stepAnchorID(steps[currentStepIndex].line), anchor: .top)
-            }
- 
         case .scrollTop:
             currentStepIndex = 0
             withAnimation {
@@ -382,20 +393,34 @@ struct RecipeDetailView: View {
             }
         
         case .scrollBottom:
-                currentStepIndex = 0
-                withAnimation {
-                    proxy.scrollTo(topAnchorID, anchor: .top)
-                }
-        case .scrollUp:
-            currentStepIndex = 0
+            if !steps.isEmpty {
+                currentStepIndex = steps.count - 1
+            }
             withAnimation {
-                proxy.scrollTo(topAnchorID, anchor: .top)
+                proxy.scrollTo(tipsAnchorID, anchor: .bottom)
+            }
+        case .scrollUp:
+            let steps = allSteps
+            guard !steps.isEmpty else { return }
+                
+            // Go backward by 3 steps, or stop at the first step
+            let prevChunk = max(currentStepIndex - 3, 0)
+            currentStepIndex = prevChunk
+                
+            withAnimation {
+                proxy.scrollTo(stepAnchorID(steps[prevChunk].line), anchor: .top)
             }
             
         case .scrollDown:
-            currentStepIndex = 0
+            let steps = allSteps
+            guard !steps.isEmpty else { return }
+                
+            // Go forward by 3 steps, or stop at the first step
+            let nextChunk = min(currentStepIndex + 3, steps.count - 1)
+            currentStepIndex = nextChunk
+            
             withAnimation {
-                proxy.scrollTo(topAnchorID, anchor: .top)
+                proxy.scrollTo(stepAnchorID(steps[nextChunk].line), anchor: .top)
             }
  
         case .unknown:

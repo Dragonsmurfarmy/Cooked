@@ -13,7 +13,6 @@ import Observation
 enum VoiceCommand {
     case nextStep
     case previousStep
-    case repeatStep
     case scrollTop
     case scrollBottom
     case scrollUp
@@ -204,11 +203,6 @@ final class VoiceController {
             "zpět", "předchozí", "předchozí krok",       // Czech
         ]
 
-        let repeatPhrases = [
-            "repeat", "again", "say again", "what",
-            "zopakuj", "znovu",                          // Czech
-        ]
-
         let topPhrases = [
             "top", "beginning", "start", "go to top",
             "začátek", "nahoru",                         // Czech
@@ -234,9 +228,6 @@ final class VoiceController {
         }
         if previousPhrases.contains(where: { transcript.hasSuffix($0) || transcript == $0 }) {
             return .previousStep
-        }
-        if repeatPhrases.contains(where: { transcript.hasSuffix($0) || transcript == $0 }) {
-            return .repeatStep
         }
         if topPhrases.contains(where: { transcript.hasSuffix($0) || transcript == $0 }) {
             return .scrollTop

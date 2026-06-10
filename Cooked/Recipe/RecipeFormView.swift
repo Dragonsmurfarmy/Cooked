@@ -23,7 +23,6 @@ struct RecipeFormView: View {
     @State private var selectedCategories: [RecipeCategory]
     @State private var cookingTimeMinutes: Double = 0
     @State private var selectedDifficulty: RecipeDifficulty
-    @State private var hasManuallySelectedDifficulty = false
     @State private var recipeDescription = ""
     @State private var showNewUnitAlert = false
     @State private var newUnitName = ""
@@ -191,7 +190,6 @@ struct RecipeFormView: View {
         Binding(
             get: { selectedDifficulty },
             set: { newDifficulty in
-                hasManuallySelectedDifficulty = true
                 selectedDifficulty = newDifficulty
             }
         )
@@ -202,56 +200,6 @@ struct RecipeFormView: View {
         let clampedMinutes = max(0, min(59, minutes))
         let totalMinutes = (clampedHours * 60) + clampedMinutes
         cookingTimeMinutes = Double(totalMinutes)
-    }
-
-    private func autoCalculatedDifficulty() -> RecipeDifficulty {
-        let textSteps = sections.flatMap { $0.instructions.map(\.text) }
-        let flatIngredients = sections.flatMap { $0.ingredients }
-        return Self.calculateDifficulty(
-            name: name,
-            ingredients: flatIngredients,
-            instructions: textSteps,
-            cookingTimeMinutes: Int(cookingTimeMinutes)
-        )
-    }
-
-    private func updateDifficultyIfNeeded() {
-        guard !isEditing, !hasManuallySelectedDifficulty else { return }
-        selectedDifficulty = autoCalculatedDifficulty()
-    }
-
-    private static func calculateDifficulty(
-        name: String,
-        ingredients: [Ingredient],
-        instructions: [String],
-        cookingTimeMinutes: Int
-    ) -> RecipeDifficulty {
-        var score = Double(instructions.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count)
-
-        let filledIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-        score += Double(filledIngredients.count) * 0.5
-
-        let sectionCount = filledIngredients.filter { ingredient in
-            let name = ingredient.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-            return name.hasPrefix("for ") || name.hasSuffix(":")
-        }
-        .count
-        
-        if sectionCount >= 3 {
-            score += 6
-        } else if sectionCount == 2 {
-            score += 3
-        }
-
-        score += Double(max(0, cookingTimeMinutes)) / 15
-
-        if score <= 12 {
-            return .easy
-        } else if score <= 28 {
-            return .intermediate
-        } else {
-            return .advanced
-        }
     }
 
     var body: some View {
@@ -325,26 +273,22 @@ struct RecipeFormView: View {
                 ImageCropper(image: rawImage, visibleImageData: $selectedImageData, isShown: $navigateToCropper)
             }
         }
-        .onChange(of: name) { _, _ in
-            updateDifficultyIfNeeded()
-            saveDraftIfNeeded()
-        }
-        .onChange(of: recipeDescription) { _, _ in saveDraftIfNeeded() }
-        .onChange(of: selectedCategories) { _, _ in saveDraftIfNeeded() }
-        .onChange(of: cookingTimeMinutes) { _, _ in
-            updateDifficultyIfNeeded()
-            saveDraftIfNeeded()
-        }
-        .onChange(of: selectedDifficulty) { _, _ in saveDraftIfNeeded() }
-        .onChange(of: sections) { _, _ in
-            updateDifficultyIfNeeded()
-            saveDraftIfNeeded()
-        }
-        .onChange(of: tips) { _, _ in saveDraftIfNeeded() }
-        .onChange(of: selectedImageData) { _, _ in
-            guard !isEditing else { return }
-            store.saveDraftImageData(selectedImageData)
-        }
+        .onChange(of: RecipeFormChanges(
+                    name: name,
+                    desc: recipeDescription,
+                    cats: selectedCategories,
+                    time: Int(cookingTimeMinutes),
+                    diff: selectedDifficulty,
+                    sections: sections,
+                    tips: tips,
+                    img: selectedImageData
+                )) { oldValue, newValue in
+                    
+                    saveDraftIfNeeded()
+                    if oldValue.img != newValue.img && !isEditing {
+                        store.saveDraftImageData(newValue.img)
+                    }
+                }
     }
     
     // --- EXTRACTED VIEWS ---
@@ -844,4 +788,15 @@ private struct RecipeSelectedImagePreview: View {
         .frame(width: 56, height: 56)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
+}
+
+struct RecipeFormChanges: Equatable {
+    let name: String
+    let desc: String
+    let cats: [RecipeCategory]
+    let time: Int
+    let diff: RecipeDifficulty
+    let sections: [RecipeSection]
+    let tips: String
+    let img: Data?
 }

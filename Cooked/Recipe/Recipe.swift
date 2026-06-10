@@ -140,7 +140,13 @@ struct Recipe: Identifiable, Equatable, Hashable, Codable {
     }
         
     static func == (lhs: Recipe, rhs: Recipe) -> Bool {
-        lhs.id == rhs.id
+        lhs.id == rhs.id &&
+        lhs.name == rhs.name &&
+        lhs.cookingTimeMinutes == rhs.cookingTimeMinutes &&
+        lhs.difficulty == rhs.difficulty &&
+        lhs.categories == rhs.categories &&
+        lhs.isFavorite == rhs.isFavorite &&
+        lhs.imageData == rhs.imageData
     }
 }
 

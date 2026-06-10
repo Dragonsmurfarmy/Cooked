@@ -1,6 +1,12 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
+    ", " : {
+
+    },
     "%@" : {
 
     },
@@ -249,6 +255,23 @@
         }
       }
     },
+    "category.count_format %lld" : {
+      "comment" : "%d categories",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d kategorií"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d categories"
+          }
+        }
+      }
+    },
     "category.dessert" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -284,7 +307,6 @@
       }
     },
     "category.lunch" : {
-      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {

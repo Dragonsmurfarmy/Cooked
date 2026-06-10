@@ -60,6 +60,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		CABA695B2FD9BBAB00AC89B8 /* Exceptions for "Cooked" folder in "Cooked" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"/Localized: InfoPlist.strings",
+			);
+			target = CA045E202F9E5C1D00E11729 /* Cooked */;
+		};
 		CAF388C82FA110D000162458 /* Exceptions for "CookedWidget" folder in "CookedWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -77,10 +84,22 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		CABA695C2FD9BBAB00AC89B8 /* Exceptions for "Cooked" folder in "Compile Sources" phase from "Cooked" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = CA045E1D2F9E5C1D00E11729 /* Sources */;
+			membershipExceptions = (
+				"/Localized: InfoPlist.strings",
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		CA045E232F9E5C1D00E11729 /* Cooked */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
+				CABA695B2FD9BBAB00AC89B8 /* Exceptions for "Cooked" folder in "Cooked" target */,
+				CABA695C2FD9BBAB00AC89B8 /* Exceptions for "Cooked" folder in "Compile Sources" phase from "Cooked" target */,
 				CAF388CD2FA1116800162458 /* Exceptions for "Cooked" folder in "CookedWidgetExtension" target */,
 			);
 			path = Cooked;
@@ -299,6 +318,7 @@
 			knownRegions = (
 				en,
 				Base,
+				cs,
 			);
 			mainGroup = CA045E182F9E5C1D00E11729;
 			minimizedProjectReferenceProxies = 1;
@@ -401,6 +421,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -467,6 +488,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -531,7 +553,9 @@
 				DEVELOPMENT_TEAM = 7TFVHY6W73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "„Aplikace potřebuje přístup k rozpoznávání řeči pro hlasové ovládání kroků receptu při vaření.“";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -564,7 +588,9 @@
 				DEVELOPMENT_TEAM = 7TFVHY6W73;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "„Aplikace potřebuje přístup k rozpoznávání řeči pro hlasové ovládání kroků receptu při vaření.“";
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_NSSupportsLiveActivitiesFrequentUpdates = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

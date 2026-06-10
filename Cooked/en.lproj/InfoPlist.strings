@@ -1,0 +1,9 @@
+//
+//  InfoPlist.strings
+//  Cooked
+//
+//  Created by Tomáš Kříž on 10.06.2026.
+//
+
+"NSSpeechRecognitionUsageDescription" = "The app requires speech recognition access to control recipe steps using voice commands while cooking.";
+"NSMicrophoneUsageDescription" = "The app requires microphone access to listen to your voice commands.";

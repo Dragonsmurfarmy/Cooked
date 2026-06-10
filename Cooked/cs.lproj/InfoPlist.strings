@@ -1,0 +1,9 @@
+//
+//  InfoPlist.strings
+//  Cooked
+//
+//  Created by Tomáš Kříž on 10.06.2026.
+//
+
+"NSSpeechRecognitionUsageDescription" = "Aplikace potřebuje přístup k rozpoznávání řeči pro hlasové ovládání kroků receptu při vaření.";
+"NSMicrophoneUsageDescription" = "Aplikace potřebuje přístup k mikrofonu, aby mohla zachytit vaše hlasové příkazy.";
