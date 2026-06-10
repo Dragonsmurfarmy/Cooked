@@ -233,7 +233,7 @@ struct TimerView: View {
                         }
                         tipRow(title: "timer.tip.reset", icon: "gobackward")
                         tipRow(title: "timer.tip.sound", icon: "bell.fill")
-                        tipRow(title: "timer.tip.notification", icon: "bell.slash")
+                        tipRow(title: "timer.tip.notification", icon: "info.circle")
                     }
                 }
                 .font(.subheadline)

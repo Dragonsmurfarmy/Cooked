@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@" : {
+
+    },
     "%lld" : {
 
     },
@@ -11,6 +14,27 @@
 
     },
     "0" : {
+
+    },
+    "1 hour" : {
+
+    },
+    "5 minutes" : {
+
+    },
+    "10 minutes" : {
+
+    },
+    "15 minutes" : {
+
+    },
+    "20 minutes" : {
+
+    },
+    "30 minutes" : {
+
+    },
+    "45 minutes" : {
 
     },
     "button.add" : {
@@ -128,6 +152,7 @@
       }
     },
     "button.ok" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -409,7 +434,7 @@
         }
       }
     },
-    "Display" : {
+    "Duration" : {
 
     },
     "error.cannot_delete_builtin" : {
@@ -785,6 +810,7 @@
       }
     },
     "main.recipe_display.card" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -801,6 +827,7 @@
       }
     },
     "main.recipe_display.compact" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -848,6 +875,22 @@
         }
       }
     },
+    "main.sort_option.long" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nejdelší"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longest"
+          }
+        }
+      }
+    },
     "main.sort_option.name" : {
       "localizations" : {
         "cs" : {
@@ -860,6 +903,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Name"
+          }
+        }
+      }
+    },
+    "main.sort_option.short" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nejkratší"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Shortest"
           }
         }
       }
@@ -985,6 +1044,15 @@
         }
       }
     },
+    "Open Recipe" : {
+
+    },
+    "Opening %@" : {
+
+    },
+    "Opens a recipe in Cooked." : {
+
+    },
     "portions.count" : {
       "localizations" : {
         "cs" : {
@@ -1000,6 +1068,26 @@
           }
         }
       }
+    },
+    "reader.action.read_steps" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Číst postup"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read steps"
+          }
+        }
+      }
+    },
+    "Recipe" : {
+
     },
     "recipe.category" : {
       "extractionState" : "stale",
@@ -1117,20 +1205,20 @@
       }
     },
     "recipe.select" : {
-        "localizations" : {
-          "cs" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Vybrat recept"
-            }
-          },
-          "en" : {
-            "stringUnit" : {
-              "state" : "translated",
-              "value" : "Select recipe"
-            }
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vybrat recept"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select recipe"
           }
         }
+      }
     },
     "recipe.step_placeholder" : {
       "localizations" : {
@@ -1195,6 +1283,18 @@
           }
         }
       }
+    },
+    "Set Cooking Timer" : {
+
+    },
+    "Set Timer" : {
+
+    },
+    "Sets and starts the Cooked timer." : {
+
+    },
+    "Setting timer for %@" : {
+
     },
     "settings" : {
       "localizations" : {
@@ -1456,6 +1556,9 @@
 
     },
     "This is an example widget." : {
+
+    },
+    "Timer Duration" : {
 
     },
     "timer.action.pause" : {
@@ -1900,6 +2003,7 @@
       }
     },
     "voice_regime.info.message" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -1916,6 +2020,7 @@
       }
     },
     "voice_regime.info.title" : {
+      "extractionState" : "stale",
       "localizations" : {
         "cs" : {
           "stringUnit" : {
@@ -1930,6 +2035,18 @@
           }
         }
       }
+    },
+    "voice.error.mic_permission" : {
+
+    },
+    "voice.error.speech_permission" : {
+
+    },
+    "voice.error.unavailable" : {
+
+    },
+    "voice.listening" : {
+
     },
     "widget.text" : {
       "localizations" : {

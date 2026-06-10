@@ -1,3 +1,10 @@
+//
+//  Speech.swift
+//  Cooked
+//
+//  Created by Tomáš Kříž on 20.04.2026.
+//
+
 import SwiftUI
 import UserNotifications
 

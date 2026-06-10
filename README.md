@@ -18,10 +18,16 @@ Cooked is a SwiftUI iOS recipe app with a built-in cooking timer, editable recip
 ## Features
 
 - Browse recipes in compact or card layout
-- Sort recipes by name or favorites
+- Sort recipes by name, favorites, or cooking time
 - Filter recipes by category
 - Mark recipes as favorites
-- Add, edit, and delete recipes
+- Add, edit, and delete recipes with:
+  - Recipe descriptions and tips
+  - Difficulty ratings (easy, intermediate, advanced)
+  - Recipe images
+  - Multiple sections for ingredients and instructions
+  - Adjustable portion sizes for ingredient scaling
+- Link recipes in recipe tips
 - Import and export recipe data as JSON
 - Create custom categories in Settings
 - Choose the app language and default portions
@@ -69,3 +75,6 @@ On first launch, bundled sample recipes are copied into the app Documents direct
 
 - The app requests notification permission at launch for timer alerts.
 - The widget target provides a timer Live Activity on the Lock Screen and in Dynamic Island.
+
+## Known limitations
+- Voice regime option doesnt do anything yet, will be added in future updates

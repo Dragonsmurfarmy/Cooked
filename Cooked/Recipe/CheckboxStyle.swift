@@ -4,6 +4,7 @@
 //
 //  Created by Tomáš Kříž on 27.05.2026.
 //
+
 import SwiftUI
 
 struct CheckboxToggleStyle: ToggleStyle {

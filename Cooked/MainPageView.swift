@@ -9,7 +9,6 @@ import SwiftUI
 struct MainPageView: View {
     @Bindable var store: RecipeStore
     @State private var sortOption: RecipeSortOption = .name
-    @State private var displayStyle: RecipeDisplayStyle = .compact
     
     @State private var selectedCategoryIDs: Set<UUID>? = nil
     @State private var isShowingFilterPopover = false
@@ -18,6 +17,7 @@ struct MainPageView: View {
     @State private var recipeToDelete: Recipe?
     @State private var showDeleteConfirmation = false
     @State private var isShowingEditPage = false
+    @State var icn: String = "" // sorting icon
     
     private var allCategoryIDs: Set<UUID> {
         Set(store.categories.map { $0.id })
@@ -30,13 +30,28 @@ struct MainPageView: View {
     ]
     
     private var visibleRecipes: [Recipe] {
-        guard let selected = selectedCategoryIDs else { return store.recipes }
-        if selected.isEmpty { return [] }
         
-        return store.recipes.filter { recipe in
-            recipe.categories.contains { selected.contains($0.id) }
-        }
-    }
+        let filtered: [Recipe]
+        if let selected = selectedCategoryIDs {
+                if selected.isEmpty { return [] }
+                filtered = store.recipes.filter { recipe in
+                    recipe.categories.contains { selected.contains($0.id) }
+                }
+            } else {
+                filtered = store.recipes
+            }
+        
+        switch sortOption {
+        case .name:
+            return filtered.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .favorites:
+            return filtered.sorted { $0.isFavorite && !$1.isFavorite }
+        case .short:
+            return filtered.sorted { $0.cookingTimeMinutes < $1.cookingTimeMinutes }
+        case .long:
+            return filtered.sorted { $0.cookingTimeMinutes > $1.cookingTimeMinutes }
+            }
+     }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -74,10 +89,21 @@ struct MainPageView: View {
             Spacer()
             
             Menu {
-                // Ensure the selection matches the Enum type
                 Picker("sort", selection: $sortOption) {
                     ForEach(RecipeSortOption.allCases) { option in
-                        Label(option.title, systemImage: option == .name ? "textformat" : "star.fill").tag(option)
+                        let icn: String = {
+                                switch option {
+                                case .name:
+                                    return "textformat"
+                                case .favorites:
+                                    return "star.fill"
+                                case .short:
+                                    return "hourglass.tophalf.filled"
+                                case .long:
+                                    return "hourglass.bottomhalf.filled"
+                                }
+                            }()
+                        Label(option.title, systemImage: icn).tag(option)
                     }
                 }
             } label: { Image(systemName: "arrow.up.arrow.down.circle").font(.title3) }
@@ -98,13 +124,13 @@ struct MainPageView: View {
                 )
             }
             
-            Picker("Display", selection: $displayStyle) {
+            /*Picker("Display", selection: $displayStyle) {
                 ForEach(RecipeDisplayStyle.allCases) { style in
                     Image(systemName: style == .compact ? "list.bullet" : "square.grid.2x2").tag(style)
                 }
             }
             .pickerStyle(.segmented)
-            .frame(width: 100)
+            .frame(width: 100) */
         }
     }
 
@@ -112,11 +138,7 @@ struct MainPageView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("main.recipes.title").font(.title2).fontWeight(.semibold)
             Group {
-                if displayStyle == .compact {
-                    VStack(spacing: 12) { ForEach(visibleRecipes) { recipe in recipeRowWrapper(recipe: recipe, isCard: false) } }
-                } else {
-                    LazyVGrid(columns: columns, spacing: 16) { ForEach(visibleRecipes) { recipe in recipeRowWrapper(recipe: recipe, isCard: true) } }
-                }
+                VStack(spacing: 12) { ForEach(visibleRecipes) { recipe in recipeRowWrapper(recipe: recipe, isCard: false) } }
             }
             .animation(.default, value: visibleRecipes)
         }
@@ -125,8 +147,7 @@ struct MainPageView: View {
     @ViewBuilder
     private func recipeRowWrapper(recipe: Recipe, isCard: Bool) -> some View {
         NavigationLink { RecipeDetailView(recipe: recipe, store: store) } label: {
-            if isCard { CardRecipeRow(recipe: recipe) { toggleFavorite(for: recipe.id) } }
-            else { CompactRecipeRow(recipe: recipe, store: store) { toggleFavorite(for: recipe.id) } }
+            CompactRecipeRow(recipe: recipe, store: store) { toggleFavorite(for: recipe.id) }
         }
         .buttonStyle(.plain)
         .transition(.opacity.combined(with: .scale))
@@ -187,65 +208,36 @@ private struct RecipeMetadata: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
 
-            Label(recipe.difficulty.title, systemImage: "chart.bar.fill")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-        }
-    }
-}
+            HStack(spacing: 8) {
+                Label(recipe.difficulty.title, systemImage: "chart.bar.fill")
 
-private struct CardRecipeRow: View {
-    let recipe: Recipe
-    let onToggleFavorite: () -> Void
-
-    var body: some View {
-        GeometryReader { geometry in
-            // Set spacing to 0 to prevent internal offsets
-            VStack(alignment: .leading, spacing: 0) {
-                
-                // ----- Image Area ----
-                RecipeImage(imageData: recipe.imageData, cornerRadius: 12)
-                    .frame(height: geometry.size.height * 0.65) // Upper 65%
-                    .frame(maxWidth: .infinity)
-                    .clipped() // Prevents the image from "peeking" into the info area
-                
-                // ----- Info Area -----
-                VStack(spacing: 0) {
-                    Spacer(minLength: 0)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(alignment: .center, spacing: 4) {
-                            Text(recipe.name)
-                                .font(.subheadline.bold())
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.8) // Shrinks slightly if name is long
-                            
-                            Spacer()
-                            
-                            Button(action: onToggleFavorite) {
-                            Image(systemName: recipe.isFavorite ? "star.fill" : "star")
-                                .font(.system(size: 18, weight: .semibold)) // Explicit size for better visibility
-                                .foregroundStyle(recipe.isFavorite ? .yellow : .secondary)
-                            }
-                            .buttonStyle(.plain)
-                        }
-
-                        RecipeMetadata(recipe: recipe)
-                    }
-                    .padding(.horizontal, 10)
-                    
-                    Spacer(minLength: 0)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                Label(formatCookingTime(recipe.cookingTimeMinutes), systemImage: "clock")
             }
+            .font(.caption2)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
         }
-        .aspectRatio(1.0, contentMode: .fit)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func formatCookingTime(_ minutes: Int) -> String {
+        if minutes < 5 {
+            return "<5 min"
+        }
+
+        let hours = minutes / 60
+        let remainingMinutes = minutes % 60
+
+        if hours == 0 {
+            return "\(minutes) min"
+        }
+
+        if remainingMinutes == 0 {
+            return "\(hours) h"
+        }
+
+        return "\(hours) h \(remainingMinutes) min"
     }
 }
-
 
 struct RecipeImage: View {
     let imageData: Data?
@@ -292,23 +284,14 @@ struct NavigationBarButton: View {
 }
 
 enum RecipeSortOption: String, CaseIterable, Identifiable {
-    case name, favorites
+    case name, favorites, short, long
     var id: String { rawValue }
     var title: LocalizedStringKey {
         switch self {
         case .name: "main.sort_option.name"
         case .favorites: "main.sort_option.favorites"
-        }
-    }
-}
-
-enum RecipeDisplayStyle: String, CaseIterable, Identifiable {
-    case compact, card
-    var id: String { rawValue }
-    var title: LocalizedStringKey {
-        switch self {
-        case .compact: "main.recipe_display.compact"
-        case .card: "main.recipe_display.card"
+        case .long: "main.sort_option.long"
+        case .short: "main.sort_option.short"   
         }
     }
 }

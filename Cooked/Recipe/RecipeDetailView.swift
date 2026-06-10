@@ -22,6 +22,25 @@ struct RecipeDetailView: View {
     private let minPortions = 1
     private let maxPortions = 50
     
+    // MARK: Voice
+    @State private var voice = VoiceController()
+    // Flat list of all non-empty instruction steps across all sections, built once.
+    private var allSteps: [(sectionIndex: Int, stepIndex: Int, line: InstructionLine)] {
+        var result: [(Int, Int, InstructionLine)] = []
+        for (si, section) in recipe.sections.enumerated() {
+            let nonEmpty = section.instructions.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+            for (li, line) in nonEmpty.enumerated() {
+                result.append((si, li, line))
+            }
+        }
+        return result
+    }
+    // Index into allSteps that voice commands navigate
+    @State private var currentStepIndex: Int = 0
+    // Scroll anchor IDs — each step gets "step-\(line.id)"
+    private func stepAnchorID(_ line: InstructionLine) -> String { "step-\(line.id.uuidString)" }
+    private let topAnchorID = "recipe-top"
+ 
     init(recipe: Recipe, store: RecipeStore) {
         self._recipe = State(initialValue: recipe)
         self.store = store
@@ -283,6 +302,115 @@ struct RecipeDetailView: View {
         }
     }
     
+    // MARK: - Voice status bar
+ 
+    private var voiceStatusBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "mic.fill")
+                .foregroundStyle(Color.accentColor)
+ 
+            VStack(alignment: .leading, spacing: 1) {
+                Text("voice.listening")
+                    .font(.caption.weight(.semibold))
+                if !voice.lastTranscript.isEmpty {
+                    Text(voice.lastTranscript)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.head)
+                }
+            }
+ 
+            Spacer()
+ 
+            if let stepInfo = currentStepInfo {
+                Text(stepInfo)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(.thinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .padding(.horizontal, 16)
+        .padding(.bottom, 8)
+    }
+ 
+    private var currentStepInfo: String? {
+        let steps = allSteps
+        guard !steps.isEmpty else { return nil }
+        return "\(currentStepIndex + 1) / \(steps.count)"
+    }
+ 
+    // MARK: - Voice setup
+ 
+    private func setupVoice(proxy: ScrollViewProxy) {
+        voice.onCommand = { [self] command in
+            handleVoiceCommand(command, proxy: proxy)
+        }
+    }
+ 
+    private func handleVoiceCommand(_ command: VoiceCommand, proxy: ScrollViewProxy) {
+        let steps = allSteps
+        guard !steps.isEmpty else { return }
+ 
+        switch command {
+        case .nextStep:
+            let next = min(currentStepIndex + 1, steps.count - 1)
+            currentStepIndex = next
+            withAnimation {
+                proxy.scrollTo(stepAnchorID(steps[next].line), anchor: .top)
+            }
+ 
+        case .previousStep:
+            let prev = max(currentStepIndex - 1, 0)
+            currentStepIndex = prev
+            withAnimation {
+                proxy.scrollTo(stepAnchorID(steps[prev].line), anchor: .top)
+            }
+ 
+        case .repeatStep:
+            withAnimation {
+                proxy.scrollTo(stepAnchorID(steps[currentStepIndex].line), anchor: .top)
+            }
+ 
+        case .scrollTop:
+            currentStepIndex = 0
+            withAnimation {
+                proxy.scrollTo(topAnchorID, anchor: .top)
+            }
+        
+        case .scrollBottom:
+                currentStepIndex = 0
+                withAnimation {
+                    proxy.scrollTo(topAnchorID, anchor: .top)
+                }
+        case .scrollUp:
+            currentStepIndex = 0
+            withAnimation {
+                proxy.scrollTo(topAnchorID, anchor: .top)
+            }
+            
+        case .scrollDown:
+            currentStepIndex = 0
+            withAnimation {
+                proxy.scrollTo(topAnchorID, anchor: .top)
+            }
+ 
+        case .unknown:
+            break
+        }
+    }
+ 
+    private func isCurrentVoiceStep(_ line: InstructionLine) -> Bool {
+        guard voice.isListening else { return false }
+        let steps = allSteps
+        guard currentStepIndex < steps.count else { return false }
+        return steps[currentStepIndex].line.id == line.id
+    }
+
+    
     // MARK: - Helper Functions
     
     private func formatCookingTime(_ minutes: Int) -> String {
@@ -351,8 +479,7 @@ struct RecipeDetailView: View {
 
 // MARK: - Linked Tips Renderer
 
-/// Parses [[word|uuid]] tokens in tips text and renders linked words
-/// as tappable accent-coloured text that navigates to the target recipe.
+// Parses [[word|uuid]] tokens in tips text and renders linked words as tappable accent-coloured text that navigates to the target recipe.
 private struct LinkedTipsText: View {
     let tips: String
     let store: RecipeStore

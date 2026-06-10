@@ -1,16 +1,28 @@
+//
+//  Speech.swift
+//  Cooked
+//
+//  Created by Tomáš Kříž on 20.04.2026.
+//
+
 import SwiftUI
 
 
 struct RootView: View {
     @Environment(TimerViewModel.self) private var viewModel
     @Environment(\.scenePhase) private var scenePhase
+    
     @Bindable var store: RecipeStore
+    
     @State private var selectedTab: Tab = .home
     @State private var slideDirection: Edge = .trailing
     @State private var isVoiceRegimeActive = false
+    @State private var selectedRecipe: Recipe?
+    @State private var voiceController = VoiceController()
     @State private var hasShownVoiceRegimeInfo = false
     @State private var isShowingVoiceRegimeInfo = false
     @State private var isKeyboardVisible = false
+    
     private let bottomBarReservedHeight: CGFloat = 200
 
     enum Tab: Int, Comparable {
@@ -27,6 +39,9 @@ struct RootView: View {
                     NavigationStack {
                         MainPageView(store: store)
                             .safeAreaPadding(.bottom, isKeyboardVisible ? 0 : bottomBarReservedHeight)
+                            .navigationDestination(item: $selectedRecipe) { recipe in
+                                RecipeDetailView(recipe: recipe, store: store)
+                            }
                     }
                 case .timer:
                     NavigationStack {
@@ -84,10 +99,13 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             withAnimation(.easeIn(duration: 0.2)) { isKeyboardVisible = false }
         }
-        .alert("voice_regime.info.title", isPresented: $isShowingVoiceRegimeInfo) {
-            Button("button.ok", role: .cancel) { }
-        } message: {
-            Text("voice_regime.info.message")
+        .onAppear {
+            processPendingAppIntentCommands()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                processPendingAppIntentCommands()
+            }
         }
     }
 
@@ -98,6 +116,17 @@ struct RootView: View {
                 if !hasShownVoiceRegimeInfo {
                     hasShownVoiceRegimeInfo = true
                     isShowingVoiceRegimeInfo = true
+                }
+
+                Task {
+                    if !voiceController.isListening {
+                        let granted = await voiceController.requestPermissions()
+                        if granted {
+                            voiceController.startListening()
+                        }
+                    } else {
+                        voiceController.stopListening()
+                    }
                 }
 
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
@@ -116,6 +145,9 @@ struct RootView: View {
             tabButton(tab: .home, title: "navigation.home", icon: "house.fill")
             tabButton(tab: .add, title: "navigation.add", icon: "plus")
             tabButton(tab: .settings, title: "navigation.settings", icon: "gearshape")
+        }
+        .onChange(of: voiceController.isListening) { _, listening in
+            withAnimation { isVoiceRegimeActive = listening }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -136,4 +168,33 @@ struct RootView: View {
         }
         .buttonStyle(.plain)
     }
+
+    private func processPendingAppIntentCommands() {
+        if let recipeID = CookedAppIntentCommandStore.consumePendingOpenRecipeID() {
+            openRecipe(id: recipeID)
+        }
+
+        if let seconds = CookedAppIntentCommandStore.consumePendingTimerSeconds() {
+            setTimer(seconds: seconds)
+        }
+    }
+
+    private func openRecipe(id: String) {
+        guard let recipe = store.recipes.first(where: { $0.id.uuidString == id }) else { return }
+
+        slideDirection = .leading
+        selectedTab = .home
+        selectedRecipe = recipe
+    }
+
+    private func setTimer(seconds: Int) {
+        let duration = TimeInterval(max(seconds, 1))
+
+        slideDirection = .trailing
+        selectedTab = .timer
+        viewModel.selectDuration(duration)
+        viewModel.start()
+    }
+    
+    
 }

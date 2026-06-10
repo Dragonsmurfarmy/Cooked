@@ -21,7 +21,7 @@ struct RecipeSection: Identifiable, Codable, Equatable {
     var ingredients: [Ingredient] = [Ingredient(name: "", amount: 1, unit: "")] // List of ingredients
     var instructions: [InstructionLine] = [InstructionLine(text: "")] // List of Instructions
     
-    // 2 sections are equal if these all are true (needed for Reset button)
+    // 2 sections are equal if all are true (needed for Reset button)
     static func == (lhs: RecipeSection, rhs: RecipeSection) -> Bool {
         lhs.id == rhs.id &&
         lhs.name == rhs.name &&
@@ -93,7 +93,7 @@ struct Recipe: Identifiable, Equatable, Hashable, Codable {
     var imageFileName: String?
     var tips: String?
     
-    // This is now the ONLY source of truth for ingredients and instructions
+    // Source of truth for ingredients and instructions
     var sections: [RecipeSection]
 
     var imageData: Data? {
@@ -113,7 +113,7 @@ struct Recipe: Identifiable, Equatable, Hashable, Codable {
         self.difficulty = difficulty
         self.isFavorite = isFavorite
         self.imageFileName = imageFileName
-        self.tips = tips // <-- Assigned tips parameter
+        self.tips = tips
         self.sections = sections
     }
 

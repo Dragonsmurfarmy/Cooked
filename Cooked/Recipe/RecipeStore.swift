@@ -66,16 +66,13 @@ import SwiftUI
             var decodedRecipe: Recipe? = nil
             
             
-            do {
-                decodedRecipe = try decoder.decode(Recipe.self, from: data)
-            } catch let singleError {
-                
-                do {
-                    let recipeArray = try decoder.decode([Recipe].self, from: data)
-                    decodedRecipe = recipeArray.first
-                } catch let arrayError {
-                    
-                }
+            if let singleRecipe = try? decoder.decode(Recipe.self, from: data) {
+                decodedRecipe = singleRecipe
+            } else if let recipeArray = try? decoder.decode([Recipe].self, from: data) {
+                decodedRecipe = recipeArray.first
+            } else {
+                // Failed to decode
+                decodedRecipe = nil
             }
             
             

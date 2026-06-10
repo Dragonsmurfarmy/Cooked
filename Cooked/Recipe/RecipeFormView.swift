@@ -98,7 +98,7 @@ struct RecipeFormView: View {
     private var formattedTipsBinding: Binding<String> {
         Binding(
             get: {
-                // Regex to find [[Word|UUID]] and replace with [Word]
+                // replace link with [Word] placeholder
                 let pattern = "\\[\\[(.*?)\\|.*?\\]\\]"
                 let regex = try? NSRegularExpression(pattern: pattern)
                 let nsString = tips as NSString
@@ -109,10 +109,6 @@ struct RecipeFormView: View {
                 ) ?? tips
             },
             set: { newValue in
-                // This is the tricky part: You need to ensure that when a user
-                // edits the text, they don't accidentally break the existing links.
-                // A simple approach is to only allow updating raw text here
-                // if the tokens remain intact.
                 tips = newValue
             }
         )
@@ -230,8 +226,6 @@ struct RecipeFormView: View {
         instructions: [String],
         cookingTimeMinutes: Int
     ) -> RecipeDifficulty {
-        let joinedText = ([name] + instructions).joined(separator: " ").lowercased()
-
         var score = Double(instructions.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count)
 
         let filledIngredients = ingredients.filter { !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
@@ -541,15 +535,6 @@ struct RecipeFormView: View {
             sanitized.instructions = currentSection.instructions.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
             return sanitized
         }.filter { !$0.ingredients.isEmpty || !$0.instructions.isEmpty }
-        
-        let flatIngredients: [Ingredient] = finalRecipeSections.flatMap { $0.ingredients }
-        
-        let mappedLines: [[String]] = finalRecipeSections.map { section in
-            let header = section.name.map { ["[\($0)]"] } ?? []
-            let steps = section.instructions.map(\.text)
-            return header + steps
-        }
-        let serializedInstructionsText: String = mappedLines.flatMap { $0 }.joined(separator: "\n")
         
         let recipeId: UUID = recipeToEdit?.id ?? UUID()
         let defaultPortions: Int = recipeToEdit?.defaultPortions ?? store.settings.defaultPortions
